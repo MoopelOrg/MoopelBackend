@@ -10,6 +10,8 @@ Table Users {
 
   Name nvarchar(50) [not null, unique]
   Email nvarchar(200) [null, unique]
+  Role UserRole [not null, Note: "This should have a constraint"]
+  
 
   CreatedAtUtc datetime2 [not null, default: `SYSUTCDATETIME()`]
   Deactivated bit [not null, default: 0]
@@ -64,6 +66,16 @@ Table LoginAttempts {
   Note: "Trigger: detect repeated failures and enforce lockout rules"
 }
 
+Table Sessions {
+    SessionId int [pk, increment, not null]
+    UserId int [not null, ref: > Users.UserId]
+    HashedSessionToken nvarchar(3000) [not null]
+    IpIssuedTo varchar(200) [not null]
+    IssuedAtUtc datetime2 [not null, default: `SYSUTCDATETIME()`]
+    ExpiresAtUtc datetime2 [not null, default: `(DATEADD(MINUTE, 120, SYSUTCDATETIME()))`]
+    Revoked bit [not null, default: 0]
+}
+
 Table WorkItems {
   ItemId int [pk, increment, not null]
   UserId int [not null, ref: > Users.UserId]
@@ -97,6 +109,11 @@ Enum WorkItemType {
   Story
   Epic
   Project
+}
+
+Enum UserRole {
+    Admin
+    Standard
 }
 
 /* Example value for ThemeData in Themes
