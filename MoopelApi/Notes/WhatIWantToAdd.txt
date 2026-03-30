@@ -1,0 +1,5 @@
+I want to add the ability to have a reading list
+I want to add the ability to have reading sessions
+
+I want the ability to have work items
+I want to be able to have work item sessions, tracking the hours/minutes I spend on an item

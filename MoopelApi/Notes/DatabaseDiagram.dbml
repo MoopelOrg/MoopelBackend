@@ -1,0 +1,130 @@
+Table Groups {
+  GroupId int [pk, increment, not null]
+  Name nvarchar(50) [not null, unique]
+
+  Note: "Trigger: enforce unique group names and audit changes"
+}
+
+Table Users {
+  UserId int [pk, increment, not null]
+
+  Name nvarchar(50) [not null, unique]
+  Email nvarchar(200) [null, unique]
+
+  CreatedAtUtc datetime2 [not null, default: `SYSUTCDATETIME()`]
+  Deactivated bit [not null, default: 0]
+
+  Note: "Trigger: audit insert/update, enforce soft delete behavior"
+}
+
+Table GroupAccess {
+  GroupId int [not null, ref: > Groups.GroupId]
+  UserId int [not null, ref: > Users.UserId]
+
+  CanReadWorkItems bit [not null, default: 1]
+  CanCreateWorkItems bit [not null, default: 0]
+
+
+  Indexes {
+    (GroupId, UserId) [unique]
+  }
+  Note: "Trigger: enforce unique (GroupId, UserId) and audit permission changes"
+}
+
+Table UserSettings {
+  SettingId int [pk, increment, not null]
+  UserId int [not null, ref: > Users.UserId]
+
+  Indexes {
+    (SettingId, UserId) [pk]
+  }
+}
+
+Table Themes {
+  ThemeId int [pk, increment, not null]
+  ThemeName nvarchar(100) [null]
+  UserId int [not null, ref: > Users.UserId]
+  CreatedAtUtc datetime2 [not null, default: `SYSUTCDATETIME()`]
+
+  ThemeData nvarchar(max) [not null]
+
+  Indexes {
+    (ThemeName, UserId) [unique]
+  }
+
+  Note: "Trigger: audit theme changes"
+}
+
+Table LoginAttempts {
+  LoginId int [pk, increment, not null]
+  Username nvarchar(200) [null]
+  AttemptTime datetime2 [not null]
+  Status LoginStatus [not null]
+
+  Note: "Trigger: detect repeated failures and enforce lockout rules"
+}
+
+Table WorkItems {
+  ItemId int [pk, increment, not null]
+  UserId int [not null, ref: > Users.UserId]
+
+  Name nvarchar(20) [not null]
+  Description nvarchar(300) [not null, default: '']
+  Points decimal(5,2) [not null, default: 0.0, note: "Should be >= 0"]
+  Type WorkItemType [not null]
+
+  Note: "Trigger: enforce business rules (e.g., non-negative points)"
+}
+
+Table WorkItemParents {
+  ParentId int [not null, ref: > WorkItems.ItemId]
+  ChildId int [not null, ref: > WorkItems.ItemId]
+
+  Indexes {
+    (ParentId, ChildId) [pk]
+  }
+
+  Note: "Trigger: enforce ChildId <> ParentId and prevent circular references"
+}
+
+Enum LoginStatus {
+  Successful
+  Failed
+}
+
+Enum WorkItemType {
+  Task
+  Story
+  Epic
+  Project
+}
+
+/* Example value for ThemeData in Themes
+{
+  "Background": "#0f172a",
+  "Surface": "#1e293b",
+  "SurfaceAlt": "#334155",
+
+  "TextPrimary": "#ffffff",
+  "TextSecondary": "#94a3b8",
+  "TextMuted": "#64748b",
+  "TextInverse": "#0f172a",
+
+  "Primary": "#3b82f6",
+  "PrimaryHover": "#2563eb",
+  "Secondary": "#64748b",
+
+  "Accent": "#22c55e",
+  "AccentHover": "#16a34a",
+
+  "Success": "#22c55e",
+  "Warning": "#f59e0b",
+  "Error": "#ef4444",
+  "Info": "#0ea5e9",
+
+  "Border": "#334155",
+  "Focus": "#3b82f6",
+  "Disabled": "#475569",
+  "Overlay": "rgba(0,0,0,0.5)"
+}
+*/
