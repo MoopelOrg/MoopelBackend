@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using System.Data;
+using Microsoft.Data.SqlClient;
 
 namespace MoopelApi.Helpers;
 
@@ -32,5 +33,42 @@ public static class SqlHelper
         {
             throw new Exception($"Error getting nullable string for column '{columnName}': {ex}");
         }
+    }
+
+    public static SqlDbType GetSqlDbType(string type)
+    {
+        return type.ToLower() switch
+        {
+            // Integers
+            "int" => SqlDbType.Int,
+            "bigint" => SqlDbType.BigInt,
+            "smallint" => SqlDbType.SmallInt,
+            "tinyint" => SqlDbType.TinyInt,
+
+            "bit" => SqlDbType.Bit,
+
+            // Strings
+            "nvarchar" => SqlDbType.NVarChar,
+            "varchar" => SqlDbType.VarChar,
+            "text" => SqlDbType.Text,
+            "ntext" => SqlDbType.NText,
+
+            "datetime" => SqlDbType.DateTime,
+            "datetime2" => SqlDbType.DateTime2,
+            "datetimeoffset" => SqlDbType.DateTimeOffset,
+
+            // Numbers / money
+            "decimal" => SqlDbType.Decimal,
+            "numeric" => SqlDbType.Decimal,
+            "money" => SqlDbType.Money,
+            "float" => SqlDbType.Float,
+            "real" => SqlDbType.Real,
+
+            // Other
+            "uniqueidentifier" => SqlDbType.UniqueIdentifier,
+            "xml" => SqlDbType.Xml,
+
+            _ => throw new Exception($"Could not identify SqlDbType of '{type}'")
+        };
     }
 }

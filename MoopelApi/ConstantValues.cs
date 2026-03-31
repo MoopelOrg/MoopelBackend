@@ -10,7 +10,8 @@ public class ConstantValues
     public const StringComparison CurrentIgnoreCase = StringComparison.CurrentCultureIgnoreCase;
 
     // Issues here: This does not create the database.
-    public const string DB_DOCKER_RUN = "docker run --name MoopelDB -e ACCEPT_EULA=Y -e SA_PASSWORD=YourStrong!Passw0rd -e MSSQL_PID=Express -p 1433:1433 -v sql_data:/var/opt/mssql -d mcr.microsoft.com/mssql/server:2022-latest";
+    public const string DB_DOCKER_RUN = 
+        "docker run --name MoopelDB -e ACCEPT_EULA=Y -e SA_PASSWORD=YourStrong!Passw0rd -e MSSQL_PID=Express -p 1433:1433 -v sql_data:/var/opt/mssql -d mcr.microsoft.com/mssql/server:2022-latest";
     public const string DB_DOCKER_CONNECTION = "Server=localhost,1433;Database=MoopelDB;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;";
 
     #region Database
@@ -21,6 +22,11 @@ public class ConstantValues
     public static readonly DatabaseField GroupNameField =
         new() { Name = "Name", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 50 };
 
+    public static readonly DatabaseField GroupDescriptionField =
+        new() { Name = "Description", Type = SqlDbType.NVarChar, Nullable = true, FieldSize = 300 };
+    public static readonly DatabaseField GroupCreatedAtUtcField =
+        new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
+
     public static readonly DatabaseTable GroupsTable = new()
     {
         Name = "Groups",
@@ -29,6 +35,8 @@ public class ConstantValues
         [
             GroupIdField,
             GroupNameField,
+            GroupDescriptionField,
+            GroupCreatedAtUtcField,
         ]
     };
     #endregion
@@ -72,9 +80,9 @@ public class ConstantValues
     public static readonly DatabaseField GroupUsersUserIdField =
         new () { Name = UserIdField.Name, Type = UserIdField.Type, Nullable = false, Reference = UserIdField };
 
-    public static readonly DatabaseField GroupUsersCanReadWorkItems = 
+    public static readonly DatabaseField GroupUsersCanReadWorkItemsField = 
         new() { Name = "CanReadWorkItems", Type = SqlDbType.Bit, Nullable = false, DefaultValue = "0" }; 
-    public static readonly DatabaseField GroupUsersCanWriteWorkItems =
+    public static readonly DatabaseField GroupUsersCanWriteWorkItemsField =
         new() { Name = "CanWriteWorkItems", Type = SqlDbType.Bit, Nullable = false, DefaultValue = "0" };
 
     public static readonly DatabaseTable GroupUsersTable = new()
@@ -85,8 +93,8 @@ public class ConstantValues
         [
             GroupUsersGroupIdField,
             GroupUsersUserIdField,
-            GroupUsersCanReadWorkItems,
-            GroupUsersCanWriteWorkItems
+            GroupUsersCanReadWorkItemsField,
+            GroupUsersCanWriteWorkItemsField
         ]
     };
     #endregion
@@ -117,10 +125,10 @@ public class ConstantValues
         new() { Name = "ThemeName", Type = SqlDbType.NVarChar, Nullable = true, FieldSize = 100 };
 
     public static readonly DatabaseField ThemeUserIdField =
-        new() { Name = UserIdField.Name, Type = SqlDbType.Int, Nullable = false, Reference = UserIdField };
+        new() { Name = UserIdField.Name, Type = UserIdField.Type, Nullable = false, Reference = UserIdField };
 
     public static readonly DatabaseField ThemeCreatedAtUtcField =
-        new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime2, Nullable = false };
+        new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
 
     public static readonly DatabaseTable ThemesTable = new()
     {
@@ -136,7 +144,7 @@ public class ConstantValues
     };
     #endregion
 
-    #region LoginAttempts
+    #region Logins
     public static readonly DatabaseField LoginIdField =
         new() { Name = "LoginId", Type = SqlDbType.Int, Nullable = false };
 
@@ -144,14 +152,14 @@ public class ConstantValues
         new() { Name = "Username", Type = SqlDbType.NVarChar, Nullable = true, FieldSize = UserNameField.FieldSize };
 
     public static readonly DatabaseField LoginAttemptTimeField =
-        new() { Name = "AttemptTime", Type = SqlDbType.DateTime2, Nullable = false };
+        new() { Name = "AttemptTime", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
 
     public static readonly DatabaseField LoginStatusField =
         new() { Name = "Status", Type = SqlDbType.VarChar, Nullable = false, FieldSize = 50 };
 
-    public static readonly DatabaseTable LoginAttemptsTable = new()
+    public static readonly DatabaseTable LoginsTable = new()
     {
-        Name = "LoginAttempts",
+        Name = "Logins",
         Alias = "login",
         Fields =
         [
@@ -168,11 +176,11 @@ public class ConstantValues
         new() { Name = "SessionId", Type = SqlDbType.Int, Nullable = false };
     public static readonly DatabaseField SessionUserIdField =
         new() { Name = UserIdField.Name, Type = UserIdField.Type, Nullable = false, Reference = UserIdField };
-    public static readonly DatabaseField SessionLoginIdUtcField =
-        new() { Name = LoginIdField.Name, Type = SqlDbType.DateTime2, Nullable = false, Reference = LoginIdField };
+    public static readonly DatabaseField SessionLoginIdField =
+        new() { Name = LoginIdField.Name, Type = LoginIdField.Type, Nullable = false, Reference = LoginIdField };
     public static readonly DatabaseField SessionTokenField =
         new() { Name = "HashedToken", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 3000 };
-    public static readonly DatabaseField SessionIpIssuedTo =
+    public static readonly DatabaseField SessionIpIssuedToField =
         new() { Name = "IpIssuedTo", Type = SqlDbType.VarChar, Nullable = false, FieldSize = 45 };
     public static readonly DatabaseField SessionIssuedAtUtcField = 
         new() { Name = "IssuedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
@@ -189,9 +197,9 @@ public class ConstantValues
         [
             SessionIdField,
             SessionUserIdField,
-            SessionLoginIdUtcField,
+            SessionLoginIdField,
             SessionTokenField,
-            SessionIpIssuedTo,
+            SessionIpIssuedToField,
             SessionIssuedAtUtcField,
             SessionExpiresAtUtcField,
             SessionRevokedField,
@@ -204,7 +212,7 @@ public class ConstantValues
     new() { Name = "ItemId", Type = SqlDbType.Int, Nullable = false };
 
     public static readonly DatabaseField WorkItemUserIdField =
-        new() { Name = UserIdField.Name, Type = SqlDbType.Int, Nullable = false, Reference = UserIdField };
+        new() { Name = UserIdField.Name, Type = UserIdField.Type, Nullable = false, Reference = UserIdField };
 
     public static readonly DatabaseField WorkItemNameField =
         new() { Name = "Name", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 20 };
@@ -213,10 +221,10 @@ public class ConstantValues
         new() { Name = "Description", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 300 };
 
     public static readonly DatabaseField WorkItemPointsField =
-        new() { Name = "Points", Type = SqlDbType.Decimal, Nullable = false };
+        new() { Name = "Points", Type = SqlDbType.Decimal, Nullable = false, FieldSize = 5, Precision = 2 };
 
     public static readonly DatabaseField WorkItemTypeField =
-        new() { Name = "Type", Type = SqlDbType.Int, Nullable = false };
+        new() { Name = "Type", Type = SqlDbType.VarChar, Nullable = false, FieldSize = 20 };
 
     public static readonly DatabaseTable WorkItemsTable = new()
     {
@@ -236,15 +244,15 @@ public class ConstantValues
 
     #region WorkItemParents
     public static readonly DatabaseField WorkItemParentIdField =
-    new() { Name = "ParentId", Type = SqlDbType.Int, Nullable = false, Reference = WorkItemIdField };
+        new() { Name = "ParentId", Type = WorkItemIdField.Type, Nullable = false, Reference = WorkItemIdField };
 
     public static readonly DatabaseField WorkItemChildIdField =
-        new() { Name = "ChildId", Type = SqlDbType.Int, Nullable = false, Reference = WorkItemIdField };
+        new() { Name = "ChildId", Type = WorkItemIdField.Type, Nullable = false, Reference = WorkItemIdField };
 
     public static readonly DatabaseTable WorkItemParentsTable = new()
     {
         Name = "WorkItemParents",
-        Alias = "workItem",
+        Alias = "workItemParent",
         Fields =
         [
             WorkItemParentIdField,
@@ -270,7 +278,9 @@ public class ConstantValues
         Fields =
         [
             WorkItemTagIdField,
-            WorkItemIdField,
+            WorkItemGroupIdField,
+            WorkItemTagNameField,
+            WorkItemTagColorField
         ]
     };
     #endregion
@@ -280,18 +290,72 @@ public class ConstantValues
         new() { Name = WorkItemIdField.Name, Type = WorkItemIdField.Type, Nullable = false, Reference = WorkItemIdField };
     public static readonly DatabaseField WorkItemTagAssignmentTagIdField = 
         new() { Name = WorkItemTagIdField.Name, Type = WorkItemTagIdField.Type, Nullable = false, Reference = WorkItemTagIdField };
+
+    public static readonly DatabaseTable WorkItemTagAssignmentsTable = new()
+    {
+        Name = "WorkItemTagAssignments",
+        Alias = "workItemTagAssignment",
+        Fields =
+        [
+            WorkItemTagAssignmentTagItemIdField,
+            WorkItemTagAssignmentTagIdField,
+        ]
+    };
+    #endregion
+
+    #region LogEvents
+    public static readonly DatabaseField LogEventIdField =
+    new() { Name = "LogId", Type = SqlDbType.Int, Nullable = false };
+
+    public static readonly DatabaseField LogEventMessageField =
+        new() { Name = "Message", Type = SqlDbType.NVarChar, Nullable = true };
+
+    public static readonly DatabaseField LogEventMessageTemplateField =
+        new() { Name = "MessageTemplate", Type = SqlDbType.NVarChar, Nullable = true };
+
+    public static readonly DatabaseField LogEventLevelField =
+        new() { Name = "Level", Type = SqlDbType.NVarChar, Nullable = true, FieldSize = 16 };
+
+    public static readonly DatabaseField LogEventCreatedAtUtcField =
+        new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime, Nullable = true };
+
+    public static readonly DatabaseField LogEventExceptionField =
+        new() { Name = "Exception", Type = SqlDbType.NVarChar, Nullable = true };
+
+    public static readonly DatabaseField LogEventPropertiesField =
+        new() { Name = "Properties", Type = SqlDbType.NVarChar, Nullable = true };
+
+    public static readonly DatabaseTable LogEventsTable = new()
+    {
+        Name = "LogEvents",
+        Alias = "logEvent",
+        Fields =
+        [
+            LogEventIdField,
+            LogEventMessageField,
+            LogEventMessageTemplateField,
+            LogEventLevelField,
+            LogEventCreatedAtUtcField,
+            LogEventExceptionField,
+            LogEventPropertiesField
+        ]
+    };
     #endregion
 
     public static readonly List<DatabaseTable> DatabaseTables = 
     [
+        GroupsTable,
         UsersTable,
+        GroupUsersTable,
         UserSettingsTable,
         ThemesTable,
-        LoginAttemptsTable,
+        LoginsTable,
         SessionsTable,
         WorkItemsTable,
         WorkItemParentsTable,
-
+        WorkItemTagsTable,
+        WorkItemTagAssignmentsTable,
+        LogEventsTable,
     ];
     #endregion
 }

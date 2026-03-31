@@ -189,6 +189,25 @@ public class Startup
 
         try
         {
+            // Groups Table
+            command.CommandText =
+            $@"
+            IF OBJECT_ID('dbo.{GroupsTable.Name}', 'U') IS NULL
+            BEGIN
+
+            CREATE TABLE [{GroupsTable.Name}] (
+                {GroupIdField.SelectName} {GroupIdField.FieldDataType} PRIMARY KEY IDENTITY(1,1),
+                {GroupNameField.SelectName} {GroupNameField.FieldDataType},
+                {GroupDescriptionField.SelectName} {GroupDescriptionField.FieldDataType},
+                {GroupCreatedAtUtcField.SelectName} {GroupCreatedAtUtcField.FieldDataType},
+
+                CONSTRAINT UQ_{GroupsTable.Name}_{GroupNameField.Name} UNIQUE ({GroupNameField.SelectName})
+            );
+
+            END
+            ";
+            command.ExecuteNonQuery();
+
             // Users Table
             command.CommandText =
             @$"
@@ -197,12 +216,13 @@ public class Startup
 
             CREATE TABLE [{UsersTable.Name}] (
                 {UserIdField.SelectName} {UserIdField.FieldDataType} PRIMARY KEY IDENTITY(1,1),
+
                 {UserNameField.SelectName} {UserNameField.FieldDataType},
                 {UserEmailField.SelectName} {UserEmailField.FieldDataType},
                 {UserPasswordHashField.SelectName} {UserPasswordHashField.FieldDataType},
-                {UserRoleField.SelectName} {UserRoleField.FieldDataType} DEFAULT 'User',
-                {UserCreatedAtUtc.SelectName} {UserCreatedAtUtc.FieldDataType} DEFAULT SYSUTCDATETIME(),
-                {UserDeactivated.SelectName} {UserDeactivated.FieldDataType} DEFAULT 0,
+                {UserRoleField.SelectName} {UserRoleField.FieldDataType},
+                {UserCreatedAtUtc.SelectName} {UserCreatedAtUtc.FieldDataType},
+                {UserDeactivated.SelectName} {UserDeactivated.FieldDataType},
                 
                 CONSTRAINT UQ_{UsersTable.Name}_{UserNameField.Name} UNIQUE ({UserNameField.SelectName}),
                 CONSTRAINT UQ_{UsersTable.Name}_{UserEmailField.Name} UNIQUE ({UserEmailField.SelectName}),
@@ -212,14 +232,39 @@ public class Startup
             END";
             command.ExecuteNonQuery();
 
+            // GroupUsers Table
+            command.CommandText =
+            $@"
+            IF OBJECT_ID('dbo.{GroupUsersTable.Name}', 'U') IS NULL
+            BEGIN
+
+            CREATE TABLE [{GroupUsersTable.Name}] (
+                {GroupUsersGroupIdField.SelectName} {GroupUsersGroupIdField.FieldDataType},
+                {GroupUsersUserIdField.SelectName} {GroupUsersUserIdField.FieldDataType},
+                
+                {GroupUsersCanReadWorkItemsField.SelectName} {GroupUsersCanReadWorkItemsField.FieldDataType},
+                {GroupUsersCanWriteWorkItemsField.SelectName} {GroupUsersCanWriteWorkItemsField.FieldDataType},                
+
+                CONSTRAINT PK_{GroupUsersTable.Name} PRIMARY KEY ({GroupUsersGroupIdField.SelectName}, {GroupUsersUserIdField.SelectName}),
+                CONSTRAINT FK_{GroupUsersTable.Name}_{GroupsTable.Name} FOREIGN KEY ({GroupUsersGroupIdField.SelectName}) REFERENCES {GroupsTable.Name}({GroupIdField.SelectName}) ON DELETE CASCADE,
+                CONSTRAINT FK_{GroupUsersTable.Name}_{UsersTable.Name} FOREIGN KEY ({GroupUsersUserIdField.SelectName}) REFERENCES {UsersTable.Name}({UserIdField.SelectName}) ON DELETE CASCADE
+            );
+
+            END
+            ";
+            command.ExecuteNonQuery();
+
             // UserSettings Table
             command.CommandText =
             $@"
             IF OBJECT_ID('dbo.{UserSettingsTable.Name}', 'U') IS NULL
             BEGIN
 
-            CREATE TABLE [{UsersTable.Name}] (
-            
+            CREATE TABLE [{UserSettingsTable.Name}] (
+                {UserSettingsIdField.SelectName} {UserSettingsIdField.FieldDataType} PRIMARY KEY IDENTITY(1,1),
+                {UserSettingsUserIdField.SelectName} {UserSettingsUserIdField.FieldDataType},
+                
+                CONSTRAINT FK_{UserSettingsTable.Name}_{UsersTable.Name} FOREIGN KEY ({UserSettingsUserIdField.SelectName}) REFERENCES {UsersTable.Name}({UserIdField.SelectName}) ON DELETE CASCADE
             );
 
             END
@@ -233,7 +278,13 @@ public class Startup
             BEGIN
 
             CREATE TABLE [{ThemesTable.Name}] (
-            
+                {ThemeIdField.SelectName} {ThemeIdField.FieldDataType} PRIMARY KEY IDENTITY(1,1),
+                {ThemeUserIdField.SelectName} {ThemeUserIdField.FieldDataType},
+                {ThemeNameField.SelectName} {ThemeNameField.FieldDataType},
+                {ThemeCreatedAtUtcField.SelectName} {ThemeCreatedAtUtcField.FieldDataType},
+
+                CONSTRAINT FK_{ThemesTable.Name}_{UsersTable.Name} FOREIGN KEY ({ThemeUserIdField.SelectName}) REFERENCES {UsersTable.Name}({UserIdField.SelectName}) ON DELETE CASCADE,
+                CONSTRAINT UQ_{ThemesTable.Name}_{ThemeUserIdField.Name}_{ThemeNameField.Name} UNIQUE ({ThemeUserIdField.SelectName}, {ThemeNameField.SelectName})
             );
 
             END
@@ -243,11 +294,16 @@ public class Startup
             // LoginAttempts Table
             command.CommandText =
             $@"
-            IF OBJECT_ID('dbo.{LoginAttemptsTable.Name}', 'U') IS NULL
+            IF OBJECT_ID('dbo.{LoginsTable.Name}', 'U') IS NULL
             BEGIN
 
-            CREATE TABLE [{LoginAttemptsTable.Name}] (
-            
+            CREATE TABLE [{LoginsTable.Name}] (
+                {LoginIdField.SelectName} {LoginIdField.FieldDataType} PRIMARY KEY IDENTITY(1,1),
+                {LoginUserNameField.SelectName} {LoginUserNameField.FieldDataType},
+                {LoginAttemptTimeField.SelectName} {LoginAttemptTimeField.FieldDataType},
+                {LoginStatusField.SelectName} {LoginStatusField.FieldDataType}
+                
+                CONSTRAINT CHK_{LoginsTable.Name}_{LoginStatusField.Name} CHECK ({LoginStatusField.SelectName} IN ('Success', 'Failure'))
             );
 
             END
@@ -261,7 +317,18 @@ public class Startup
             BEGIN
 
             CREATE TABLE [{SessionsTable.Name}] (
-            
+                {SessionIdField.SelectName} {SessionIdField.FieldDataType} PRIMARY KEY IDENTITY(1,1),
+                {SessionUserIdField.SelectName} {SessionUserIdField.FieldDataType},
+                {SessionLoginIdField.SelectName} {SessionLoginIdField.FieldDataType},
+                
+                {SessionTokenField.SelectName} {SessionTokenField.FieldDataType},
+                {SessionIpIssuedToField.SelectName} {SessionIpIssuedToField.FieldDataType},
+                {SessionIssuedAtUtcField.SelectName} {SessionIssuedAtUtcField.FieldDataType},
+                {SessionExpiresAtUtcField.SelectName} {SessionExpiresAtUtcField.FieldDataType},
+                {SessionRevokedField.SelectName} {SessionRevokedField.FieldDataType},
+
+                CONSTRAINT FK_{SessionsTable.Name}_{UsersTable.Name} FOREIGN KEY ({SessionUserIdField.SelectName}) REFERENCES {UsersTable.Name}({UserIdField.SelectName}) ON DELETE CASCADE,
+                CONSTRAINT FK_{SessionsTable.Name}_{LoginsTable.Name} FOREIGN KEY ({SessionLoginIdField.SelectName}) REFERENCES {LoginsTable.Name}({LoginIdField.SelectName}) ON DELETE CASCADE,
             );
 
             END
@@ -275,7 +342,18 @@ public class Startup
             BEGIN
 
             CREATE TABLE [{WorkItemsTable.Name}] (
-            
+                {WorkItemIdField.SelectName} {WorkItemIdField.FieldDataType} PRIMARY KEY IDENTITY(1,1),
+                {WorkItemUserIdField.SelectName} {WorkItemUserIdField.FieldDataType},
+                
+                {WorkItemNameField.SelectName} {WorkItemNameField.FieldDataType},
+                {WorkItemDescriptionField.SelectName} {WorkItemDescriptionField.FieldDataType},
+                {WorkItemPointsField.SelectName} {WorkItemPointsField.FieldDataType},
+                {WorkItemTypeField.SelectName} {WorkItemTypeField.FieldDataType},
+
+                CONSTRAINT FK_{WorkItemsTable.Name}_{UsersTable.Name} FOREIGN KEY ({WorkItemUserIdField.SelectName}) REFERENCES {UsersTable.Name}({UserIdField.SelectName}) ON DELETE CASCADE,
+                CONSTRAINT CHK_{WorkItemsTable.Name}_{WorkItemTypeField.Name} CHECK ({WorkItemTypeField.SelectName} IN ('Task', 'Bug', 'Feature', 'Epic', 'Project')),
+                CONSTRAINT UQ_{WorkItemsTable.Name}_{WorkItemUserIdField.Name}_{WorkItemNameField.Name} UNIQUE ({WorkItemUserIdField.SelectName}, {WorkItemNameField.SelectName}),
+                CONSTRAINT CHK_{WorkItemsTable.Name}_{WorkItemPointsField.Name} CHECK ({WorkItemPointsField.SelectName} >= 0)
             );
 
             END
@@ -289,7 +367,12 @@ public class Startup
             BEGIN
 
             CREATE TABLE [{WorkItemParentsTable.Name}] (
-            
+                {WorkItemParentIdField.SelectName} {WorkItemParentIdField.FieldDataType},
+                {WorkItemChildIdField.SelectName} {WorkItemChildIdField.FieldDataType},
+
+                CONSTRAINT PK_{WorkItemParentsTable.Name} PRIMARY KEY ({WorkItemParentIdField.SelectName}, {WorkItemChildIdField.SelectName}),
+                CONSTRAINT FK_{WorkItemParentsTable.Name}_{WorkItemsTable.Name}_Parent FOREIGN KEY ({WorkItemParentIdField.SelectName}) REFERENCES {WorkItemsTable.Name}({WorkItemIdField.SelectName}) ON DELETE CASCADE,
+                CONSTRAINT FK_{WorkItemParentsTable.Name}_{WorkItemsTable.Name}_Child FOREIGN KEY ({WorkItemChildIdField.SelectName}) REFERENCES {WorkItemsTable.Name}({WorkItemIdField.SelectName}) ON DELETE NO ACTION
             );
 
             END
@@ -299,11 +382,38 @@ public class Startup
             // WorkItemTags Table
             command.CommandText =
             $@"
-            IF OBJECT_ID('dbo.', 'U') IS NULL
+            IF OBJECT_ID('dbo.{WorkItemTagsTable.Name}', 'U') IS NULL
             BEGIN
 
-            CREATE TABLE [{.Name}] (
-            
+            CREATE TABLE [{WorkItemTagsTable.Name}] (
+                {WorkItemTagIdField.SelectName} {WorkItemTagIdField.FieldDataType} PRIMARY KEY IDENTITY(1,1),
+                {WorkItemGroupIdField.SelectName} {WorkItemGroupIdField.FieldDataType},
+
+                {WorkItemTagNameField.SelectName} {WorkItemTagNameField.FieldDataType},
+                {WorkItemTagColorField.SelectName} {WorkItemTagColorField.FieldDataType},
+
+                CONSTRAINT FK_{WorkItemTagsTable.Name}_{GroupsTable.Name} FOREIGN KEY ({WorkItemGroupIdField.SelectName}) REFERENCES {GroupsTable.Name}({GroupIdField.SelectName}) ON DELETE CASCADE,
+                CONSTRAINT UQ_{WorkItemTagsTable.Name}_{WorkItemGroupIdField.Name}_{WorkItemTagNameField.Name} UNIQUE ({WorkItemGroupIdField.SelectName}, {WorkItemTagNameField.SelectName}),
+                CONSTRAINT CHK_{WorkItemTagsTable.Name}_{WorkItemTagColorField.Name} CHECK ({WorkItemTagColorField.SelectName} LIKE '#[0-9A-Fa-f]{{6}}')
+            );
+
+            END
+            ";
+            command.ExecuteNonQuery();
+
+            // WorkItemTagAssignments Table
+            command.CommandText =
+            $@"
+            IF OBJECT_ID('dbo.{WorkItemTagAssignmentsTable.Name}', 'U') IS NULL
+            BEGIN
+
+            CREATE TABLE [{WorkItemTagAssignmentsTable.Name}] (
+                {WorkItemTagAssignmentTagItemIdField.SelectName} {WorkItemTagAssignmentTagItemIdField.FieldDataType},
+                {WorkItemTagAssignmentTagIdField.SelectName} {WorkItemTagAssignmentTagIdField.FieldDataType},
+
+                CONSTRAINT PK_{WorkItemTagAssignmentsTable.Name} PRIMARY KEY ({WorkItemTagAssignmentTagItemIdField.SelectName}, {WorkItemTagAssignmentTagIdField.SelectName}),
+                CONSTRAINT FK_{WorkItemTagAssignmentsTable.Name}_{WorkItemsTable.Name} FOREIGN KEY ({WorkItemTagAssignmentTagItemIdField.SelectName}) REFERENCES {WorkItemsTable.Name}({WorkItemIdField.SelectName}) ON DELETE CASCADE,
+                CONSTRAINT FK_{WorkItemTagAssignmentsTable.Name}_{WorkItemTagsTable.Name} FOREIGN KEY ({WorkItemTagAssignmentTagIdField.SelectName}) REFERENCES {WorkItemTagsTable.Name}({WorkItemTagIdField.SelectName}) ON DELETE CASCADE
             );
 
             END
@@ -332,7 +442,7 @@ public class Startup
             }
 
             command.CommandText =
-                @$"SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE, COLUMN_DEFAULT 
+                @$"SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE, COLUMN_DEFAULT, NUMERIC_PRECISION, NUMERIC_SCALE 
                    FROM INFORMATION_SCHEMA.COLUMNS
                    WHERE TABLE_NAME = '{table.Name}'";
             try
@@ -346,11 +456,18 @@ public class Startup
                     string? maxLength = SqlHelper.GetNullableString(reader, "CHARACTER_MAXIMUM_LENGTH");
                     string? isNullable = SqlHelper.GetNullableString(reader, "IS_NULLABLE");
                     string? columnDefault = SqlHelper.GetNullableString(reader, "COLUMN_DEFAULT");
-
                     int? fieldSize = null;
+                    int? precision = null;
+
+                    // Get FieldSize
                     if (!string.IsNullOrWhiteSpace(maxLength))
                     {
                         fieldSize = int.Parse(maxLength);
+                    }
+                    // -1 is max which I represent with null
+                    if (fieldSize == -1)
+                    {
+                        fieldSize = null;
                     }
 
                     if (columnName is null || dataType is null || isNullable is null)
@@ -358,42 +475,24 @@ public class Startup
                         throw new($"Missing required column information for a field in table {table.Name}");
                     }
 
+                    SqlDbType sqlType = SqlHelper.GetSqlDbType(dataType);
+
+                    if (sqlType == SqlDbType.Decimal)
+                    {
+                        string? numericPrecision = SqlHelper.GetNullableString(reader, "NUMERIC_PRECISION");
+                        string? numericScale = SqlHelper.GetNullableString(reader, "NUMERIC_SCALE");
+                        if (numericPrecision is null || numericScale is null)
+                        {
+                            throw new($"Missing precision or scale information for decimal field {columnName} in table {table.Name}");
+                        }
+                        fieldSize = int.Parse(numericPrecision);
+                        precision = int.Parse(numericScale);
+                    }
+
                     fields.Add(new DatabaseField
                     {
                         Name = columnName,
-                        Type = dataType?.ToLower() switch
-                        {
-                            // Integers
-                            "int" => SqlDbType.Int,
-                            "bigint" => SqlDbType.BigInt,
-                            "smallint" => SqlDbType.SmallInt,
-                            "tinyint" => SqlDbType.TinyInt,
-
-                            "bit" => SqlDbType.Bit,
-
-                            // Strings
-                            "nvarchar" => SqlDbType.NVarChar,
-                            "varchar" => SqlDbType.VarChar,
-                            "text" => SqlDbType.Text,
-                            "ntext" => SqlDbType.NText,
-
-                            "datetime2" => SqlDbType.DateTime2,
-                            "datetimeoffset" => SqlDbType.DateTimeOffset,
-
-                            // Numbers / money
-                            "decimal" => SqlDbType.Decimal,
-                            "numeric" => SqlDbType.Decimal, // alias
-                            "money" => SqlDbType.Money,
-                            "float" => SqlDbType.Float,
-                            "real" => SqlDbType.Real,
-
-                            // Other
-                            "uniqueidentifier" => SqlDbType.UniqueIdentifier,
-                            "xml" => SqlDbType.Xml,
-
-                            _ => throw new Exception(
-                                $"Unsupported data type '{dataType}' for field '{columnName}' in table '{table.Name}'")
-                        },
+                        Type = sqlType,
                         
                         FieldSize = fieldSize,
                         Nullable = isNullable == "YES",
