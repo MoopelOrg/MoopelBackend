@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.Extensions.Options;
 using MoopelApi;
+using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
 using Scalar.AspNetCore;
 using Serilog;
@@ -23,7 +24,7 @@ WebApplication app = await Startup.ConfigureApp(builder, deploymentInfo);
 string dbConnection = builder.Configuration.GetConnectionString("MoopelDB")
     ?? throw new("Failed to retrieve MoopelDB connection string.");
 
-Startup.BuildDatabase(dbConnectionInfo.Connection);
+Startup.BuildDatabase(dbConnection);
 
 try
 {

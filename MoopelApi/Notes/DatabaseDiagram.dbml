@@ -9,6 +9,7 @@ Table Users {
   UserId int [pk, increment, not null]
 
   Name nvarchar(50) [not null, unique]
+  PasswordHash nvarchar(3000) [not null]
   Email nvarchar(200) [null, unique]
   Role UserRole [not null, Note: "This should have a constraint"]
   
@@ -19,7 +20,7 @@ Table Users {
   Note: "Trigger: audit insert/update, enforce soft delete behavior"
 }
 
-Table GroupAccess {
+Table GroupUsers {
   GroupId int [not null, ref: > Groups.GroupId]
   UserId int [not null, ref: > Users.UserId]
 
@@ -59,7 +60,7 @@ Table Themes {
 
 Table LoginAttempts {
   LoginId int [pk, increment, not null]
-  Username nvarchar(200) [null]
+  Username nvarchar(200) [not null]
   AttemptTime datetime2 [not null]
   Status LoginStatus [not null]
 
@@ -69,8 +70,9 @@ Table LoginAttempts {
 Table Sessions {
     SessionId int [pk, increment, not null]
     UserId int [not null, ref: > Users.UserId]
-    HashedSessionToken nvarchar(3000) [not null]
-    IpIssuedTo varchar(200) [not null]
+    LoginId int [not null, ref: > LoginAttempts.LoginId]
+    HashedToken nvarchar(3000) [not null]
+    IpIssuedTo varchar(45) [not null]
     IssuedAtUtc datetime2 [not null, default: `SYSUTCDATETIME()`]
     ExpiresAtUtc datetime2 [not null, default: `(DATEADD(MINUTE, 120, SYSUTCDATETIME()))`]
     Revoked bit [not null, default: 0]
@@ -78,12 +80,14 @@ Table Sessions {
 
 Table WorkItems {
   ItemId int [pk, increment, not null]
-  UserId int [not null, ref: > Users.UserId]
+  GroupId int [not null, ref: > Groups.GroupId]
 
   Name nvarchar(20) [not null]
   Description nvarchar(300) [not null, default: '']
   Points decimal(5,2) [not null, default: 0.0, note: "Should be >= 0"]
   Type WorkItemType [not null]
+
+  CreatedAtUtc datetime2 [not null, default: `SYSUTCDATETIME()`]
 
   Note: "Trigger: enforce business rules (e.g., non-negative points)"
 }
@@ -98,6 +102,22 @@ Table WorkItemParents {
 
   Note: "Trigger: enforce ChildId <> ParentId and prevent circular references"
 }
+
+Table WorkItemTags {
+    TagId int [pk, increment, not null]
+    GroupId int [not null, ref: > Groups.GroupId]
+    TagName nvarchar(50) [not null, unique]
+    TagColor nvarchar(7) [not null, default: '#000000', note: "Should be a valid hex color code"]
+}
+
+Table WorkItemTagAssignments {
+    ItemId int [not null, ref: > WorkItems.ItemId]
+    TagId int [not null, ref: > WorkItemTags.TagId]
+    Indexes {
+        (ItemId, TagId) [pk]
+    }
+}
+
 
 Enum LoginStatus {
   Successful

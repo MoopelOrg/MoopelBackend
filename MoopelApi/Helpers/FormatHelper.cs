@@ -1,4 +1,4 @@
-﻿namespace MoopelApi;
+﻿namespace MoopelApi.Helpers;
 
 public static class FormatHelper
 {
