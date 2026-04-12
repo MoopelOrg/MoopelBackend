@@ -331,7 +331,7 @@ public class Startup
             CREATE TABLE [{LoginsTable.Name}] (
                 {LoginIdField.SelectName} {LoginIdField.FieldDataType} PRIMARY KEY IDENTITY(1,1),
                 {LoginUserNameField.SelectName} {LoginUserNameField.FieldDataType},
-                {LoginAttemptTimeField.SelectName} {LoginAttemptTimeField.FieldDataType},
+                {LoginAttemptTimeUtcField.SelectName} {LoginAttemptTimeUtcField.FieldDataType},
                 {LoginStatusField.SelectName} {LoginStatusField.FieldDataType}
                 
                 CONSTRAINT CHK_{LoginsTable.Name}_{LoginStatusField.Name} CHECK ({LoginStatusField.SelectName} IN ('Success', 'Failure'))

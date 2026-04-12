@@ -18,16 +18,11 @@ namespace ApiTests.Integration;
 public class AuthControllerTests : IClassFixture<MoopelApiFactory>
 {
     private readonly MoopelApiFactory _apiFactory;
-    private readonly JwtSettings _jwtSettings;
     private readonly CancellationToken _cancelToken;
 
     public AuthControllerTests(MoopelApiFactory apiFactory)
     {
         _apiFactory = apiFactory;
-
-        using var scope = _apiFactory.Services.CreateScope();
-        var tokenSettings = scope.ServiceProvider.GetRequiredService<IOptions<JwtSettings>>();
-        _jwtSettings = tokenSettings.Value;
         _cancelToken = TestContext.Current.CancellationToken;
     }
 
