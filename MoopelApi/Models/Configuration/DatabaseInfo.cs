@@ -7,6 +7,8 @@ public class DatabaseTable
 {
     public required string Name { get; init; }
 
+    public string SelectName => $"[{Name}]";
+
     public required List<DatabaseField> Fields { get; init; }
 
     public required string Alias { get; init; }
