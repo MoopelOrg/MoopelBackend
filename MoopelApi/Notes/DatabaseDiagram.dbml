@@ -8,11 +8,13 @@ Table Groups {
 Table Users {
   UserId int [pk, increment, not null]
 
-  Name nvarchar(50) [not null, unique]
+  Username nvarchar(50) [not null, unique]
   PasswordHash nvarchar(3000) [not null]
   Email nvarchar(200) [null, unique]
   Role UserRole [not null, Note: "This should have a constraint"]
   
+  ThemeId int [null, ref: > Themes.ThemeId]
+  SettingId int [null, ref: > UserSettings.SettingId]
 
   CreatedAtUtc datetime2 [not null, default: `SYSUTCDATETIME()`]
   Deactivated bit [not null, default: 0]
@@ -24,44 +26,38 @@ Table GroupUsers {
   GroupId int [not null, ref: > Groups.GroupId]
   UserId int [not null, ref: > Users.UserId]
 
-  CanReadWorkItems bit [not null, default: 1]
+  CanReadWorkItems bit [not null, default: 0]
   CanCreateWorkItems bit [not null, default: 0]
 
-
   Indexes {
-    (GroupId, UserId) [unique]
+    (GroupId, UserId) [pk]
   }
-  Note: "Trigger: enforce unique (GroupId, UserId) and audit permission changes"
+  
 }
 
 Table UserSettings {
-  SettingId int [pk, increment, not null]
-  UserId int [not null, ref: > Users.UserId]
-
-  Indexes {
-    (SettingId, UserId) [pk]
-  }
+  SettingId int [increment, not null, pk]
 }
 
 Table Themes {
   ThemeId int [pk, increment, not null]
-  ThemeName nvarchar(100) [null]
-  UserId int [not null, ref: > Users.UserId]
+  ThemeName nvarchar(100) [not null]
+  CreatorUserId int [not null, ref: > Users.UserId]
   CreatedAtUtc datetime2 [not null, default: `SYSUTCDATETIME()`]
 
   ThemeData nvarchar(max) [not null]
+  IsDark bit [not null, default: 0]
+  Description nvarchar(300) [not null, default: '']
 
-  Indexes {
-    (ThemeName, UserId) [unique]
-  }
+  Deleted bit [not null, default: 0]
 
   Note: "Trigger: audit theme changes"
 }
 
-Table LoginAttempts {
+Table Logins {
   LoginId int [pk, increment, not null]
   Username nvarchar(200) [not null]
-  AttemptTime datetime2 [not null]
+  AttemptTimeUtc datetime2 [not null, default: `SYSUTCDATETIME()`]
   Status LoginStatus [not null]
 
   Note: "Trigger: detect repeated failures and enforce lockout rules"
@@ -93,30 +89,114 @@ Table WorkItems {
 }
 
 Table WorkItemParents {
+  GroupId int [not null, ref: > Groups.GroupId]
   ParentId int [not null, ref: > WorkItems.ItemId]
   ChildId int [not null, ref: > WorkItems.ItemId]
 
   Indexes {
     (ParentId, ChildId) [pk]
+    (GroupId, ParentId)
+    (GroupId, ChildId)
   }
 
   Note: "Trigger: enforce ChildId <> ParentId and prevent circular references"
 }
 
-Table Tags {
-    TagId int [pk, increment, not null]
-    GroupId int [not null, ref: > Groups.GroupId]
-    TagName nvarchar(50) [not null, unique]
+Table UserTags {
+    UserTagId int [pk, increment, not null]
+    UserId int [not null, ref: > Users.UserId]
+    TagName nvarchar(50) [not null]
     TagColor nvarchar(7) [not null, default: '#000000', note: "Should be a valid hex color code"]
+
+    Indexes {
+        (UserId, TagName) [unique]
+    }
+}
+
+Table GroupTags {
+    GroupTagId int [pk, increment, not null]
+    GroupId int [not null, ref: > Groups.GroupId]
+    TagName nvarchar(50) [not null]
+    TagColor nvarchar(7) [not null, default: '#000000', note: "Should be a valid hex color code"]
+}
+
+Table Notes {
+  NoteId int [pk, increment, not null]
+  UserId int [not null, ref: > Users.UserId]
+
+  Type NoteType [not null]
+
+  Title nvarchar(50) [not null]
+  Content nvarchar(500) [not null]
+}
+
+Table Storages {
+    StorageId int [pk, increment, not null]
+    UserId int [not null, ref: > Users.UserId]
+
+    Name nvarchar(100) [not null]
+    CreatedAtUtc datetime2 [not null, default: `SYSUTCDATETIME()`]
+}
+
+Table StorageItems {
+    StorageItemId int [pk, increment, not null]
+    StorageId int [not null, ref: > Storages.StorageId]
+
+    Name nvarchar(100) [not null]
+    Count int [not null, default: 1]
+    CreatedAtUtc datetime2 [not null, default: `SYSUTCDATETIME()`]
+}
+
+Table Fridges {
+    FridgeId int [pk, increment, not null]
+    UserId int [not null, ref: > Users.UserId]
+    Name nvarchar(100) [not null]
+    CreatedAtUtc datetime2 [not null, default: `SYSUTCDATETIME()`]
+}
+
+Table FridgeItems {
+    FridgeItemId int [pk, increment, not null]
+    FridgeId int [not null, ref: > Fridges.FridgeId]
+
+    Name nvarchar(100) [not null]
+    Count int [not null, default: 1]
+    ExpirationDate date [null]
+    CreatedAtUtc datetime2 [not null, default: `SYSUTCDATETIME()`]
 }
 
 Table WorkItemTagAssignments {
     ItemId int [not null, ref: > WorkItems.ItemId]
-    TagId int [not null, ref: > WorkItemTags.TagId]
+    GroupTagId int [not null, ref: > GroupTags.GroupTagId]
     Indexes {
-        (ItemId, TagId) [pk]
+        (ItemId, GroupTagId) [pk]
     }
 }
+
+Table BankAccounts {
+    AccountId int [pk, increment, not null]
+    UserId int [not null, ref: > Users.UserId]
+    AccountName nvarchar(20) [not null]
+    Description nvarchar(100) [not null, default: '']
+    CreatedAtUtc datetime2 [not null, default: `SYSUTCDATETIME()`]
+}
+
+Table Transactions {
+    TransactionId int [pk, increment, not null]
+    AccountId int [not null, ref: > BankAccounts.AccountId]
+    TagId int [null, ref: > UserTags.UserTagId]
+    Amount decimal(18,2) [not null]
+    CreatedAtUtc datetime2 [not null, default: `SYSUTCDATETIME()`]
+}
+
+Table TransactionItems {
+    TransactionItemId int [pk, increment, not null]
+    TransactionId int [not null, ref: > Transactions.TransactionId]
+    TagId int [null, ref: > UserTags.UserTagId]
+    Name nvarchar(100) [not null]
+    Amount decimal(18,2) [not null]
+}
+
+
 
 
 Enum LoginStatus {
@@ -134,6 +214,14 @@ Enum WorkItemType {
 Enum UserRole {
     Admin
     Standard
+}
+
+Enum NoteType {
+    Storage
+    WorkItem
+    Fridge
+    Recipe
+    Note
 }
 
 /* Example value for ThemeData in Themes
