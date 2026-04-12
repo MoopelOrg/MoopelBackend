@@ -20,4 +20,36 @@ public static class GenericAuthActions
         HttpResponseMessage response = await client.PostAsJsonAsync(Routes.Auth.Register, request, cancelToken);
         return await ApiHelper.GetClassFromResponse<UserRead>(response, cancelToken);
     }
+
+    public static HttpClient AttachBearer(HttpClient client, string? token)
+    {
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token ?? "");
+        return client;
+    }
+
+    public async static Task<HttpClient> CreateAuthenticatedClient(HttpClient client, string username, string password, CancellationToken cancelToken)
+    {
+        RegistrationRequest registerRequest = new()
+        {
+            Username = username,
+            Password = password
+        };
+
+        LoginRequest loginRequest = new()
+        {
+            Username = username,
+            Password = password
+        };
+
+        UserRead? user = await Register(client, registerRequest, cancelToken);
+        Assert.NotNull(user);
+
+        LoginResult? loginResult = await Login(client, loginRequest, cancelToken);
+        Assert.NotNull(loginResult);
+        Assert.NotNull(loginResult.Token);
+
+        AttachBearer(client, loginResult.Token);
+
+        return client;
+    }
 }
