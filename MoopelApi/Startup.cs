@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
@@ -7,17 +8,19 @@ using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
+using MoopelApi.Models.Dto;
+using MoopelApi.Services;
+using MoopelApi.Services.Interfaces;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Sinks.MSSqlServer;
 
-using static MoopelApi.ConstantValues;
+using static MoopelApi.ConstantValues.Database;
 
 namespace MoopelApi;
 
 public class Startup
 {
-
     public static WebApplicationBuilder CreateBuilder(WebApplicationBuilder builder)
     {
         try
@@ -75,6 +78,20 @@ public class Startup
                 };
             });
 
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.User.Identity?.Name ?? httpContext.Request.Headers.Host.ToString(),
+                    factory: partition => new FixedWindowRateLimiterOptions
+                    {
+                        AutoReplenishment = true,
+                        PermitLimit = 10,
+                        QueueLimit = 0,
+                        Window = TimeSpan.FromMinutes(1)
+                    }));
+        });
+
         /*
         builder.Services.AddCors(options =>
         {
@@ -94,6 +111,18 @@ public class Startup
     public static WebApplicationBuilder AddLifetimeServices(WebApplicationBuilder builder)
     {
         builder.Services.Configure<JwtSettings>(builder.Configuration.GetRequiredSection("JwtSettings"));
+
+        builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+        builder.Services.Configure<PasswordHasherOptions>(options =>
+        {
+            options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3;
+            options.IterationCount = 100_000;
+        });
+
+
+        builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<IUserService, UserService>();
+
 
         return builder;
     }
@@ -144,6 +173,8 @@ public class Startup
                    .WithTheme(ScalarTheme.Kepler)
                    .AddPreferredSecuritySchemes(JwtBearerDefaults.AuthenticationScheme);
         });
+
+        app.UseRateLimiter();
 
         app.UseHttpsRedirection();
         //app.UseCors(corsPolicyName);
@@ -221,8 +252,8 @@ public class Startup
                 {UserEmailField.SelectName} {UserEmailField.FieldDataType},
                 {UserPasswordHashField.SelectName} {UserPasswordHashField.FieldDataType},
                 {UserRoleField.SelectName} {UserRoleField.FieldDataType},
-                {UserCreatedAtUtc.SelectName} {UserCreatedAtUtc.FieldDataType},
-                {UserDeactivated.SelectName} {UserDeactivated.FieldDataType},
+                {UserCreatedAtUtcField.SelectName} {UserCreatedAtUtcField.FieldDataType},
+                {UserDeactivatedField.SelectName} {UserDeactivatedField.FieldDataType},
                 
                 CONSTRAINT UQ_{UsersTable.Name}_{UserNameField.Name} UNIQUE ({UserNameField.SelectName}),
                 CONSTRAINT UQ_{UsersTable.Name}_{UserEmailField.Name} UNIQUE ({UserEmailField.SelectName}),
@@ -382,19 +413,19 @@ public class Startup
             // WorkItemTags Table
             command.CommandText =
             $@"
-            IF OBJECT_ID('dbo.{WorkItemTagsTable.Name}', 'U') IS NULL
+            IF OBJECT_ID('dbo.{TagsTable.Name}', 'U') IS NULL
             BEGIN
 
-            CREATE TABLE [{WorkItemTagsTable.Name}] (
+            CREATE TABLE [{TagsTable.Name}] (
                 {WorkItemTagIdField.SelectName} {WorkItemTagIdField.FieldDataType} PRIMARY KEY IDENTITY(1,1),
                 {WorkItemGroupIdField.SelectName} {WorkItemGroupIdField.FieldDataType},
 
                 {WorkItemTagNameField.SelectName} {WorkItemTagNameField.FieldDataType},
                 {WorkItemTagColorField.SelectName} {WorkItemTagColorField.FieldDataType},
 
-                CONSTRAINT FK_{WorkItemTagsTable.Name}_{GroupsTable.Name} FOREIGN KEY ({WorkItemGroupIdField.SelectName}) REFERENCES {GroupsTable.Name}({GroupIdField.SelectName}) ON DELETE CASCADE,
-                CONSTRAINT UQ_{WorkItemTagsTable.Name}_{WorkItemGroupIdField.Name}_{WorkItemTagNameField.Name} UNIQUE ({WorkItemGroupIdField.SelectName}, {WorkItemTagNameField.SelectName}),
-                CONSTRAINT CHK_{WorkItemTagsTable.Name}_{WorkItemTagColorField.Name} CHECK ({WorkItemTagColorField.SelectName} LIKE '#[0-9A-Fa-f]{{6}}')
+                CONSTRAINT FK_{TagsTable.Name}_{GroupsTable.Name} FOREIGN KEY ({WorkItemGroupIdField.SelectName}) REFERENCES {GroupsTable.Name}({GroupIdField.SelectName}) ON DELETE CASCADE,
+                CONSTRAINT UQ_{TagsTable.Name}_{WorkItemGroupIdField.Name}_{WorkItemTagNameField.Name} UNIQUE ({WorkItemGroupIdField.SelectName}, {WorkItemTagNameField.SelectName}),
+                CONSTRAINT CHK_{TagsTable.Name}_{WorkItemTagColorField.Name} CHECK ({WorkItemTagColorField.SelectName} LIKE '#[0-9A-Fa-f]{{6}}')
             );
 
             END
@@ -408,12 +439,12 @@ public class Startup
             BEGIN
 
             CREATE TABLE [{WorkItemTagAssignmentsTable.Name}] (
-                {WorkItemTagAssignmentTagItemIdField.SelectName} {WorkItemTagAssignmentTagItemIdField.FieldDataType},
-                {WorkItemTagAssignmentTagIdField.SelectName} {WorkItemTagAssignmentTagIdField.FieldDataType},
+                {WorkItemTagItemIdField.SelectName} {WorkItemTagItemIdField.FieldDataType},
+                {WorkItemTagIdField.SelectName} {WorkItemTagIdField.FieldDataType},
 
-                CONSTRAINT PK_{WorkItemTagAssignmentsTable.Name} PRIMARY KEY ({WorkItemTagAssignmentTagItemIdField.SelectName}, {WorkItemTagAssignmentTagIdField.SelectName}),
-                CONSTRAINT FK_{WorkItemTagAssignmentsTable.Name}_{WorkItemsTable.Name} FOREIGN KEY ({WorkItemTagAssignmentTagItemIdField.SelectName}) REFERENCES {WorkItemsTable.Name}({WorkItemIdField.SelectName}) ON DELETE CASCADE,
-                CONSTRAINT FK_{WorkItemTagAssignmentsTable.Name}_{WorkItemTagsTable.Name} FOREIGN KEY ({WorkItemTagAssignmentTagIdField.SelectName}) REFERENCES {WorkItemTagsTable.Name}({WorkItemTagIdField.SelectName}) ON DELETE CASCADE
+                CONSTRAINT PK_{WorkItemTagAssignmentsTable.Name} PRIMARY KEY ({WorkItemTagItemIdField.SelectName}, {WorkItemTagIdField.SelectName}),
+                CONSTRAINT FK_{WorkItemTagAssignmentsTable.Name}_{WorkItemsTable.Name} FOREIGN KEY ({WorkItemTagItemIdField.SelectName}) REFERENCES {WorkItemsTable.Name}({WorkItemIdField.SelectName}) ON DELETE CASCADE,
+                CONSTRAINT FK_{WorkItemTagAssignmentsTable.Name}_{TagsTable.Name} FOREIGN KEY ({WorkItemTagIdField.SelectName}) REFERENCES {TagsTable.Name}({WorkItemTagIdField.SelectName}) ON DELETE CASCADE
             );
 
             END
@@ -474,6 +505,10 @@ public class Startup
                     {
                         throw new($"Missing required column information for a field in table {table.Name}");
                     }
+                    if (fields.Any(fields => fields.Name == columnName))
+                    {
+                        throw new($"Duplicate column name detected: {columnName} in table {table.Name}");
+                    }
 
                     SqlDbType sqlType = SqlHelper.GetSqlDbType(dataType);
 
@@ -493,7 +528,7 @@ public class Startup
                     {
                         Name = columnName,
                         Type = sqlType,
-                        
+
                         FieldSize = fieldSize,
                         Nullable = isNullable == "YES",
                         Reference = null // TODO: Add this
@@ -539,7 +574,6 @@ public class Startup
                 }
             }
             return null;
-
         }
         catch (Exception ex)
         {

@@ -1,9 +1,6 @@
-using Microsoft.AspNetCore.Mvc.TagHelpers;
-using Microsoft.Extensions.Options;
 using MoopelApi;
 using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
-using Scalar.AspNetCore;
 using Serilog;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
