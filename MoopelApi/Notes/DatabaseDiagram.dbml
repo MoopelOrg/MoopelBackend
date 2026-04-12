@@ -103,7 +103,7 @@ Table WorkItemParents {
   Note: "Trigger: enforce ChildId <> ParentId and prevent circular references"
 }
 
-Table WorkItemTags {
+Table Tags {
     TagId int [pk, increment, not null]
     GroupId int [not null, ref: > Groups.GroupId]
     TagName nvarchar(50) [not null, unique]
