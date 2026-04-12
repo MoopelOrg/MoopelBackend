@@ -1,5 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MoopelApi.Models;
+using MoopelApi.Models.Dto;
+using MoopelApi.Models.Requests;
+using MoopelApi.Services.Interfaces;
 
 namespace MoopelApi.Controllers;
 
@@ -7,36 +11,43 @@ namespace MoopelApi.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly ILogger<AuthController> _logger;
+    private readonly IContextService _contextService;
 
-    public AuthController(ILogger<AuthController> logger)
+    public AuthController(ILogger<AuthController> logger, IContextService contextService)
     {
         _logger = logger;
+        _contextService = contextService;
     }
 
     [HttpPost(Routes.Auth.Login)]
-    public async Task Login()
+    public async Task Login([FromBody] LoginRequest request)
     {
-        _logger.LogInformation("Login");
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
+        _logger.LogInformation("Received Login request for {User} with {Context}",
+            request.Username, context);
     }
 
-    //[Authorize]
+    [HttpPost(Routes.Auth.Register)]
+    public async Task<ActionResult<UserRead>> Register([FromBody] RegistrationRequest request)
+    {
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
+        _logger.LogInformation("Received Registration request for {User} with {Context}",
+            request.Username, context);
+
+        return BadRequest();
+    }
+
+    [Authorize]
     [HttpPost(Routes.Auth.Logout)]
     public async Task Logout()
     {
         _logger.LogInformation("Logout");
     }
 
-    //[Authorize]
+    [Authorize]
     [HttpGet(Routes.Auth.Me)]
     public async Task Me()
     {
         _logger.LogInformation("Me");
-    }
-
-    //[Authorize]
-    [HttpGet(Routes.Auth.UserById)]
-    public async Task GetUser(int userId)
-    {
-        _logger.LogInformation("Retrieve user[{Id}]", userId);
     }
 }
