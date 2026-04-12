@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="ApiTests/ApiTests.csproj" Id="edec57c1-a21f-450a-b413-5242730e6618" />
   <Project Path="MoopelApi/MoopelApi.csproj" />
 </Solution>
