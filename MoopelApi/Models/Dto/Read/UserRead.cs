@@ -1,6 +1,6 @@
 ﻿using MoopelApi.Models.Enums;
 
-namespace MoopelApi.Models.Dto;
+namespace MoopelApi.Models.Dto.Read;
 
 public record UserRead
 {

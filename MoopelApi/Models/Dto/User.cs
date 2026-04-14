@@ -1,4 +1,6 @@
-﻿namespace MoopelApi.Models.Dto;
+﻿using MoopelApi.Models.Dto.Read;
+
+namespace MoopelApi.Models.Dto;
 
 public record User : UserRead
 {

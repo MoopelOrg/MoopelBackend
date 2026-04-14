@@ -66,7 +66,7 @@ Table Logins {
 Table Sessions {
     SessionId int [pk, increment, not null]
     UserId int [not null, ref: > Users.UserId]
-    LoginId int [not null, ref: > LoginAttempts.LoginId]
+    LoginId int [not null, ref: > Logins.LoginId]
     HashedToken nvarchar(3000) [not null]
     IpIssuedTo varchar(45) [not null]
     IssuedAtUtc datetime2 [not null, default: `SYSUTCDATETIME()`]

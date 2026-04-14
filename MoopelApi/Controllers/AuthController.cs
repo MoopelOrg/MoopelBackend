@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MoopelApi.Models;
-using MoopelApi.Models.Dto;
+using MoopelApi.Models.Dto.Read;
 using MoopelApi.Models.Requests;
 using MoopelApi.Services.Interfaces;
 

@@ -1,4 +1,4 @@
-﻿using MoopelApi.Models.Dto;
+﻿using MoopelApi.Models.Dto.Read;
 
 namespace MoopelApi.Models.Results;
 

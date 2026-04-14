@@ -1,7 +1,7 @@
 ﻿using System.Net.Http.Json;
 using MoopelApi;
 using MoopelApi.Helpers;
-using MoopelApi.Models.Dto;
+using MoopelApi.Models.Dto.Read;
 using MoopelApi.Models.Requests;
 using MoopelApi.Models.Results;
 
