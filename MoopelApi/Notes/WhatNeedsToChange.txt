@@ -1,0 +1,2 @@
+﻿Validation Regex and how I use it in Auth Controller does not really explain specifically was wrong
+Global Exception Handler
