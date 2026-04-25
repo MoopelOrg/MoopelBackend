@@ -27,4 +27,8 @@
     </Content>
   </ItemGroup>
 
+  <Target Name="StartDocker" BeforeTargets="Build">
+  	<Exec Command="docker compose -f sql-docker-compose.yml up -d" />
+  </Target>
+
 </Project>

@@ -1,0 +1,4 @@
+-- Use the following command to create the Sql docker container:
+docker compose -f sql-docker-compose.yml up -d
+-- Full reset:
+docker compose -f sql-docker-compose.yml down -v

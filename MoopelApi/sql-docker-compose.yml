@@ -1,0 +1,45 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: MoopelDB
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourStrong!Passw0rd"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+
+  sql-init:
+    image: mcr.microsoft.com/mssql-tools
+    depends_on:
+      - sqlserver
+    entrypoint: /bin/bash
+    command: >
+      -c "
+      echo 'Waiting for SQL Server...';
+
+      until /opt/mssql-tools/bin/sqlcmd
+      -S sqlserver
+      -U sa
+      -P 'YourStrong!Passw0rd'
+      -Q 'SELECT 1';
+      do
+        echo 'SQL Server not ready yet...';
+        sleep 2;
+      done;
+
+      echo 'SQL Server is ready. Creating database if needed...';
+
+      /opt/mssql-tools/bin/sqlcmd
+      -S sqlserver
+      -U sa
+      -P 'YourStrong!Passw0rd'
+      -Q \"IF DB_ID('MoopelDB') IS NULL CREATE DATABASE MoopelDB;\"
+
+      echo 'Database setup complete.';
+      "
+
+volumes:
+  sql_data:
