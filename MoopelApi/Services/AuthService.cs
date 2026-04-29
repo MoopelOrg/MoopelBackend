@@ -5,10 +5,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using MoopelApi.Models;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Enums;
 using MoopelApi.Models.Requests;
+using MoopelApi.Models.Results;
 using MoopelApi.Services.Interfaces;
 
 using static MoopelApi.ConstantValues.Database;
@@ -44,7 +46,7 @@ public class AuthService : IAuthService
                 UserId = 0,
                 Username = request.Username,
                 PasswordHash = string.Empty,
-                Role = UserRole.User,
+                Role = UserRole.Standard,
                 Deactivated = false,
                 Groups = [],
                 CreatedAtUtc = DateTime.UtcNow,
@@ -127,5 +129,30 @@ public class AuthService : IAuthService
     {
         PasswordVerificationResult result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
         return result == PasswordVerificationResult.Success;
+    }
+
+    public Task<LoginResult?> Login(LoginRequest request)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> DeactivateUser(int id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> LogoutUser(int id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<User?> GetUserByName(string name)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<GroupAccess> GetGroupAccess(User user, Group group)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -52,6 +52,7 @@ public static class SqlHelper
             "varchar" => SqlDbType.VarChar,
             "text" => SqlDbType.Text,
             "ntext" => SqlDbType.NText,
+            "varbinary" => SqlDbType.VarBinary,
 
             "datetime" => SqlDbType.DateTime,
             "datetime2" => SqlDbType.DateTime2,
