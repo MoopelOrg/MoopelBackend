@@ -1,19 +1,22 @@
 ﻿using MoopelApi.Models.Dto;
-using MoopelApi.Models.Requests;
+using MoopelApi.Models.Enums;
+using MoopelApi.Models.Requests.Creation;
+using MoopelApi.Models.Requests.Update;
 
 namespace MoopelApi.Services.Interfaces;
 
 public interface IWorkItemService
 {
-    Task<List<WorkItem?>> GetWorkItemsForUser(int userId);
-    Task<WorkItem?> GetWorkItemById(int itemId);
-    
+    Task<List<WorkItem>?> GetWorkItems(int groupId, WorkItemType? type = null);
+    Task<WorkItem?> GetWorkItem(int itemId);
+
+    Task<WorkItem> CreateWorkItem(WorkItemCreateRequest request, int groupId);
+    Task<WorkItem> UpdateWorkItem(WorkItemUpdateRequest request, int groupId);
+    Task<bool> DeleteWorkItem(int itemId);
+
     Task<List<WorkItem>?> GetParentWorkItems(int itemId);
     Task<List<WorkItem>?> GetChildrenWorkItems(int itemId);
 
-    Task<WorkItem?> CreateWorkItem(WorkItemCreationRequest request, int userId);
-    Task<bool> DeleteWorkItem(int itemId);
-
-    Task<bool> AddChildWorkItem(WorkItem workItem, int parentId);
-    Task<bool> AddParentWorkItem(WorkItem workItem, int childId);
+    Task<bool> AddWorkItemLink(int childWorkItemId, int parentWorkItemId);
+    Task<bool> RemoveWorkItemLink(int childWorkItemId, int parentWorkItemId);
 }

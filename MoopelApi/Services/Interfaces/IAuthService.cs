@@ -1,4 +1,5 @@
-﻿using MoopelApi.Models.Dto;
+﻿using MoopelApi.Models;
+using MoopelApi.Models.Dto;
 using MoopelApi.Models.Requests;
 using MoopelApi.Models.Results;
 
@@ -6,11 +7,11 @@ namespace MoopelApi.Services.Interfaces;
 
 public interface IAuthService
 {
-    Task<User?> Register(RegistrationRequest request);
-    Task<LoginResult?> Login(LoginRequest request);
-    Task<bool> DeactivateUser(int id);
-    Task<bool> LogoutUser(int id);
+    public Task<User?> Register(RegistrationRequest request);
+    public Task<LoginResult?> Login(LoginRequest request);
+    public Task<bool> LogoutUser(int userId);
 
-    Task<User?> GetUserById(int id);
-    Task<User?> GetUserByName(string name);
+    
+
+    public Task<GroupAccess> GetGroupAccess(User user, Group group);
 }

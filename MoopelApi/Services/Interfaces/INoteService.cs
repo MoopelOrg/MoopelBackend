@@ -1,5 +1,16 @@
-﻿namespace MoopelApi.Services.Interfaces;
+﻿using MoopelApi.Models.Dto;
+using MoopelApi.Models.Requests.Creation;
+using MoopelApi.Models.Requests.Update;
+
+namespace MoopelApi.Services.Interfaces;
 
 public interface INoteService
 {
+    public Task<List<Note>> GetUserNotes(int userId);
+    public Task<Note?> GetNoteById(int noteId);
+
+    public Task<Note> CreateNote(NoteCreationRequest request);
+    public Task<Note?> UpdateNote(NoteUpdateRequest request);
+
+    public Task<bool> DeleteNote(int noteId);
 }
