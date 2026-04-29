@@ -11,6 +11,8 @@ public class DatabaseTable
 
     public required List<DatabaseField> Fields { get; init; }
 
+    public required List<DatabaseConstraint> Constraints { get; init; }
+
     public required string Alias { get; init; }
 
     public string GenerateSelect()
@@ -24,6 +26,31 @@ public class DatabaseTable
     public string GetFields()
     {
         return $"{string.Join(", ", Fields.Select(field => field.SelectName))}";
+    }
+    public string GenerateCreateTable()
+    {
+        try
+        {
+            List<string> tableParts = [];
+
+            tableParts.AddRange(Fields.Select(field =>
+                $"    {field.SelectName} {field.FieldDataType}"));
+
+            tableParts.AddRange(Constraints.Select(constraint =>
+                $"    {constraint.GenerateSql()}"));
+
+            return $@"
+            IF OBJECT_ID('dbo.{Name}', 'U') IS NULL
+            BEGIN
+            CREATE TABLE {SelectName} (
+            {string.Join(",\n", tableParts)}
+            );
+            END";
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Error generating CREATE TABLE SQL for table '{Name}': {ex.Message}", ex);
+        }
     }
 }
 
@@ -39,7 +66,8 @@ public class DatabaseField
 
     public string? DefaultValue { get; init; } = null;
 
-    public DatabaseField? Reference { get; init; } = null;
+    public bool IsPrimaryKey { get; init; } = false;
+    public bool IsIdentity { get; init; } = false;
 
     public string FieldDataType
     {
@@ -59,10 +87,12 @@ public class DatabaseField
 
                 SqlDbType.NVarChar => $"NVARCHAR({sizeOrMax})",
                 SqlDbType.VarChar => $"VARCHAR({sizeOrMax})",
+                SqlDbType.VarBinary => $"VARBINARY({sizeOrMax})",
 
                 SqlDbType.Text => "TEXT",
                 SqlDbType.NText => "NTEXT",
 
+                SqlDbType.DateTime => "DATETIME",
                 SqlDbType.DateTime2 => "DATETIME2",
                 SqlDbType.DateTimeOffset => "DATETIMEOFFSET",
 
@@ -83,7 +113,10 @@ public class DatabaseField
             string nullPart = Nullable ? "NULL" : "NOT NULL";
             string defaultValue = DefaultValue != null ? $"DEFAULT {DefaultValue}" : string.Empty;
 
-            return $"{typePart} {nullPart} {defaultValue}";
+            string identityPart = IsIdentity ? "IDENTITY(1,1)" : string.Empty;
+            string pkPart = IsPrimaryKey ? "PRIMARY KEY" : string.Empty;
+
+            return $"{typePart} {identityPart} {nullPart} {defaultValue} {pkPart}".Trim();
         }
     }
 
@@ -106,4 +139,63 @@ public class DatabaseField
             Value = value ?? DBNull.Value
         };
     }
+}
+
+public class DatabaseConstraint
+{
+    public required string Name { get; init; }
+    public required DatabaseConstraintType Type { get; init; }
+    public required List<DatabaseField> Fields { get; init; }
+
+    public DatabaseTable? ReferenceTable { get; init; } = null;
+    public List<DatabaseField>? ReferenceFields { get; init; } = null;
+
+    public string? CheckSql { get; init; } = null;
+    public string OnDelete { get; init; } = "NO ACTION";
+
+    public string GenerateSql()
+    {
+        string fields = string.Join(", ", Fields.Select(f => f.SelectName));
+
+        return Type switch
+        {
+            DatabaseConstraintType.Unique =>
+                $"CONSTRAINT [{Name}] UNIQUE ({fields})",
+
+            DatabaseConstraintType.CompositePrimaryKey =>
+                $"CONSTRAINT [{Name}] PRIMARY KEY ({fields})",
+
+            DatabaseConstraintType.Check =>
+                $"CONSTRAINT [{Name}] CHECK ({CheckSql})",
+
+            DatabaseConstraintType.ForeignKey =>
+                GenerateForeignKeySql(fields),
+
+            _ => throw new NotSupportedException($"Unsupported constraint type: {Type}")
+        };
+    }
+
+    private string GenerateForeignKeySql(string fields)
+    {
+        if (ReferenceTable is null)
+            throw new InvalidOperationException($"Foreign key {Name} is missing ReferenceTable.");
+
+        if (ReferenceFields is null || ReferenceFields.Count == 0)
+            throw new InvalidOperationException($"Foreign key {Name} is missing ReferenceFields.");
+
+        string referenceFields = string.Join(", ", ReferenceFields.Select(f => f.SelectName));
+
+        return
+            $"CONSTRAINT [{Name}] FOREIGN KEY ({fields}) " +
+            $"REFERENCES {ReferenceTable.SelectName}({referenceFields}) " +
+            $"ON DELETE {OnDelete}";
+    }
+}
+
+public enum DatabaseConstraintType
+{
+    Unique,
+    CompositePrimaryKey,
+    ForeignKey,
+    Check
 }

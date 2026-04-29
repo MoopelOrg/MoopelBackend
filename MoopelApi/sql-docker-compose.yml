@@ -8,8 +8,6 @@ services:
       MSSQL_PID: "Express"
     ports:
       - "1433:1433"
-    volumes:
-      - sql_data:/var/opt/mssql
 
   sql-init:
     image: mcr.microsoft.com/mssql-tools
@@ -40,6 +38,3 @@ services:
 
       echo 'Database setup complete.';
       "
-
-volumes:
-  sql_data:

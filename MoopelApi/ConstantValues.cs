@@ -19,17 +19,43 @@ public class ConstantValues
 
     public static class Database
     {
-
         #region Groups
         public static readonly DatabaseField GroupIdField =
-        new() { Name = "GroupId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "GroupId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
+
         public static readonly DatabaseField GroupNameField =
-            new() { Name = "Name", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 50 };
+            new()
+            {
+                Name = "Name",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 50
+            };
 
         public static readonly DatabaseField GroupDescriptionField =
-            new() { Name = "Description", Type = SqlDbType.NVarChar, Nullable = true, FieldSize = 300 };
+            new()
+            {
+                Name = "Description",
+                Type = SqlDbType.NVarChar,
+                Nullable = true,
+                FieldSize = 300
+            };
+
         public static readonly DatabaseField GroupCreatedAtUtcField =
-            new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
+            new()
+            {
+                Name = "CreatedAtUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
 
         public static readonly DatabaseTable GroupsTable = new()
         {
@@ -38,16 +64,32 @@ public class ConstantValues
             Fields =
             [
                 GroupIdField,
-            GroupNameField,
-            GroupDescriptionField,
-            GroupCreatedAtUtcField,
-        ]
+                GroupNameField,
+                GroupDescriptionField,
+                GroupCreatedAtUtcField,
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "UQ_Groups_Name",
+                    Type = DatabaseConstraintType.Unique,
+                    Fields = [GroupNameField]
+                }
+            ]
         };
         #endregion
 
         #region Settings
         public static readonly DatabaseField SettingsIdField =
-            new() { Name = "SettingId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "SettingId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
 
         public static readonly DatabaseTable UserSettingsTable = new()
         {
@@ -56,34 +98,88 @@ public class ConstantValues
             Fields =
             [
                 SettingsIdField,
+            ],
+            Constraints =
+            [
             ]
         };
         #endregion
 
         #region Themes
         public static readonly DatabaseField ThemeIdField =
-            new() { Name = "ThemeId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "ThemeId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
 
-        public static readonly DatabaseField ThemeCreatorUserIdField =
-            new() { Name = "Creator" + UserIdField.Name, Type = UserIdField.Type, Nullable = false, Reference = UserIdField };
+        public static readonly DatabaseField ThemeCreatorDescriptorField =
+            new()
+            {
+                Name = "CreatorDescriptor",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 100
+            };
 
         public static readonly DatabaseField ThemeNameField =
-            new() { Name = "ThemeName", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 100 };
+            new()
+            {
+                Name = "ThemeName",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 100
+            };
 
         public static readonly DatabaseField ThemeDataField =
-            new() { Name = "ThemeData", Type = SqlDbType.Json, Nullable = false, DefaultValue = "'{}'" };
+            new()
+            {
+                Name = "ThemeData",
+                Type = SqlDbType.NVarChar, // SQL Server does not support Json type directly
+                Nullable = false,
+                FieldSize = null,
+                DefaultValue = "'{}'"
+            };
 
         public static readonly DatabaseField ThemeDescriptionField =
-            new() { Name = "Description", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 300, DefaultValue = "''" };
+            new()
+            {
+                Name = "Description",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 300,
+                DefaultValue = "''"
+            };
 
         public static readonly DatabaseField ThemeIsDarkField =
-            new() { Name = "IsDark", Type = SqlDbType.Bit, Nullable = false, DefaultValue = "0" };
+            new()
+            {
+                Name = "IsDark",
+                Type = SqlDbType.Bit,
+                Nullable = false,
+                DefaultValue = "0"
+            };
 
         public static readonly DatabaseField ThemeCreatedAtUtcField =
-            new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
+            new()
+            {
+                Name = "CreatedAtUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
 
         public static readonly DatabaseField ThemeDeletedField =
-            new() { Name = "Deleted", Type = SqlDbType.Bit, Nullable = false, DefaultValue = "0" };
+            new()
+            {
+                Name = "Deleted",
+                Type = SqlDbType.Bit,
+                Nullable = false,
+                DefaultValue = "0"
+            };
 
         public static readonly DatabaseTable ThemesTable = new()
         {
@@ -92,40 +188,115 @@ public class ConstantValues
             Fields =
             [
                 ThemeIdField,
-                ThemeCreatorUserIdField,
+                ThemeCreatorDescriptorField,
                 ThemeNameField,
                 ThemeDataField,
                 ThemeDescriptionField,
                 ThemeIsDarkField,
                 ThemeCreatedAtUtcField,
                 ThemeDeletedField
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "UQ_Themes_Name_Creator",
+                    Type = DatabaseConstraintType.Unique,
+                    Fields = [ThemeNameField, ThemeCreatorDescriptorField]
+                }
             ]
         };
         #endregion
 
         #region Users
         public static readonly DatabaseField UserIdField =
-            new() { Name = "UserId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "UserId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
+
         public static readonly DatabaseField UserNameField =
-            new() { Name = "Username", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 50 };
-        public static readonly DatabaseField UserEmailField =
-            new() { Name = "Email", Type = SqlDbType.NVarChar, Nullable = true, FieldSize = 200, DefaultValue = "NULL" };
+            new()
+            {
+                Name = "Username",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 50
+            };
+
         public static readonly DatabaseField UserPasswordHashField =
-            new() { Name = "PasswordHash", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 3000 };
+            new()
+            {
+                Name = "PasswordHash",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 3000
+            };
+
         public static readonly DatabaseField UserRoleField =
-            new() { Name = "Role", Type = SqlDbType.VarChar, Nullable = false, FieldSize = 50, DefaultValue = $"'{UserRole.Standard}'" };
+            new()
+            {
+                Name = "Role",
+                Type = SqlDbType.VarChar,
+                Nullable = false,
+                FieldSize = 50,
+                DefaultValue = $"'{UserRole.Standard}'"
+            };
+
+        public static readonly DatabaseField UserEmailField =
+            new()
+            {
+                Name = "Email",
+                Type = SqlDbType.NVarChar,
+                Nullable = true,
+                FieldSize = 200
+            };
+
         public static readonly DatabaseField UserCreatedAtUtcField =
-            new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
-        public static readonly DatabaseField UserLastLoginUtc =
-            new() { Name = "LastLoginUtc", Type = SqlDbType.DateTime2, Nullable = true };
+            new()
+            {
+                Name = "CreatedAtUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
+
+        public static readonly DatabaseField UserLastLoginUtcField =
+            new()
+            {
+                Name = "LastLoginUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = true
+            };
+
         public static readonly DatabaseField UserDeactivatedField =
-            new() { Name = "Deactivated", Type = SqlDbType.Bit, Nullable = false, DefaultValue = "0" };
+            new()
+            {
+                Name = "Deactivated",
+                Type = SqlDbType.Bit,
+                Nullable = false,
+                DefaultValue = "0"
+            };
 
         public static readonly DatabaseField UserThemeIdField =
-            new() { Name = ThemeIdField.Name, Type = ThemeIdField.Type, Nullable = true, Reference = ThemeIdField };
+            new()
+            {
+                Name = "ThemeId",
+                Type = SqlDbType.Int,
+                Nullable = true
+            };
 
         public static readonly DatabaseField UserSettingsIdField =
-            new() { Name = SettingsIdField.Name, Type = SettingsIdField.Type, Nullable = true, Reference = SettingsIdField };
+            new()
+            {
+                Name = "SettingId",
+                Type = SqlDbType.Int,
+                Nullable = true
+            };
 
         public static readonly DatabaseTable UsersTable = new()
         {
@@ -139,24 +310,115 @@ public class ConstantValues
                 UserRoleField,
                 UserEmailField,
                 UserCreatedAtUtcField,
-                UserLastLoginUtc,
+                UserLastLoginUtcField,
                 UserDeactivatedField,
                 UserThemeIdField,
                 UserSettingsIdField,
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "UQ_Users_Username",
+                    Type = DatabaseConstraintType.Unique,
+                    Fields = [UserNameField]
+                },
+                new()
+                {
+                    Name = "UQ_Users_Email",
+                    Type = DatabaseConstraintType.Unique,
+                    Fields = [UserEmailField]
+                },
+                new()
+                {
+                    Name = "FK_Users_Themes",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [UserThemeIdField],
+                    ReferenceTable = ThemesTable,
+                    ReferenceFields = [ThemeIdField],
+                    OnDelete = "SET NULL"
+                },
+                new()
+                {
+                    Name = "FK_Users_Settings",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [UserSettingsIdField],
+                    ReferenceTable = UserSettingsTable,
+                    ReferenceFields = [SettingsIdField],
+                    OnDelete = "SET NULL"
+                },
+                new()
+                {
+                    Name = "CHK_Users_Role",
+                    Type = DatabaseConstraintType.Check,
+                    Fields = [UserRoleField],
+                    CheckSql = $"{UserRoleField.SelectName} IN ('Admin','Standard')"
+                }
             ]
         };
         #endregion
 
         #region GroupUsers
         public static readonly DatabaseField GroupUsersGroupIdField =
-            new() { Name = GroupIdField.Name, Type = GroupIdField.Type, Nullable = false, Reference = GroupIdField };
+            new()
+            {
+                Name = "GroupId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
+
         public static readonly DatabaseField GroupUsersUserIdField =
-            new() { Name = UserIdField.Name, Type = UserIdField.Type, Nullable = false, Reference = UserIdField };
+            new()
+            {
+                Name = "UserId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
+
+        public static readonly DatabaseField GroupUsersOwnerField =
+            new()
+            {
+                Name = "IsOwner",
+                Type = SqlDbType.Bit,
+                Nullable = false,
+                DefaultValue = "0"
+            };
+
+        public static readonly DatabaseField GroupUsersCanEditGroupField =
+            new()
+            {
+                Name = "CanEditGroup",
+                Type = SqlDbType.Bit,
+                Nullable = false,
+                DefaultValue = "0"
+            };
+
+        public static readonly DatabaseField GroupUsersCanInviteUsersField =
+            new()
+            {
+                Name = "CanInviteUsers",
+                Type = SqlDbType.Bit,
+                Nullable = false,
+                DefaultValue = "0"
+            };
 
         public static readonly DatabaseField GroupUsersCanReadWorkItemsField =
-            new() { Name = "CanReadWorkItems", Type = SqlDbType.Bit, Nullable = false, DefaultValue = "0" };
-        public static readonly DatabaseField GroupUsersCanWriteWorkItemsField =
-            new() { Name = "CanWriteWorkItems", Type = SqlDbType.Bit, Nullable = false, DefaultValue = "0" };
+            new()
+            {
+                Name = "CanReadWorkItems",
+                Type = SqlDbType.Bit,
+                Nullable = false,
+                DefaultValue = "1"
+            };
+
+        public static readonly DatabaseField GroupUsersCanCreateWorkItemsField =
+            new()
+            {
+                Name = "CanCreateWorkItems",
+                Type = SqlDbType.Bit,
+                Nullable = false,
+                DefaultValue = "0"
+            };
 
         public static readonly DatabaseTable GroupUsersTable = new()
         {
@@ -165,25 +427,77 @@ public class ConstantValues
             Fields =
             [
                 GroupUsersGroupIdField,
-            GroupUsersUserIdField,
-            GroupUsersCanReadWorkItemsField,
-            GroupUsersCanWriteWorkItemsField
+                GroupUsersUserIdField,
+                GroupUsersCanReadWorkItemsField,
+                GroupUsersCanCreateWorkItemsField
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "PK_GroupUsers",
+                    Type = DatabaseConstraintType.CompositePrimaryKey,
+                    Fields = [GroupUsersGroupIdField, GroupUsersUserIdField]
+                },
+                new()
+                {
+                    Name = "FK_GroupUsers_Groups",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [GroupUsersGroupIdField],
+                    ReferenceTable = GroupsTable,
+                    ReferenceFields = [GroupIdField],
+                    OnDelete = "CASCADE"
+                },
+                new()
+                {
+                    Name = "FK_GroupUsers_Users",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [GroupUsersUserIdField],
+                    ReferenceTable = UsersTable,
+                    ReferenceFields = [UserIdField],
+                    OnDelete = "CASCADE"
+                }
             ]
         };
         #endregion
 
         #region Logins
         public static readonly DatabaseField LoginIdField =
-            new() { Name = "LoginId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "LoginId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
 
         public static readonly DatabaseField LoginUserNameField =
-            new() { Name = "Username", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = UserNameField.FieldSize };
+            new()
+            {
+                Name = "Username",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 50
+            };
 
         public static readonly DatabaseField LoginAttemptTimeUtcField =
-            new() { Name = "AttemptTimeUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
+            new()
+            {
+                Name = "AttemptTimeUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
 
         public static readonly DatabaseField LoginStatusField =
-            new() { Name = "Status", Type = SqlDbType.VarChar, Nullable = false, FieldSize = 50 };
+            new()
+            {
+                Name = "Status",
+                Type = SqlDbType.VarChar,
+                Nullable = false,
+                FieldSize = 50
+            };
 
         public static readonly DatabaseTable LoginsTable = new()
         {
@@ -195,27 +509,91 @@ public class ConstantValues
                 LoginUserNameField,
                 LoginAttemptTimeUtcField,
                 LoginStatusField
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "CHK_Logins_Status",
+                    Type = DatabaseConstraintType.Check,
+                    Fields = [LoginStatusField],
+                    CheckSql = $"{LoginStatusField.SelectName} IN ('Successful','Failed')"
+                }
             ]
         };
         #endregion
 
         #region Sessions
         public static readonly DatabaseField SessionIdField =
-            new() { Name = "SessionId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "SessionId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
+
         public static readonly DatabaseField SessionUserIdField =
-            new() { Name = UserIdField.Name, Type = UserIdField.Type, Nullable = false, Reference = UserIdField };
+            new()
+            {
+                Name = "UserId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
+
         public static readonly DatabaseField SessionLoginIdField =
-            new() { Name = LoginIdField.Name, Type = LoginIdField.Type, Nullable = false, Reference = LoginIdField };
+            new()
+            {
+                Name = "LoginId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
+
         public static readonly DatabaseField SessionTokenField =
-            new() { Name = "HashedToken", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 3000 };
+            new()
+            {
+                Name = "HashedToken",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 3000
+            };
+
         public static readonly DatabaseField SessionIpIssuedToField =
-            new() { Name = "IpIssuedTo", Type = SqlDbType.VarChar, Nullable = false, FieldSize = 45 };
+            new()
+            {
+                Name = "IpIssuedTo",
+                Type = SqlDbType.VarChar,
+                Nullable = false,
+                FieldSize = 45
+            };
+
         public static readonly DatabaseField SessionIssuedAtUtcField =
-            new() { Name = "IssuedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
+            new()
+            {
+                Name = "IssuedAtUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
+
         public static readonly DatabaseField SessionExpiresAtUtcField =
-            new() { Name = "ExpiresAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "(DATEADD(MINUTE, 120, SYSUTCDATETIME()))" };
+            new()
+            {
+                Name = "ExpiresAtUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "(DATEADD(MINUTE, 120, SYSUTCDATETIME()))"
+            };
+
         public static readonly DatabaseField SessionRevokedField =
-            new() { Name = "Revoked", Type = SqlDbType.Bit, Nullable = false, DefaultValue = "0" };
+            new()
+            {
+                Name = "Revoked",
+                Type = SqlDbType.Bit,
+                Nullable = false,
+                DefaultValue = "0"
+            };
 
         public static readonly DatabaseTable SessionsTable = new()
         {
@@ -224,38 +602,110 @@ public class ConstantValues
             Fields =
             [
                 SessionIdField,
-            SessionUserIdField,
-            SessionLoginIdField,
-            SessionTokenField,
-            SessionIpIssuedToField,
-            SessionIssuedAtUtcField,
-            SessionExpiresAtUtcField,
-            SessionRevokedField,
-        ]
+                SessionUserIdField,
+                SessionLoginIdField,
+                SessionTokenField,
+                SessionIpIssuedToField,
+                SessionIssuedAtUtcField,
+                SessionExpiresAtUtcField,
+                SessionRevokedField,
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "FK_Sessions_Users",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [SessionUserIdField],
+                    ReferenceTable = UsersTable,
+                    ReferenceFields = [UserIdField],
+                    OnDelete = "CASCADE"
+                },
+                new()
+                {
+                    Name = "FK_Sessions_Logins",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [SessionLoginIdField],
+                    ReferenceTable = LoginsTable,
+                    ReferenceFields = [LoginIdField],
+                    OnDelete = "CASCADE"
+                },
+                new()
+                {
+                    Name = "UQ_Sessions_Token",
+                    Type = DatabaseConstraintType.Unique,
+                    Fields = [SessionTokenField]
+                }
+            ]
         };
         #endregion
 
         #region WorkItems
         public static readonly DatabaseField WorkItemIdField =
-            new() { Name = "ItemId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "ItemId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
 
         public static readonly DatabaseField WorkItemGroupIdField =
-            new() { Name = GroupIdField.Name, Type = GroupIdField.Type, Nullable = false, Reference = GroupIdField };
+            new()
+            {
+                Name = "GroupId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
 
         public static readonly DatabaseField WorkItemNameField =
-            new() { Name = "Name", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 20 };
+            new()
+            {
+                Name = "Name",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 20
+            };
 
         public static readonly DatabaseField WorkItemDescriptionField =
-            new() { Name = "Description", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 300 };
+            new()
+            {
+                Name = "Description",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 300,
+                DefaultValue = "''"
+            };
 
         public static readonly DatabaseField WorkItemPointsField =
-            new() { Name = "Points", Type = SqlDbType.Decimal, Nullable = false, FieldSize = 5, Precision = 2, DefaultValue = "0.0" };
-
-        public static readonly DatabaseField WorkItemCreatedAtUtcField =
-            new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
+            new()
+            {
+                Name = "Points",
+                Type = SqlDbType.Decimal,
+                Nullable = false,
+                FieldSize = 5,
+                Precision = 2,
+                DefaultValue = "0.0"
+            };
 
         public static readonly DatabaseField WorkItemTypeField =
-            new() { Name = "Type", Type = SqlDbType.VarChar, Nullable = false, FieldSize = 20 };
+            new()
+            {
+                Name = "Type",
+                Type = SqlDbType.VarChar,
+                Nullable = false,
+                FieldSize = 20
+            };
+
+        public static readonly DatabaseField WorkItemCreatedAtUtcField =
+            new()
+            {
+                Name = "CreatedAtUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
 
         public static readonly DatabaseTable WorkItemsTable = new()
         {
@@ -270,19 +720,66 @@ public class ConstantValues
                 WorkItemPointsField,
                 WorkItemTypeField,
                 WorkItemCreatedAtUtcField,
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "UQ_WorkItems_Group_Item",
+                    Type = DatabaseConstraintType.Unique,
+                    Fields = [WorkItemGroupIdField, WorkItemIdField]
+                },
+                new()
+                {
+                    Name = "FK_WorkItems_Groups",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [WorkItemGroupIdField],
+                    ReferenceTable = GroupsTable,
+                    ReferenceFields = [GroupIdField],
+                    OnDelete = "CASCADE"
+                },
+                new()
+                {
+                    Name = "CHK_WorkItems_Points",
+                    Type = DatabaseConstraintType.Check,
+                    Fields = [WorkItemPointsField],
+                    CheckSql = $"{WorkItemPointsField.SelectName} >= 0"
+                },
+                new()
+                {
+                    Name = "CHK_WorkItems_Type",
+                    Type = DatabaseConstraintType.Check,
+                    Fields = [WorkItemTypeField],
+                    CheckSql = $"{WorkItemTypeField.SelectName} IN ('Task','Story','Epic','Project')"
+                }
             ]
         };
         #endregion
 
         #region WorkItemParents
+        public static readonly DatabaseField WorkItemLinkGroupIdField =
+            new()
+            {
+                Name = "GroupId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
+
         public static readonly DatabaseField WorkItemParentIdField =
-            new() { Name = "ParentId", Type = WorkItemIdField.Type, Nullable = false, Reference = WorkItemIdField };
+            new()
+            {
+                Name = "ParentId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
 
         public static readonly DatabaseField WorkItemChildIdField =
-            new() { Name = "ChildId", Type = WorkItemIdField.Type, Nullable = false, Reference = WorkItemIdField };
-
-        public static readonly DatabaseField WorkItemLinkGroupIdField =
-            new() { Name = GroupIdField.Name, Type = GroupIdField.Type, Nullable = false, Reference = GroupIdField };
+            new()
+            {
+                Name = "ChildId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
 
         public static readonly DatabaseTable WorkItemParentsTable = new()
         {
@@ -290,25 +787,84 @@ public class ConstantValues
             Alias = "workItemLink",
             Fields =
             [
+                WorkItemLinkGroupIdField,
                 WorkItemParentIdField,
-                WorkItemChildIdField,
-                WorkItemLinkGroupIdField
+                WorkItemChildIdField
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "PK_WorkItemLinks",
+                    Type = DatabaseConstraintType.CompositePrimaryKey,
+                    Fields = [WorkItemLinkGroupIdField, WorkItemParentIdField, WorkItemChildIdField]
+                },
+                new()
+                {
+                    Name = "FK_WorkItemLinks_Parent",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [WorkItemLinkGroupIdField, WorkItemParentIdField],
+                    ReferenceTable = WorkItemsTable,
+                    ReferenceFields = [WorkItemGroupIdField, WorkItemIdField],
+                    OnDelete = "NO ACTION"
+                },
+                new()
+                {
+                    Name = "FK_WorkItemLinks_Child",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [WorkItemLinkGroupIdField, WorkItemChildIdField],
+                    ReferenceTable = WorkItemsTable,
+                    ReferenceFields = [WorkItemGroupIdField, WorkItemIdField],
+                    OnDelete = "NO ACTION"
+                },
+                new()
+                {
+                    Name = "CHK_WorkItemLinks_NotSelf",
+                    Type = DatabaseConstraintType.Check,
+                    Fields = [WorkItemParentIdField, WorkItemChildIdField],
+                    CheckSql = $"{WorkItemParentIdField.SelectName} <> {WorkItemChildIdField.SelectName}"
+                }
             ]
         };
         #endregion
 
         #region UserTags
         public static readonly DatabaseField UserTagIdField =
-            new() { Name = "UserTagId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "UserTagId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
 
         public static readonly DatabaseField UserTagUserIdField =
-            new() { Name = UserIdField.Name, Type = UserIdField.Type, Nullable = false, Reference = UserIdField };
+            new()
+            {
+                Name = "UserId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
 
         public static readonly DatabaseField UserTagNameField =
-            new() { Name = "TagName", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 50 };
+            new()
+            {
+                Name = "TagName",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 50
+            };
 
         public static readonly DatabaseField UserTagColorField =
-            new() { Name = "TagColor", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 7, DefaultValue = "'#000000'" };
+            new()
+            {
+                Name = "TagColor",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 7,
+                DefaultValue = "'#000000'"
+            };
 
         public static readonly DatabaseTable UserTagsTable = new()
         {
@@ -320,22 +876,65 @@ public class ConstantValues
                 UserTagUserIdField,
                 UserTagNameField,
                 UserTagColorField,
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "UQ_UserTags_User_TagName",
+                    Type = DatabaseConstraintType.Unique,
+                    Fields = [UserTagUserIdField, UserTagNameField]
+                },
+                new()
+                {
+                    Name = "FK_UserTags_Users",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [UserTagUserIdField],
+                    ReferenceTable = UsersTable,
+                    ReferenceFields = [UserIdField],
+                    OnDelete = "CASCADE"
+                }
             ]
         };
         #endregion
 
         #region GroupTags
         public static readonly DatabaseField GroupTagIdField =
-            new() { Name = "GroupTagId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "GroupTagId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
 
         public static readonly DatabaseField GroupTagGroupIdField =
-            new() { Name = GroupIdField.Name, Type = GroupIdField.Type, Nullable = false, Reference = GroupIdField };
+            new()
+            {
+                Name = "GroupId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
 
         public static readonly DatabaseField GroupTagNameField =
-            new() { Name = "TagName", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 50 };
+            new()
+            {
+                Name = "TagName",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 50
+            };
 
         public static readonly DatabaseField GroupTagColorField =
-            new() { Name = "TagColor", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 7, DefaultValue = "'#000000'" };
+            new()
+            {
+                Name = "TagColor",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 7,
+                DefaultValue = "'#000000'"
+            };
 
         public static readonly DatabaseTable GroupTagsTable = new()
         {
@@ -347,15 +946,44 @@ public class ConstantValues
                 GroupTagGroupIdField,
                 GroupTagNameField,
                 GroupTagColorField,
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "UQ_GroupTags_Group_TagName",
+                    Type = DatabaseConstraintType.Unique,
+                    Fields = [GroupTagGroupIdField, GroupTagNameField]
+                },
+                new()
+                {
+                    Name = "FK_GroupTags_Groups",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [GroupTagGroupIdField],
+                    ReferenceTable = GroupsTable,
+                    ReferenceFields = [GroupIdField],
+                    OnDelete = "CASCADE"
+                }
             ]
         };
         #endregion
 
         #region WorkItemTagAssignments
         public static readonly DatabaseField WorkItemTagItemIdField =
-            new() { Name = WorkItemIdField.Name, Type = WorkItemIdField.Type, Nullable = false, Reference = WorkItemIdField };
+            new()
+            {
+                Name = "ItemId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
+
         public static readonly DatabaseField WorkItemTagIdField =
-            new() { Name = GroupTagIdField.Name, Type = GroupTagIdField.Type, Nullable = false, Reference = GroupTagIdField };
+            new()
+            {
+                Name = "GroupTagId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
 
         public static readonly DatabaseTable WorkItemTagAssignmentsTable = new()
         {
@@ -365,26 +993,91 @@ public class ConstantValues
             [
                 WorkItemTagItemIdField,
                 WorkItemTagIdField,
-        ]
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "PK_WorkItemTagAssignments",
+                    Type = DatabaseConstraintType.CompositePrimaryKey,
+                    Fields = [WorkItemTagItemIdField, WorkItemTagIdField]
+                },
+                new()
+                {
+                    Name = "FK_WorkItemTagAssignments_WorkItems",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [WorkItemTagItemIdField],
+                    ReferenceTable = WorkItemsTable,
+                    ReferenceFields = [WorkItemIdField],
+                    OnDelete = "CASCADE"
+                },
+                new()
+                {
+                    Name = "FK_WorkItemTagAssignments_GroupTags",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [WorkItemTagIdField],
+                    ReferenceTable = GroupTagsTable,
+                    ReferenceFields = [GroupTagIdField],
+                    OnDelete = "NO ACTION"
+                }
+            ]
         };
         #endregion
 
         #region Notes
         public static readonly DatabaseField NoteIdField =
-            new() { Name = "NoteId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "NoteId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
+
         public static readonly DatabaseField NoteUserIdField =
-            new() { Name = UserIdField.Name, Type = UserIdField.Type, Nullable = false, Reference = UserIdField };
+            new()
+            {
+                Name = "UserId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
 
         public static readonly DatabaseField NoteTypeField =
-            new() { Name = "Type", Type = SqlDbType.VarChar, Nullable = false, FieldSize = 20 };
+            new()
+            {
+                Name = "Type",
+                Type = SqlDbType.VarChar,
+                Nullable = false,
+                FieldSize = 20
+            };
 
-        public static readonly DatabaseField NoteTitleField = 
-            new() { Name = "Title", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 50 };
+        public static readonly DatabaseField NoteTitleField =
+            new()
+            {
+                Name = "Title",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 50
+            };
+
         public static readonly DatabaseField NoteContentField =
-            new() { Name = "Content", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 500 };
+            new()
+            {
+                Name = "Content",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 500
+            };
 
         public static readonly DatabaseField NoteCreatedAtUtcField =
-            new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
+            new()
+            {
+                Name = "CreatedAtUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
 
         public static readonly DatabaseTable NotesTable = new()
         {
@@ -398,22 +1091,65 @@ public class ConstantValues
                 NoteTitleField,
                 NoteContentField,
                 NoteCreatedAtUtcField
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "FK_Notes_Users",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [NoteUserIdField],
+                    ReferenceTable = UsersTable,
+                    ReferenceFields = [UserIdField],
+                    OnDelete = "CASCADE"
+                },
+                new()
+                {
+                    Name = "CHK_Notes_Type",
+                    Type = DatabaseConstraintType.Check,
+                    Fields = [NoteTypeField],
+                    CheckSql = $"{NoteTypeField.SelectName} IN ('General','WorkItem','Personal')"
+                }
             ]
         };
         #endregion
 
         #region Storages
         public static readonly DatabaseField StorageIdField =
-            new() { Name = "StorageId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "StorageId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
 
         public static readonly DatabaseField StorageUserIdField =
-            new() { Name = UserIdField.Name, Type = UserIdField.Type, Nullable = false, Reference = UserIdField };
+            new()
+            {
+                Name = "UserId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
 
         public static readonly DatabaseField StorageNameField =
-            new() { Name = "Name", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 100 };
+            new()
+            {
+                Name = "Name",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 100
+            };
 
         public static readonly DatabaseField StorageCreatedAtUtcField =
-            new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
+            new()
+            {
+                Name = "CreatedAtUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
 
         public static readonly DatabaseTable StoragesTable = new()
         {
@@ -425,25 +1161,73 @@ public class ConstantValues
                 StorageUserIdField,
                 StorageNameField,
                 StorageCreatedAtUtcField
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "FK_Storages_Users",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [StorageUserIdField],
+                    ReferenceTable = UsersTable,
+                    ReferenceFields = [UserIdField],
+                    OnDelete = "CASCADE"
+                },
+                new()
+                {
+                    Name = "UQ_Storages_User_Name",
+                    Type = DatabaseConstraintType.Unique,
+                    Fields = [StorageUserIdField, StorageNameField]
+                }
             ]
         };
         #endregion
 
         #region StorageItems
         public static readonly DatabaseField StorageItemIdField =
-            new() { Name = "StorageItemId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "StorageItemId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
 
         public static readonly DatabaseField StorageItemStorageIdField =
-            new() { Name = StorageIdField.Name, Type = StorageIdField.Type, Nullable = false, Reference = StorageIdField };
+            new()
+            {
+                Name = "StorageId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
 
         public static readonly DatabaseField StorageItemNameField =
-            new() { Name = "Name", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 100 };
+            new()
+            {
+                Name = "Name",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 100
+            };
 
-        public static readonly DatabaseField StorageItemCountField =
-            new() { Name = "Count", Type = SqlDbType.Int, Nullable = false, DefaultValue = "1" };
+        public static readonly DatabaseField StorageItemQuantityField =
+            new()
+            {
+                Name = "Quantity",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                DefaultValue = "0"
+            };
 
         public static readonly DatabaseField StorageItemCreatedAtUtcField =
-            new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
+            new()
+            {
+                Name = "CreatedAtUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
 
         public static readonly DatabaseTable StorageItemsTable = new()
         {
@@ -454,24 +1238,73 @@ public class ConstantValues
                 StorageItemIdField,
                 StorageItemStorageIdField,
                 StorageItemNameField,
-                StorageItemCountField,
+                StorageItemQuantityField,
                 StorageItemCreatedAtUtcField
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "FK_StorageItems_Storages",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [StorageItemStorageIdField],
+                    ReferenceTable = StoragesTable,
+                    ReferenceFields = [StorageIdField],
+                    OnDelete = "CASCADE"
+                },
+                new()
+                {
+                    Name = "UQ_StorageItems_Storage_Name",
+                    Type = DatabaseConstraintType.Unique,
+                    Fields = [StorageItemStorageIdField, StorageItemNameField]
+                },
+                new()
+                {
+                    Name = "CHK_StorageItems_Quantity",
+                    Type = DatabaseConstraintType.Check,
+                    Fields = [StorageItemQuantityField],
+                    CheckSql = $"{StorageItemQuantityField.SelectName} >= 0"
+                }
             ]
         };
         #endregion
 
         #region Fridges
         public static readonly DatabaseField FridgeIdField =
-            new() { Name = "FridgeId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "FridgeId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
 
         public static readonly DatabaseField FridgeUserIdField =
-            new() { Name = UserIdField.Name, Type = UserIdField.Type, Nullable = false, Reference = UserIdField };
+            new()
+            {
+                Name = "UserId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
 
         public static readonly DatabaseField FridgeNameField =
-            new() { Name = "Name", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 100 };
+            new()
+            {
+                Name = "Name",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 100
+            };
 
         public static readonly DatabaseField FridgeCreatedAtUtcField =
-            new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
+            new()
+            {
+                Name = "CreatedAtUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
 
         public static readonly DatabaseTable FridgesTable = new()
         {
@@ -483,28 +1316,73 @@ public class ConstantValues
                 FridgeUserIdField,
                 FridgeNameField,
                 FridgeCreatedAtUtcField
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "FK_Fridges_Users",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [FridgeUserIdField],
+                    ReferenceTable = UsersTable,
+                    ReferenceFields = [UserIdField],
+                    OnDelete = "CASCADE"
+                },
+                new()
+                {
+                    Name = "UQ_Fridges_User_Name",
+                    Type = DatabaseConstraintType.Unique,
+                    Fields = [FridgeUserIdField, FridgeNameField]
+                }
             ]
         };
         #endregion
 
         #region FridgeItems
         public static readonly DatabaseField FridgeItemIdField =
-            new() { Name = "FridgeItemId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "FridgeItemId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
 
         public static readonly DatabaseField FridgeItemFridgeIdField =
-            new() { Name = FridgeIdField.Name, Type = FridgeIdField.Type, Nullable = false, Reference = FridgeIdField };
+            new()
+            {
+                Name = "FridgeId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
 
         public static readonly DatabaseField FridgeItemNameField =
-            new() { Name = "Name", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 100 };
+            new()
+            {
+                Name = "Name",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 100
+            };
 
-        public static readonly DatabaseField FridgeItemCountField =
-            new() { Name = "Count", Type = SqlDbType.Int, Nullable = false, DefaultValue = "1" };
-
-        public static readonly DatabaseField FridgeItemExpirationDateField =
-            new() { Name = "ExpirationDate", Type = SqlDbType.Date, Nullable = true };
+        public static readonly DatabaseField FridgeItemQuantityField =
+            new()
+            {
+                Name = "Quantity",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                DefaultValue = "0"
+            };
 
         public static readonly DatabaseField FridgeItemCreatedAtUtcField =
-            new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
+            new()
+            {
+                Name = "CreatedAtUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
 
         public static readonly DatabaseTable FridgeItemsTable = new()
         {
@@ -515,28 +1393,84 @@ public class ConstantValues
                 FridgeItemIdField,
                 FridgeItemFridgeIdField,
                 FridgeItemNameField,
-                FridgeItemCountField,
-                FridgeItemExpirationDateField,
+                FridgeItemQuantityField,
                 FridgeItemCreatedAtUtcField
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "FK_FridgeItems_Fridges",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [FridgeItemFridgeIdField],
+                    ReferenceTable = FridgesTable,
+                    ReferenceFields = [FridgeIdField],
+                    OnDelete = "CASCADE"
+                },
+                new()
+                {
+                    Name = "UQ_FridgeItems_Fridge_Name",
+                    Type = DatabaseConstraintType.Unique,
+                    Fields = [FridgeItemFridgeIdField, FridgeItemNameField]
+                },
+                new()
+                {
+                    Name = "CHK_FridgeItems_Quantity",
+                    Type = DatabaseConstraintType.Check,
+                    Fields = [FridgeItemQuantityField],
+                    CheckSql = $"{FridgeItemQuantityField.SelectName} >= 0"
+                }
             ]
         };
         #endregion
 
         #region BankAccounts
         public static readonly DatabaseField BankAccountIdField =
-            new() { Name = "AccountId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "BankAccountId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
 
         public static readonly DatabaseField BankAccountUserIdField =
-            new() { Name = UserIdField.Name, Type = UserIdField.Type, Nullable = false, Reference = UserIdField };
+            new()
+            {
+                Name = "UserId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
 
         public static readonly DatabaseField BankAccountNameField =
-            new() { Name = "AccountName", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 20 };
+            new()
+            {
+                Name = "Name",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 100
+            };
 
-        public static readonly DatabaseField BankAccountDescriptionField =
-            new() { Name = "Description", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 100, DefaultValue = "''" };
+        public static readonly DatabaseField BankAccountBalanceField =
+            new()
+            {
+                Name = "Balance",
+                Type = SqlDbType.Decimal,
+                Nullable = false,
+                FieldSize = 18,
+                Precision = 2,
+                DefaultValue = "0.00"
+            };
 
         public static readonly DatabaseField BankAccountCreatedAtUtcField =
-            new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
+            new()
+            {
+                Name = "CreatedAtUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
 
         public static readonly DatabaseTable BankAccountsTable = new()
         {
@@ -547,27 +1481,77 @@ public class ConstantValues
                 BankAccountIdField,
                 BankAccountUserIdField,
                 BankAccountNameField,
-                BankAccountDescriptionField,
+                BankAccountBalanceField,
                 BankAccountCreatedAtUtcField
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "FK_BankAccounts_Users",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [BankAccountUserIdField],
+                    ReferenceTable = UsersTable,
+                    ReferenceFields = [UserIdField],
+                    OnDelete = "CASCADE"
+                },
+                new()
+                {
+                    Name = "UQ_BankAccounts_User_Name",
+                    Type = DatabaseConstraintType.Unique,
+                    Fields = [BankAccountUserIdField, BankAccountNameField]
+                }
             ]
         };
         #endregion
 
         #region Transactions
         public static readonly DatabaseField TransactionIdField =
-            new() { Name = "TransactionId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "TransactionId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
 
-        public static readonly DatabaseField TransactionAccountIdField =
-            new() { Name = BankAccountIdField.Name, Type = BankAccountIdField.Type, Nullable = false, Reference = BankAccountIdField };
-
-        public static readonly DatabaseField TransactionTagIdField =
-            new() { Name = UserTagIdField.Name, Type = UserTagIdField.Type, Nullable = true, Reference = UserTagIdField };
+        public static readonly DatabaseField TransactionBankAccountIdField =
+            new()
+            {
+                Name = "BankAccountId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
 
         public static readonly DatabaseField TransactionAmountField =
-            new() { Name = "Amount", Type = SqlDbType.Decimal, Nullable = false };
+            new()
+            {
+                Name = "Amount",
+                Type = SqlDbType.Decimal,
+                Nullable = false,
+                FieldSize = 18,
+                Precision = 2
+            };
+
+        public static readonly DatabaseField TransactionDescriptionField =
+            new()
+            {
+                Name = "Description",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 300,
+                DefaultValue = "''"
+            };
 
         public static readonly DatabaseField TransactionCreatedAtUtcField =
-            new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
+            new()
+            {
+                Name = "CreatedAtUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
 
         public static readonly DatabaseTable TransactionsTable = new()
         {
@@ -576,32 +1560,72 @@ public class ConstantValues
             Fields =
             [
                 TransactionIdField,
-                TransactionAccountIdField,
-                TransactionTagIdField,
+                TransactionBankAccountIdField,
                 TransactionAmountField,
+                TransactionDescriptionField,
                 TransactionCreatedAtUtcField
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "FK_Transactions_BankAccounts",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [TransactionBankAccountIdField],
+                    ReferenceTable = BankAccountsTable,
+                    ReferenceFields = [BankAccountIdField],
+                    OnDelete = "CASCADE"
+                }
             ]
         };
         #endregion
 
         #region TransactionItems
         public static readonly DatabaseField TransactionItemIdField =
-            new() { Name = "TransactionItemId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "TransactionItemId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
 
         public static readonly DatabaseField TransactionItemTransactionIdField =
-            new() { Name = TransactionIdField.Name, Type = TransactionIdField.Type, Nullable = false, Reference = TransactionIdField };
-
-        public static readonly DatabaseField TransactionItemTagIdField =
-            new() { Name = UserTagIdField.Name, Type = UserTagIdField.Type, Nullable = true, Reference = UserTagIdField };
+            new()
+            {
+                Name = "TransactionId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
 
         public static readonly DatabaseField TransactionItemNameField =
-            new() { Name = "Name", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 100 };
+            new()
+            {
+                Name = "Name",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 100
+            };
 
         public static readonly DatabaseField TransactionItemAmountField =
-            new() { Name = "Amount", Type = SqlDbType.Decimal, Nullable = false };
+            new()
+            {
+                Name = "Amount",
+                Type = SqlDbType.Decimal,
+                Nullable = false,
+                FieldSize = 18,
+                Precision = 2
+            };
 
         public static readonly DatabaseField TransactionItemCreatedAtUtcField =
-            new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
+            new()
+            {
+                Name = "CreatedAtUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
 
         public static readonly DatabaseTable TransactionItemsTable = new()
         {
@@ -611,34 +1635,139 @@ public class ConstantValues
             [
                 TransactionItemIdField,
                 TransactionItemTransactionIdField,
-                TransactionItemTagIdField,
                 TransactionItemNameField,
-                TransactionItemAmountField
+                TransactionItemAmountField,
+                TransactionItemCreatedAtUtcField
+            ],
+            Constraints =
+            [
+                new()
+                {
+                    Name = "FK_TransactionItems_Transactions",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [TransactionItemTransactionIdField],
+                    ReferenceTable = TransactionsTable,
+                    ReferenceFields = [TransactionIdField],
+                    OnDelete = "CASCADE"
+                }
+            ]
+        };
+        #endregion
+
+        #region Images
+        public static readonly DatabaseField ImageIdField = new()
+        { Name = "ImageId", Type = SqlDbType.Int, Nullable = false, IsPrimaryKey = true, IsIdentity = true };
+
+        public static readonly DatabaseField ImageNameField = new()
+        { Name = "Name", Type = SqlDbType.NVarChar, Nullable = false, FieldSize = 100 };
+
+        public static readonly DatabaseField ImageContentTypeField = new()
+        { Name = "ContentType", Type = SqlDbType.VarChar, Nullable = false, FieldSize = 100 };
+
+        public static readonly DatabaseField ImageDataField = new()
+        { Name = "Data", Type = SqlDbType.VarBinary, Nullable = false, FieldSize = null }; // VARBINARY(MAX)
+
+        public static readonly DatabaseField ImageThumbnailField = new()
+        { Name = "Thumbnail", Type = SqlDbType.VarBinary, Nullable = true, FieldSize = null };// VARBINARY(MAX)
+
+        public static readonly DatabaseField ImageCreatedAtUtcField = new()
+        { Name = "CreatedAtUtc", Type = SqlDbType.DateTime2, Nullable = false, DefaultValue = "SYSUTCDATETIME()" };
+
+        public static readonly DatabaseField ImageSizeBytesField = new()
+        { Name = "SizeBytes", Type = SqlDbType.BigInt, Nullable = false };
+
+        public static readonly DatabaseField ImageWidthField = new()
+        { Name = "Width", Type = SqlDbType.Int, Nullable = true };
+
+        public static readonly DatabaseField ImageHeightField = new()
+        { Name = "Height", Type = SqlDbType.Int, Nullable = true };
+
+        public static readonly DatabaseTable ImagesTable = new()
+        {
+            Name = "Images",
+            Alias = "image",
+            Fields =
+            [
+                ImageIdField,
+                ImageNameField,
+                ImageContentTypeField,
+                ImageDataField,
+                ImageThumbnailField,
+                ImageSizeBytesField,
+                ImageWidthField,
+                ImageHeightField,
+                ImageCreatedAtUtcField
+            ],
+            Constraints =
+            [
             ]
         };
         #endregion
 
         #region LogEvents
         public static readonly DatabaseField LogEventIdField =
-        new() { Name = "LogId", Type = SqlDbType.Int, Nullable = false };
+            new()
+            {
+                Name = "LogId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
 
         public static readonly DatabaseField LogEventMessageField =
-            new() { Name = "Message", Type = SqlDbType.NVarChar, Nullable = true };
+            new()
+            {
+                Name = "Message",
+                Type = SqlDbType.NVarChar,
+                Nullable = true,
+                FieldSize = null // NVARCHAR(MAX)
+            };
 
         public static readonly DatabaseField LogEventMessageTemplateField =
-            new() { Name = "MessageTemplate", Type = SqlDbType.NVarChar, Nullable = true };
+            new()
+            {
+                Name = "MessageTemplate",
+                Type = SqlDbType.NVarChar,
+                Nullable = true,
+                FieldSize = null // NVARCHAR(MAX)
+            };
 
         public static readonly DatabaseField LogEventLevelField =
-            new() { Name = "Level", Type = SqlDbType.NVarChar, Nullable = true, FieldSize = 16 };
+            new()
+            {
+                Name = "Level",
+                Type = SqlDbType.NVarChar,
+                Nullable = true,
+                FieldSize = 16
+            };
 
         public static readonly DatabaseField LogEventCreatedAtUtcField =
-            new() { Name = "CreatedAtUtc", Type = SqlDbType.DateTime, Nullable = true };
+            new()
+            {
+                Name = "CreatedAtUtc",
+                Type = SqlDbType.DateTime,
+                Nullable = true,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
 
         public static readonly DatabaseField LogEventExceptionField =
-            new() { Name = "Exception", Type = SqlDbType.NVarChar, Nullable = true };
+            new()
+            {
+                Name = "Exception",
+                Type = SqlDbType.NVarChar,
+                Nullable = true,
+                FieldSize = null // NVARCHAR(MAX)
+            };
 
         public static readonly DatabaseField LogEventPropertiesField =
-            new() { Name = "Properties", Type = SqlDbType.NVarChar, Nullable = true };
+            new()
+            {
+                Name = "Properties",
+                Type = SqlDbType.NVarChar,
+                Nullable = true,
+                FieldSize = null // NVARCHAR(MAX)
+            };
 
         public static readonly DatabaseTable LogEventsTable = new()
         {
@@ -647,12 +1776,15 @@ public class ConstantValues
             Fields =
             [
                 LogEventIdField,
-            LogEventMessageField,
-            LogEventMessageTemplateField,
-            LogEventLevelField,
-            LogEventCreatedAtUtcField,
-            LogEventExceptionField,
-            LogEventPropertiesField
+                LogEventLevelField,
+                LogEventMessageField,
+                LogEventMessageTemplateField,
+                LogEventCreatedAtUtcField,
+                LogEventExceptionField,
+                LogEventPropertiesField
+            ],
+            Constraints =
+            [
             ]
         };
         #endregion
@@ -660,27 +1792,38 @@ public class ConstantValues
         public static readonly List<DatabaseTable> DatabaseTables =
         [
             GroupsTable,
-            UsersTable,
-            GroupUsersTable,
             UserSettingsTable,
             ThemesTable,
+            UsersTable,
+
             LoginsTable,
             SessionsTable,
+
+            GroupUsersTable,
+
             WorkItemsTable,
             WorkItemParentsTable,
+
             UserTagsTable,
             GroupTagsTable,
-            NotesTable,
             WorkItemTagAssignmentsTable,
+
+            NotesTable,
+
             StoragesTable,
             StorageItemsTable,
+
             FridgesTable,
             FridgeItemsTable,
+
             BankAccountsTable,
             TransactionsTable,
             TransactionItemsTable,
+
+            ImagesTable,
+
             LogEventsTable,
-    ];
+        ];
     }
 
     public static class ValidationRegex

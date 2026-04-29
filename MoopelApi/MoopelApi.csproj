@@ -27,8 +27,9 @@
     </Content>
   </ItemGroup>
 
-  <Target Name="StartDocker" BeforeTargets="Build">
-  	<Exec Command="docker compose -f sql-docker-compose.yml up -d" />
+  <Target Name="ResetDocker" BeforeTargets="Build;Run">
+  	<Exec Command="docker compose -f sql-docker-compose.yml down --remove-orphans" />
+  	<Exec Command="docker compose -f sql-docker-compose.yml up -d --force-recreate" />
   </Target>
 
 </Project>
