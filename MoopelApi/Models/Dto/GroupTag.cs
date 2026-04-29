@@ -1,5 +1,6 @@
 namespace MoopelApi.Models.Dto;
 
-public record GroupTag
+public record GroupTag : Tag
 {
+    public required int GroupId { get; init; }
 }

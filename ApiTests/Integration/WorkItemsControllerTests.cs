@@ -101,7 +101,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.WorkItem.AddParent, request, _cancelToken);
+            await client.PostAsJsonAsync(Routes.WorkItem.AddLink, request, _cancelToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -119,7 +119,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.WorkItem.RemoveParent, request, _cancelToken);
+            await client.PostAsJsonAsync(Routes.WorkItem.RemoveLink, request, _cancelToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -393,7 +393,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.WorkItem.AddParent, request, _cancelToken);
+            await client.PostAsJsonAsync(Routes.WorkItem.AddLink, request, _cancelToken);
 
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
@@ -416,7 +416,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.WorkItem.AddParent, request, _cancelToken);
+            await client.PostAsJsonAsync(Routes.WorkItem.AddLink, request, _cancelToken);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -440,7 +440,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         HttpResponseMessage addResponse =
-            await client.PostAsJsonAsync(Routes.WorkItem.AddParent, addRequest, _cancelToken);
+            await client.PostAsJsonAsync(Routes.WorkItem.AddLink, addRequest, _cancelToken);
 
         Assert.True(
             addResponse.StatusCode == HttpStatusCode.OK ||
@@ -454,7 +454,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         HttpResponseMessage removeResponse =
-            await client.PostAsJsonAsync(Routes.WorkItem.RemoveParent, removeRequest, _cancelToken);
+            await client.PostAsJsonAsync(Routes.WorkItem.RemoveLink, removeRequest, _cancelToken);
 
         Assert.True(
             removeResponse.StatusCode == HttpStatusCode.OK ||

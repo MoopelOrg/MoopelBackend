@@ -4,7 +4,7 @@ using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 using MoopelApi;
 using MoopelApi.Models.Dto;
-using MoopelApi.Models.Requests;
+using MoopelApi.Models.Requests.Update;
 
 namespace ApiTests.Integration;
 

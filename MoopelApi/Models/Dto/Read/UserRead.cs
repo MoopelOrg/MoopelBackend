@@ -14,5 +14,5 @@ public record UserRead
 
     public required bool Deactivated { get; init; }
 
-    public required List<GroupRead> Groups { get; init; }
+    public required List<Group> Groups { get; init; }
 }

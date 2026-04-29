@@ -1,6 +1,6 @@
-﻿namespace MoopelApi.Models.Requests;
+﻿namespace MoopelApi.Models.Requests.Creation;
 
-public record GroupCreationRequest
+public record GroupCreateRequest
 {
     public required string Name { get; init; }
     public string? Description { get; init; }
