@@ -27,17 +27,14 @@ public static class Routes
         public static class Actions
         {
             public const string UserById = "/{userId:int}";
-            public const string CreateUser = "/create";
             public const string UpdateUser = "/update/{userId:int}";
             public const string DisableUser = "/disable/{userId:int}";
-            public const string MyProfile = "/me";
         }
 
         public const string UserById = Base + Actions.UserById;
-        public const string CreateUser = Base + Actions.CreateUser;
+        public const string UserByName = Base + "/{username}";
         public const string UpdateUser = Base + Actions.UpdateUser;
         public const string DisableUser = Base + Actions.DisableUser;
-        public const string MyProfile = Base + Actions.MyProfile;
     }
 
     public static class UserSettings
@@ -49,7 +46,7 @@ public static class Routes
             public const string MySettings = "/me";
             public const string SettingsById = "/{settingId:int}";
             public const string CreateSettings = "/create";
-            public const string UpdateSettings = "/update/{settingId:int}";
+            public const string UpdateSettings = "/update";
             public const string DeleteSettings = "/delete/{settingId:int}";
         }
 
@@ -57,7 +54,6 @@ public static class Routes
         public const string SettingsById = Base + Actions.SettingsById;
         public const string CreateSettings = Base + Actions.CreateSettings;
         public const string UpdateSettings = Base + Actions.UpdateSettings;
-        public const string DeleteSettings = Base + Actions.DeleteSettings;
     }
 
     public static class Group
@@ -107,19 +103,30 @@ public static class Routes
         public static class Actions
         {
             public const string UserTags = "/user";
+            public const string UserTagById = "/user/{tagId:int}";
+            public const string CreateUserTag = "/user/create";
+            public const string UpdateUserTag = "/user/update/{tagId:int}";
+            public const string DeleteUserTag = "/user/delete/{tagId:int}";
+
             public const string GroupTagsByGroupId = "/group/{groupId:int}";
-            public const string TagById = "/{tagId:int}";
-            public const string CreateTag = "/create";
-            public const string UpdateTag = "/update/{tagId:int}";
-            public const string DeleteTag = "/delete/{tagId:int}";
+            public const string GroupTagById = "/group/{tagId:int}";
+            public const string CreateGroupTag = "/group/{groupId:int}/create";
+            public const string UpdateGroupTag = "/group/update/{tagId:int}";
+            public const string DeleteGroupTag = "/group/delete/{tagId:int}";
+
         }
 
         public const string UserTags = Base + Actions.UserTags;
+        public const string UserTagById = Base + Actions.UserTagById;
+        public const string CreateUserTag = Base + Actions.CreateUserTag;
+        public const string UpdateUserTag = Base + Actions.UpdateUserTag;
+        public const string DeleteUserTag = Base + Actions.DeleteUserTag;
+
         public const string GroupTagsByGroupId = Base + Actions.GroupTagsByGroupId;
-        public const string TagById = Base + Actions.TagById;
-        public const string CreateTag = Base + Actions.CreateTag;
-        public const string UpdateTag = Base + Actions.UpdateTag;
-        public const string DeleteTag = Base + Actions.DeleteTag;
+        public const string GroupTagById = Base + Actions.GroupTagById;
+        public const string CreateGroupTag = Base + Actions.CreateGroupTag;
+        public const string UpdateGroupTag = Base + Actions.UpdateGroupTag;
+        public const string DeleteGroupTag = Base + Actions.DeleteGroupTag;
     }
 
     public static class Theme
@@ -171,21 +178,23 @@ public static class Routes
         public static class Actions
         {
             public const string WorkItemsByGroupId = "/group/{groupId:int}";
+            public const string WorkItemsByGroupIdAndType = "/group/{groupId:int}/type/{type}";
             public const string WorkItemById = "/{workItemId:int}";
             public const string CreateWorkItem = "/create";
             public const string UpdateWorkItem = "/update/{workItemId:int}";
             public const string DeleteWorkItem = "/delete/{workItemId:int}";
-            public const string AddParent = "/parent/add";
-            public const string RemoveParent = "/parent/remove";
+            public const string AddLink = "/link/add";
+            public const string RemoveLink = "/link/remove";
         }
 
         public const string WorkItemsByGroupId = Base + Actions.WorkItemsByGroupId;
+        public const string WorkItemsByGroupIdAndType = Base + Actions.WorkItemsByGroupIdAndType;
         public const string WorkItemById = Base + Actions.WorkItemById;
         public const string CreateWorkItem = Base + Actions.CreateWorkItem;
         public const string UpdateWorkItem = Base + Actions.UpdateWorkItem;
         public const string DeleteWorkItem = Base + Actions.DeleteWorkItem;
-        public const string AddParent = Base + Actions.AddParent;
-        public const string RemoveParent = Base + Actions.RemoveParent;
+        public const string AddLink = Base + Actions.AddLink;
+        public const string RemoveLink = Base + Actions.RemoveLink;
     }
 
     public static class Storage
@@ -199,7 +208,7 @@ public static class Routes
             public const string CreateStorage = "/create";
             public const string UpdateStorage = "/update/{storageId:int}";
             public const string DeleteStorage = "/delete/{storageId:int}";
-            public const string ItemsByStorageId = "/{storageId:int}/items";
+
             public const string CreateStorageItem = "/{storageId:int}/items/create";
             public const string UpdateStorageItem = "/items/update/{storageItemId:int}";
             public const string DeleteStorageItem = "/items/delete/{storageItemId:int}";
@@ -210,7 +219,7 @@ public static class Routes
         public const string CreateStorage = Base + Actions.CreateStorage;
         public const string UpdateStorage = Base + Actions.UpdateStorage;
         public const string DeleteStorage = Base + Actions.DeleteStorage;
-        public const string ItemsByStorageId = Base + Actions.ItemsByStorageId;
+
         public const string CreateStorageItem = Base + Actions.CreateStorageItem;
         public const string UpdateStorageItem = Base + Actions.UpdateStorageItem;
         public const string DeleteStorageItem = Base + Actions.DeleteStorageItem;
@@ -227,7 +236,7 @@ public static class Routes
             public const string CreateFridge = "/create";
             public const string UpdateFridge = "/update/{fridgeId:int}";
             public const string DeleteFridge = "/delete/{fridgeId:int}";
-            public const string ItemsByFridgeId = "/{fridgeId:int}/items";
+
             public const string CreateFridgeItem = "/{fridgeId:int}/items/create";
             public const string UpdateFridgeItem = "/items/update/{fridgeItemId:int}";
             public const string DeleteFridgeItem = "/items/delete/{fridgeItemId:int}";
@@ -238,7 +247,7 @@ public static class Routes
         public const string CreateFridge = Base + Actions.CreateFridge;
         public const string UpdateFridge = Base + Actions.UpdateFridge;
         public const string DeleteFridge = Base + Actions.DeleteFridge;
-        public const string ItemsByFridgeId = Base + Actions.ItemsByFridgeId;
+
         public const string CreateFridgeItem = Base + Actions.CreateFridgeItem;
         public const string UpdateFridgeItem = Base + Actions.UpdateFridgeItem;
         public const string DeleteFridgeItem = Base + Actions.DeleteFridgeItem;
@@ -275,7 +284,6 @@ public static class Routes
             public const string CreateTransaction = "/create";
             public const string UpdateTransaction = "/update/{transactionId:int}";
             public const string DeleteTransaction = "/delete/{transactionId:int}";
-            public const string ItemsByTransactionId = "/{transactionId:int}/items";
             public const string CreateTransactionItem = "/{transactionId:int}/items/create";
             public const string UpdateTransactionItem = "/items/update/{transactionItemId:int}";
             public const string DeleteTransactionItem = "/items/delete/{transactionItemId:int}";
@@ -286,7 +294,7 @@ public static class Routes
         public const string CreateTransaction = Base + Actions.CreateTransaction;
         public const string UpdateTransaction = Base + Actions.UpdateTransaction;
         public const string DeleteTransaction = Base + Actions.DeleteTransaction;
-        public const string ItemsByTransactionId = Base + Actions.ItemsByTransactionId;
+
         public const string CreateTransactionItem = Base + Actions.CreateTransactionItem;
         public const string UpdateTransactionItem = Base + Actions.UpdateTransactionItem;
         public const string DeleteTransactionItem = Base + Actions.DeleteTransactionItem;

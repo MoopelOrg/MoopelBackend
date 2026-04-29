@@ -30,8 +30,9 @@ public class ImageController : ControllerBase
 
         byte[] imageBytes = memoryStream.ToArray();
 
-        byte[] thumbnailBytes = GenerateThumbnail(imageBytes);
+        //byte[] thumbnailBytes = GenerateThumbnail(imageBytes);
 
-        return Ok(new { image.ImageId });
+        throw new NotImplementedException();
+        //return Ok(new { image.ImageId });
     }
 }
