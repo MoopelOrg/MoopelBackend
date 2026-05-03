@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ApiTests.TestData;
+﻿using ApiTests.TestData;
 using MoopelApi.Helpers;
 
 using static MoopelApi.ConstantValues;

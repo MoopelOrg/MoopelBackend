@@ -3,8 +3,6 @@ using System.Net.Http.Json;
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 using MoopelApi;
-using MoopelApi.Models.Dto;
-using MoopelApi.Models.Requests;
 
 namespace ApiTests.Integration;
 
