@@ -6,3 +6,4 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Performance", "CA1873:Avoid potentially expensive logging", Justification = "Logging isn't disabled")]
+[assembly: SuppressMessage("Style", "IDE0290:Use primary constructor", Justification = "I don't like primary constructors")]
