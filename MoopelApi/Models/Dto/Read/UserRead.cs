@@ -1,6 +1,4 @@
-﻿using MoopelApi.Models.Enums;
-
-namespace MoopelApi.Models.Dto.Read;
+﻿namespace MoopelApi.Models.Dto.Read;
 
 public record UserRead
 {
@@ -10,9 +8,7 @@ public record UserRead
     public required string Role { get; init; }
 
     public required DateTime CreatedAtUtc { get; init; }
-    public DateTime? LastLoginAtUtc { get; init; }
+    public DateTime? LastLoginUtc { get; init; }
 
     public required bool Deactivated { get; init; }
-
-    public required List<Group> Groups { get; init; }
 }

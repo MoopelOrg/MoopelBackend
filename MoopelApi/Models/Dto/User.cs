@@ -12,11 +12,11 @@ public record User
     public required UserRole Role { get; init; }
 
     public required DateTime CreatedAtUtc { get; init; }
-    public DateTime? LastLoginAtUtc { get; init; }
+    public DateTime? LastLoginUtc { get; init; }
 
     public required bool Deactivated { get; init; }
 
-    public required List<Group> Groups { get; init; }
+    public required int? ThemeId { get; init; }
 
     public UserRead ToRead()
     {
@@ -27,9 +27,8 @@ public record User
             Email = Email,
             Role = Role.ToString(),
             CreatedAtUtc = CreatedAtUtc,
-            LastLoginAtUtc = LastLoginAtUtc,
-            Deactivated = Deactivated,
-            Groups = Groups
+            LastLoginUtc = LastLoginUtc,
+            Deactivated = Deactivated
         };
     }
 }
