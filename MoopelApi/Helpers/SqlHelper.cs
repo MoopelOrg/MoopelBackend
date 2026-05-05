@@ -20,21 +20,6 @@ public static class SqlHelper
         }
     }
 
-    public static string? GetNullableString(SqlDataReader reader, string columnName)
-    {
-        try
-        {
-            int ordinal = reader.GetOrdinal(columnName);
-            if (reader.IsDBNull(ordinal))
-                return null;
-            return reader[columnName].ToString();
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"Error getting nullable string for column '{columnName}': {ex}");
-        }
-    }
-
     public static SqlDbType GetSqlDbType(string type)
     {
         return type.ToLower() switch
