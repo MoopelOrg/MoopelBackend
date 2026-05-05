@@ -2,13 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using MoopelApi.Models;
 using MoopelApi.Models.Dto;
-using MoopelApi.Models.Dto.Read;
 using MoopelApi.Models.Requests.Creation;
 using MoopelApi.Models.Requests.Update;
 using MoopelApi.Services.Interfaces;
 
 namespace MoopelApi.Controllers;
 
+[Authorize]
+[ApiController]
 public class TransactionsController : ControllerBase
 {
     private readonly ILogger<TransactionsController> _logger;

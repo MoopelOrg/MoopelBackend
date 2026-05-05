@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Server.HttpSys;
 using MoopelApi.Models;
 using MoopelApi.Models.Dto;
-using MoopelApi.Models.Dto.Read;
 using MoopelApi.Models.Requests.Creation;
 using MoopelApi.Models.Requests.Update;
 using MoopelApi.Services.Interfaces;
 
 namespace MoopelApi.Controllers;
 
+[Authorize]
+[ApiController]
 public class FridgesController : ControllerBase
 {
     private readonly ILogger<FridgesController> _logger;
@@ -87,7 +87,7 @@ public class FridgesController : ControllerBase
     }
 
     [HttpPatch(Routes.Fridge.UpdateFridge)]
-    public async Task<ActionResult<Fridge>> UpdateFridge(int fridgeId, FridgeUpdateRequest request) 
+    public async Task<ActionResult<Fridge>> UpdateFridge(int fridgeId, FridgeUpdateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
         RequestContext requestContext = await _contextService.GetRequestContext(HttpContext);
@@ -174,7 +174,7 @@ public class FridgesController : ControllerBase
     }
 
     [HttpPatch(Routes.Fridge.UpdateFridgeItem)]
-    public async Task<ActionResult<FridgeItem>> UpdateFridgeItem(int fridgeItemId, FridgeItemUpdateRequest request) 
+    public async Task<ActionResult<FridgeItem>> UpdateFridgeItem(int fridgeItemId, FridgeItemUpdateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
         RequestContext requestContext = await _contextService.GetRequestContext(HttpContext);

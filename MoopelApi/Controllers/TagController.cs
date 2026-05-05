@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MoopelApi.Models;
 using MoopelApi.Models.Dto;
-using MoopelApi.Models.Dto.Read;
 using MoopelApi.Models.Requests.Creation;
 using MoopelApi.Models.Requests.Update;
 using MoopelApi.Services.Interfaces;
@@ -10,24 +9,28 @@ using MoopelApi.Services.Interfaces;
 namespace MoopelApi.Controllers;
 
 [Authorize]
+[ApiController]
 public class TagController : ControllerBase
 {
     private readonly ILogger<TagController> _logger;
     private readonly ITagService _tagService;
     private readonly IAuthService _authService;
     private readonly IUserService _userService;
+    private readonly IGroupService _groupService;
     private readonly IContextService _contextService;
 
     public TagController(ILogger<TagController> logger,
                          ITagService tagService,
                          IAuthService authService,
                          IUserService userService,
+                         IGroupService groupService,
                          IContextService contextService)
     {
         _logger = logger;
         _tagService = tagService;
         _authService = authService;
         _userService = userService;
+        _groupService = groupService;
         _contextService = contextService;
     }
 
@@ -36,7 +39,8 @@ public class TagController : ControllerBase
     public async Task<ActionResult<List<UserTag>>> GetUserTags()
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
-        _logger.LogInformation("User {UserId} requested their tags", contextUser.UserId);
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
+        _logger.LogInformation("Received request to get users own tags from requestContext[{Context}]", context);
 
         List<UserTag> tags = await _tagService.GetUserTags(contextUser.UserId);
         return Ok(tags);
@@ -46,16 +50,19 @@ public class TagController : ControllerBase
     public async Task<ActionResult<UserTag>> GetUserTagById(int tagId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
-        _logger.LogInformation("User {UserId} requested tag {TagId}", contextUser.UserId, tagId);
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
+        _logger.LogInformation("Received request to get user tag {TagId} from requestContext[{Context}]", tagId, context);
 
         UserTag? tag = await _tagService.GetUserTagById(tagId);
 
         if (tag is null)
         {
+            _logger.LogInformation("Request[{Context}] attempted to get userTag[{Id}] which was not found.", context, tagId);
             return NotFound();
         }
         if (tag.UserId != contextUser.UserId)
         {
+            _logger.LogWarning("Request[{Context}] attempted to get userTag[{Id}] which they do not own.", context, tagId);
             return Forbid();
         }
 
@@ -63,29 +70,33 @@ public class TagController : ControllerBase
     }
 
     [HttpPost(Routes.Tag.CreateUserTag)]
-    public async Task<ActionResult<UserTag>> CreateUserTag([FromBody] TagCreationRequest creationRequest)
+    public async Task<ActionResult<UserTag>> CreateUserTag([FromBody] TagCreateRequest creationRequest)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
-        _logger.LogInformation("User {UserId} is creating a new tag", contextUser.UserId);
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
+        _logger.LogInformation("Received request to create user tag from requestContext[{Context}]", context);
 
         UserTag createdTag = await _tagService.CreateUserTag(creationRequest, contextUser.UserId);
 
-        return CreatedAtAction(nameof(GetUserTagById), new { tagId = createdTag.NoteId }, createdTag);
+        return CreatedAtAction(nameof(GetUserTagById), new { tagId = createdTag.TagId }, createdTag);
     }
 
     [HttpPatch(Routes.Tag.UpdateUserTag)]
     public async Task<ActionResult<UserTag>> UpdateUserTag(int tagId, [FromBody] TagUpdateRequest updateRequest)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
-        _logger.LogInformation("User {UserId} is updating tag {TagId}", contextUser.UserId, tagId);
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
+        _logger.LogInformation("Received request to update user tag[{Id}] from requestContext[{Context}]", tagId, context);
 
         UserTag? userTag = await _tagService.GetUserTagById(tagId);
         if (userTag is null)
         {
+            _logger.LogInformation("Request[{Context}] attempted to get userTag[{Id}] which was not found.", context, tagId);
             return NotFound();
         }
         if (userTag.UserId != contextUser.UserId)
         {
+            _logger.LogWarning("Request[{Context}] attempted to update userTag[{Id}] which they do not own.", context, tagId);
             return Forbid();
         }
 
@@ -100,19 +111,22 @@ public class TagController : ControllerBase
     }
 
     [HttpDelete(Routes.Tag.DeleteUserTag)]
-    public async Task<ActionResult> DeleteUserTag(int tagId) 
+    public async Task<ActionResult> DeleteUserTag(int tagId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
-        _logger.LogInformation("User {UserId} is deleting tag {TagId}", contextUser.UserId, tagId);
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
+        _logger.LogInformation("Received request to update user tag[{Id}] from requestContext[{Context}]", tagId, context);
 
         UserTag? userTag = await _tagService.GetUserTagById(tagId);
 
         if (userTag is null)
         {
+            _logger.LogInformation("Request[{Context}] attempted to get userTag[{Id}] which was not found.", context, tagId);
             return NotFound();
         }
         if (userTag.UserId != contextUser.UserId)
         {
+            _logger.LogWarning("Request[{Context}] attempted to delete userTag[{Id}] which they do not own.", context, tagId);
             return Forbid();
         }
 
@@ -131,9 +145,20 @@ public class TagController : ControllerBase
     public async Task<ActionResult<List<GroupTag>>> GetGroupTagsByGroupId(int groupId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
-        _logger.LogInformation("User {UserId} requested tags for group {GroupId}", contextUser.UserId, groupId);
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
+        _logger.LogInformation("Received request to update group tags for Group[{Id}] from requestContext[{Context}]",
+            groupId, context);
 
-        List<GroupTag> tags = await _tagService.GetGroupTagsByGroupId(groupId);
+        Group? group = await _groupService.GetGroup(groupId);
+
+        if (group is null)
+        {
+            _logger.LogInformation("Request[{Context}] attempted to get group[{Id}] which was not found.",
+                context, groupId);
+            return NotFound();
+        }
+
+        List<GroupTag> tags = await _tagService.GetGroupTags(groupId);
         return Ok(tags);
     }
 
@@ -141,22 +166,28 @@ public class TagController : ControllerBase
     public async Task<ActionResult<GroupTag>> GetGroupTagById(int tagId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
-        _logger.LogInformation("User {UserId} requested group tag {TagId}", contextUser.UserId, tagId);
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
+        _logger.LogInformation("Received request to update group tag[{Id}] from requestContext[{Context}]", tagId, context);
+
         GroupTag? tag = await _tagService.GetGroupTagById(tagId);
         if (tag is null)
         {
+            _logger.LogInformation("Request[{Context}] attempted to get groupTag[{Id}] which was not found.",
+                context, tagId);
             return NotFound();
         }
+
         return Ok(tag);
     }
 
     [HttpPost(Routes.Tag.CreateGroupTag)]
-    public async Task<ActionResult<GroupTag>> CreateGroupTag(int groupId, [FromBody] TagCreationRequest creationRequest)
+    public async Task<ActionResult<GroupTag>> CreateGroupTag(int groupId, [FromBody] TagCreateRequest creationRequest)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
-        _logger.LogInformation("User {UserId} is creating a new tag for group {GroupId}", contextUser.UserId, groupId);
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
+        _logger.LogInformation("Received request to create group tag from requestContext[{Context}]", context);
 
-        GroupTag createdTag = await _tagService.CreateGroupTag(creationRequest, groupId, contextUser.UserId);
+        GroupTag createdTag = await _tagService.CreateGroupTag(creationRequest, groupId, contextUser);
         return CreatedAtAction(nameof(GetGroupTagById), new { tagId = createdTag.TagId }, createdTag);
     }
 
@@ -164,14 +195,17 @@ public class TagController : ControllerBase
     public async Task<ActionResult<GroupTag>> UpdateGroupTag(int tagId, [FromBody] TagUpdateRequest updateRequest)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
-        _logger.LogInformation("User {UserId} is updating group tag {TagId}", contextUser.UserId, tagId);
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
+        _logger.LogInformation("Received request to update group tag[{Id}] from requestContext[{Context}]", tagId, context);
 
         GroupTag? groupTag = await _tagService.GetGroupTagById(tagId);
         if (groupTag is null)
         {
+            _logger.LogInformation("Request[{Context}] attempted to get groupTag[{Id}] which was not found.",
+                context, tagId);
             return NotFound();
         }
-        GroupTag? updatedTag = await _tagService.UpdateGroupTag(tagId, updateRequest, contextUser.UserId);
+        GroupTag? updatedTag = await _tagService.UpdateGroupTag(updateRequest, tagId, contextUser);
         if (updatedTag is null)
         {
             return NotFound();
@@ -184,15 +218,18 @@ public class TagController : ControllerBase
     public async Task<ActionResult> DeleteGroupTag(int tagId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
-        _logger.LogInformation("User {UserId} is deleting group tag {TagId}", contextUser.UserId, tagId);
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
+        _logger.LogInformation("Received request to delete group tag[{Id}] from requestContext[{Context}]", tagId, context);
 
         GroupTag? groupTag = await _tagService.GetGroupTagById(tagId);
         if (groupTag is null)
         {
+            _logger.LogInformation("Request[{Context}] attempted to get groupTag[{Id}] which was not found.",
+                context, tagId);
             return NotFound();
         }
 
-        bool deleted = await _tagService.DeleteGroupTag(tagId, contextUser.UserId);
+        bool deleted = await _tagService.DeleteGroupTag(tagId, contextUser);
         if (!deleted)
         {
             return NotFound();

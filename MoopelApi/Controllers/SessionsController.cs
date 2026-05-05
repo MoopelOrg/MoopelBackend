@@ -1,15 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MoopelApi.Models;
 using MoopelApi.Models.Dto;
-using MoopelApi.Models.Dto.Read;
 using MoopelApi.Models.Enums;
-using MoopelApi.Models.Requests;
 using MoopelApi.Services.Interfaces;
 
 namespace MoopelApi.Controllers;
 
 [Authorize]
+[ApiController]
 public class SessionsController : ControllerBase
 {
     private readonly ILogger<SessionsController> _logger;
@@ -70,7 +68,7 @@ public class SessionsController : ControllerBase
 
         bool revoked = await _sessionService.RevokeSession(sessionId);
 
-        if (!revoked) 
+        if (!revoked)
         {
             _logger.LogWarning("Session {SessionId} could not be revoked by user {UserId}", sessionId, contextUser.UserId);
             return NotFound();
@@ -86,12 +84,11 @@ public class SessionsController : ControllerBase
 
         if (contextUser.Role != UserRole.Admin)
         {
-            _logger.LogWarning("User {UserId} attempted to revoke session {SessionId} without sufficient permissions", contextUser.UserId, sessionId);
+            _logger.LogWarning("User {UserId} attempted to revoke all sessions without sufficient permissions", contextUser.UserId);
             return Forbid();
         }
 
-        _logger.LogInformation("User {UserId} requested to revoke all their sessions", contextUser.UserId);
-        await _sessionService.RevokeAllSessions(contextUser.UserId);
+        await _sessionService.RevokeAllSessions();
         return Ok();
     }
 }

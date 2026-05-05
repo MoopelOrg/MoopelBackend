@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MoopelApi.Models;
 using MoopelApi.Models.Dto;
-using MoopelApi.Models.Dto.Read;
 using MoopelApi.Models.Requests.Creation;
 using MoopelApi.Models.Requests.Update;
 using MoopelApi.Services.Interfaces;
 
 namespace MoopelApi.Controllers;
 
+[Authorize]
+[ApiController]
 public class NotesController : ControllerBase
 {
     private readonly ILogger<NotesController> _logger;
@@ -18,7 +18,7 @@ public class NotesController : ControllerBase
     private readonly INoteService _noteService;
 
     public NotesController(ILogger<NotesController> logger,
-                           IContextService contextService, 
+                           IContextService contextService,
                            IAuthService authService,
                            IUserService userService,
                            INoteService noteService)
@@ -93,7 +93,7 @@ public class NotesController : ControllerBase
         }
 
         Note? updatedNote = await _noteService.UpdateNote(request);
-        if (updatedNote is null) 
+        if (updatedNote is null)
         {
             _logger.LogCritical("Note could note be found, which should have been caught");
             return NotFound();

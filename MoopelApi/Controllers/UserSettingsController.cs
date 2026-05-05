@@ -8,6 +8,7 @@ using MoopelApi.Services.Interfaces;
 namespace MoopelApi.Controllers;
 
 [Authorize]
+[ApiController]
 public class UserSettingsController : ControllerBase
 {
     private readonly ILogger<UserSettingsController> _logger;
@@ -15,7 +16,7 @@ public class UserSettingsController : ControllerBase
     private readonly IUserService _userService;
     private readonly IContextService _contextService;
 
-    public UserSettingsController(ILogger<UserSettingsController> logger, IContextService contextService, 
+    public UserSettingsController(ILogger<UserSettingsController> logger, IContextService contextService,
         IAuthService authService, IUserService userService)
     {
         _logger = logger;

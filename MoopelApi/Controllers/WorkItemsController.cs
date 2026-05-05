@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MoopelApi.Models;
 using MoopelApi.Models.Dto;
-using MoopelApi.Models.Dto.Read;
 using MoopelApi.Models.Enums;
 using MoopelApi.Models.Requests.Creation;
 using MoopelApi.Models.Requests.Update;
@@ -10,6 +9,8 @@ using MoopelApi.Services.Interfaces;
 
 namespace MoopelApi.Controllers;
 
+[Authorize]
+[ApiController]
 public class WorkItemsController : ControllerBase
 {
     private readonly ILogger<WorkItemsController> _logger;
@@ -35,7 +36,7 @@ public class WorkItemsController : ControllerBase
     }
 
     [HttpGet(Routes.WorkItem.WorkItemsByGroupId)]
-    public async Task<ActionResult<List<WorkItem>>> GetWorkItems(int groupId)
+    public async Task<ActionResult<List<WorkItem>>> GetWorkItems(int groupId, CancellationToken cancelToken)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
         _logger.LogInformation("User {UserId} requested their work items for group {GroupId}", contextUser.UserId, groupId);
@@ -53,14 +54,14 @@ public class WorkItemsController : ControllerBase
             return Forbid();
         }
 
-        List<WorkItem>? workItems = await _workItemService.GetWorkItems(groupId);
+        List<WorkItem>? workItems = await _workItemService.GetWorkItems(groupId, cancelToken);
 
 
         return Ok(workItems);
     }
 
     [HttpGet(Routes.WorkItem.WorkItemsByGroupIdAndType)]
-    public async Task<ActionResult<List<WorkItem>>> GetWorkItemsByType(int groupId, string type)
+    public async Task<ActionResult<List<WorkItem>>> GetWorkItemsByType(int groupId, string type, CancellationToken cancelToken)
     {
         WorkItemType workItemType;
         try
@@ -92,7 +93,7 @@ public class WorkItemsController : ControllerBase
             return Forbid();
         }
 
-        List<WorkItem>? workItems = await _workItemService.GetWorkItems(groupId, workItemType);
+        List<WorkItem>? workItems = await _workItemService.GetWorkItems(groupId, cancelToken, workItemType);
         return Ok(workItems);
     }
 
@@ -133,16 +134,16 @@ public class WorkItemsController : ControllerBase
 
         return CreatedAtAction(
             nameof(GetWorkItem),
-            new { workItemId = workItem.WorkItemId },
+            new { workItemId = workItem.ItemId },
             workItem);
     }
 
     [HttpPut(Routes.WorkItem.UpdateWorkItem)]
-    public async Task<ActionResult<WorkItem>> UpdateWorkItem(int groupId, [FromBody] WorkItemUpdateRequest request)
+    public async Task<ActionResult<WorkItem>> UpdateWorkItem(int workItemId, [FromBody] WorkItemUpdateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
 
-        WorkItem? existingWorkItem = await _workItemService.GetWorkItem(request.WorkItemId);
+        WorkItem? existingWorkItem = await _workItemService.GetWorkItem(workItemId);
         if (existingWorkItem is null)
             return NotFound();
 
@@ -154,7 +155,7 @@ public class WorkItemsController : ControllerBase
         if (!access.CanUpdateWorkItems)
             return Forbid();
 
-        WorkItem updatedWorkItem = await _workItemService.UpdateWorkItem(request, groupId);
+        WorkItem updatedWorkItem = await _workItemService.UpdateWorkItem(request, workItemId);
 
         return Ok(updatedWorkItem);
     }
@@ -195,7 +196,7 @@ public class WorkItemsController : ControllerBase
         if (child.GroupId != parent.GroupId)
             return BadRequest("Parent and child work items must belong to the same group.");
 
-        if (child.WorkItemId == parent.WorkItemId)
+        if (child.ItemId == parent.ItemId)
             return BadRequest("A work item cannot be its own parent.");
 
         Group? group = await _groupService.GetGroup(child.GroupId);
@@ -206,7 +207,7 @@ public class WorkItemsController : ControllerBase
         if (!access.CanUpdateWorkItems)
             return Forbid();
 
-        await _workItemService.AddWorkItemLink(parent.WorkItemId, child.WorkItemId);
+        await _workItemService.AddWorkItemLink(parent.ItemId, child.ItemId);
 
         return NoContent();
     }

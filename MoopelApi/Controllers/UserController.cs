@@ -9,6 +9,7 @@ using MoopelApi.Services.Interfaces;
 namespace MoopelApi.Controllers;
 
 [Authorize]
+[ApiController]
 public class UserController : ControllerBase
 {
     private readonly ILogger<UserController> _logger;
@@ -69,7 +70,7 @@ public class UserController : ControllerBase
         return Ok(updatedUser.ToRead());
     }
 
-    [HttpPatch]
+    [HttpPatch(Routes.User.DisableUser)]
     public async Task<ActionResult> DisableUser(int userId)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);

@@ -75,14 +75,14 @@ public class AuthController : ControllerBase
         User? existingUser = await _userService.GetUserFromUserName(request.Username);
         if (existingUser is not null)
         {
-            _logger.LogWarning("{Context} attempted to register {Username}, which already existed.", 
+            _logger.LogWarning("{Context} attempted to register {Username}, which already existed.",
                 context, request.Username);
             return BadRequest($"User '{request.Username}' already exists.");
         }
 
         User? newUser = await _authService.Register(request);
 
-        if (newUser is not null) 
+        if (newUser is not null)
         {
             return Ok(newUser);
         }

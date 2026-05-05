@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Server.HttpSys;
 using MoopelApi.Models;
 using MoopelApi.Models.Dto;
-using MoopelApi.Models.Dto.Read;
 using MoopelApi.Models.Requests.Creation;
 using MoopelApi.Models.Requests.Update;
 using MoopelApi.Services.Interfaces;
 
 namespace MoopelApi.Controllers;
 
+[Authorize]
+[ApiController]
 public class StoragesController : ControllerBase
 {
     private readonly ILogger<StoragesController> _logger;
@@ -18,10 +18,10 @@ public class StoragesController : ControllerBase
     private readonly IUserService _userService;
     private readonly IStorageService _storageService;
 
-    public StoragesController(ILogger<StoragesController> logger, 
-        IContextService contextService, 
-        IAuthService authService, 
-        IUserService userService, 
+    public StoragesController(ILogger<StoragesController> logger,
+        IContextService contextService,
+        IAuthService authService,
+        IUserService userService,
         IStorageService storageService)
     {
         _logger = logger;
@@ -83,7 +83,7 @@ public class StoragesController : ControllerBase
 
         Storage storage = await _storageService.CreateStorage(contextUser.UserId, request);
 
-        return CreatedAtAction(nameof(GetStorageById), new { storageId = storage.StorageId} , storage);
+        return CreatedAtAction(nameof(GetStorageById), new { storageId = storage.StorageId }, storage);
     }
 
     [HttpPatch(Routes.Storage.UpdateStorage)]
@@ -116,7 +116,7 @@ public class StoragesController : ControllerBase
     }
 
     [HttpDelete(Routes.Storage.DeleteStorage)]
-    public async Task<ActionResult> DeleteStorage(int storageId) 
+    public async Task<ActionResult> DeleteStorage(int storageId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
         RequestContext requestContext = await _contextService.GetRequestContext(HttpContext);
@@ -181,7 +181,7 @@ public class StoragesController : ControllerBase
 
         _logger.LogInformation("Received request to update storage item[{Id}] from requestContext[{Context}]",
             storageItemId, requestContext);
-        
+
         StorageItem? item = await _storageService.GetStorageItemById(storageItemId);
         if (item is null)
         {
@@ -210,8 +210,8 @@ public class StoragesController : ControllerBase
         return Ok(updatedItem);
     }
 
-    [HttpDelete(Routes.Storage.DeleteStorageItem)] 
-    public async Task<ActionResult> DeleteStorageItem(int storageItemId) 
+    [HttpDelete(Routes.Storage.DeleteStorageItem)]
+    public async Task<ActionResult> DeleteStorageItem(int storageItemId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
         RequestContext requestContext = await _contextService.GetRequestContext(HttpContext);

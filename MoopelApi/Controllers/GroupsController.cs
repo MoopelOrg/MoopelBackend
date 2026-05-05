@@ -9,6 +9,7 @@ using MoopelApi.Services.Interfaces;
 namespace MoopelApi.Controllers;
 
 [Authorize]
+[ApiController]
 public class GroupsController : ControllerBase
 {
     private readonly ILogger<GroupsController> _logger;
@@ -100,7 +101,7 @@ public class GroupsController : ControllerBase
         if (group is null)
             return NotFound();
 
-        GroupAccess groupAccess = await _authService.GetGroupAccess(contextUser.UserId, groupId);
+        GroupAccess groupAccess = await _authService.GetGroupAccess(contextUser, group);
 
         if (groupAccess.CanDeleteGroup() is false)
             return Forbid();
