@@ -1,5 +1,5 @@
 ﻿namespace MoopelApi.Models.Requests.Creation;
 
-public record TagCreationRequest
+public record ThemeCreateRequest
 {
 }

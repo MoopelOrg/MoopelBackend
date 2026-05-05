@@ -2,5 +2,5 @@
 
 public record NoteUpdateRequest
 {
-    public required int NoteId { get; init; }   
+    public required int NoteId { get; init; }
 }
