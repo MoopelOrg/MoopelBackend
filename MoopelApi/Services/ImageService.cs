@@ -1,14 +1,27 @@
-﻿using MoopelApi.Models;
+﻿using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
 using MoopelApi.Services.Interfaces;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Processing;
+
+using static MoopelApi.ConstantValues.Database;
 
 namespace MoopelApi.Services;
 
 public class ImageService : IImageService
 {
+    private readonly ILogger<ImageService> _logger;
+    private readonly INotificationService _notificationService;
+    private readonly DatabaseConnection _connection;
+
+    public ImageService(ILogger<ImageService> logger, INotificationService notificationService, DatabaseConnection connection)
+    {
+        _logger = logger;
+        _notificationService = notificationService;
+        _connection = connection;
+    }
+
     public async Task<int> UploadImage(IFormFile imageFile)
     {
         if (imageFile.Length > 5 * 1024 * 1024)

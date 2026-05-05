@@ -11,7 +11,9 @@ public interface IAuthService
     public Task<LoginResult?> Login(LoginRequest request);
     public Task<bool> LogoutUser(int userId);
 
-    
+
 
     public Task<GroupAccess> GetGroupAccess(User user, Group group);
+
+    public Task<bool> CanUserUpdateTheme(User user, Theme theme);
 }

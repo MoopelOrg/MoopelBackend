@@ -180,7 +180,7 @@ public static class Routes
             public const string WorkItemsByGroupId = "/group/{groupId:int}";
             public const string WorkItemsByGroupIdAndType = "/group/{groupId:int}/type/{type}";
             public const string WorkItemById = "/{workItemId:int}";
-            public const string CreateWorkItem = "/create";
+            public const string CreateWorkItem = "/create/{groupId:int}";
             public const string UpdateWorkItem = "/update/{workItemId:int}";
             public const string DeleteWorkItem = "/delete/{workItemId:int}";
             public const string AddLink = "/link/add";

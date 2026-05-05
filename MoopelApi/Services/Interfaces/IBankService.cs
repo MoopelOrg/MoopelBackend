@@ -30,5 +30,5 @@ public interface IBankService
     public Task<TransactionItem> UpdateTransactionItem(int itemId, TransactionItemUpdateRequest request);
 
     public Task DeleteTransactionItem(int itemId);
-    
+
 }

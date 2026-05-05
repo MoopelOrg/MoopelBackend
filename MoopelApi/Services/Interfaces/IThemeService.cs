@@ -1,5 +1,18 @@
-﻿namespace MoopelApi.Services.Interfaces;
+﻿using MoopelApi.Models.Dto;
+using MoopelApi.Models.Requests.Creation;
+using MoopelApi.Models.Requests.Update;
+
+namespace MoopelApi.Services.Interfaces;
 
 public interface IThemeService
 {
+    Task<List<Theme>> GetAllThemes(CancellationToken cancelToken);
+
+    Task<Theme?> GetThemeById(int themeId);
+
+    Task<Theme> CreateTheme(ThemeCreateRequest request, User creatingUser);
+
+    Task<Theme> UpdateTheme(int themeId, ThemeUpdateRequest request);
+
+    Task DeleteTheme(int themeId);
 }

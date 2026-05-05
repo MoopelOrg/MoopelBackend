@@ -1,5 +1,4 @@
-﻿using MoopelApi.Models;
-using MoopelApi.Models.Dto;
+﻿using MoopelApi.Models.Dto;
 
 namespace MoopelApi.Services.Interfaces;
 

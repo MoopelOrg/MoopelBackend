@@ -22,15 +22,21 @@ public class AuthService : IAuthService
     private readonly JwtSettings _jwtSettings;
     private readonly ILogger<AuthService> _logger;
     private readonly IPasswordHasher<User> _passwordHasher;
-    private readonly string _dbConnection;
+    private readonly INotificationService _notificationService;
+    private readonly DatabaseConnection _connection;
 
     public AuthService(IOptions<JwtSettings> jwtSettings,
                        IPasswordHasher<User> passwordHasher,
-                       ILogger<AuthService> logger)
+                       ILogger<AuthService> logger,
+                       INotificationService notificationService,
+                       DatabaseConnection databaseConnection)
     {
         _jwtSettings = jwtSettings.Value;
         _passwordHasher = passwordHasher;
         _logger = logger;
+        _notificationService = notificationService;
+        _connection = databaseConnection;
+
 
         if (_jwtSettings.ExpiryMinutes <= 0)
             throw new ArgumentException("ExpiryMinutes must be greater than 0", nameof(jwtSettings));
@@ -54,7 +60,7 @@ public class AuthService : IAuthService
             string hashedPassword = HashPassword(startingUser, request.Password);
             startingUser.PasswordHash = hashedPassword;
 
-            await using SqlConnection connection = new(_dbConnection);
+            await using SqlConnection connection = new(_connection.ConnectionString);
             await connection.OpenAsync();
             SqlCommand command = connection.CreateCommand();
 
@@ -80,7 +86,7 @@ public class AuthService : IAuthService
             }
             int insertedUserId = Convert.ToInt32(insertedUserIdObject);
 
-            _logger.LogInformation("Successfully registered user with username: {Username} and assigned UserId: {UserId}", 
+            _logger.LogInformation("Successfully registered user with username: {Username} and assigned UserId: {UserId}",
                 request.Username, insertedUserId);
             return await GetUserById(insertedUserId);
         }
@@ -152,6 +158,11 @@ public class AuthService : IAuthService
     }
 
     public Task<GroupAccess> GetGroupAccess(User user, Group group)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> CanUserUpdateTheme(User user, Theme theme)
     {
         throw new NotImplementedException();
     }

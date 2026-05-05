@@ -7,16 +7,16 @@ namespace MoopelApi.Services.Interfaces;
 
 public interface IWorkItemService
 {
-    Task<List<WorkItem>?> GetWorkItems(int groupId, WorkItemType? type = null);
+    Task<List<WorkItem>?> GetWorkItems(int groupId, CancellationToken cancelToken, WorkItemType? type = null);
     Task<WorkItem?> GetWorkItem(int itemId);
 
     Task<WorkItem> CreateWorkItem(WorkItemCreateRequest request, int groupId);
-    Task<WorkItem> UpdateWorkItem(WorkItemUpdateRequest request, int groupId);
-    Task<bool> DeleteWorkItem(int itemId);
+    Task<WorkItem> UpdateWorkItem(WorkItemUpdateRequest request, int itemId);
+    Task DeleteWorkItem(int itemId);
 
-    Task<List<WorkItem>?> GetParentWorkItems(int itemId);
-    Task<List<WorkItem>?> GetChildrenWorkItems(int itemId);
+    Task<List<WorkItem>?> GetParentWorkItems(int itemId, CancellationToken cancelToken);
+    Task<List<WorkItem>?> GetChildrenWorkItems(int itemId, CancellationToken cancelToken);
 
-    Task<bool> AddWorkItemLink(int childWorkItemId, int parentWorkItemId);
-    Task<bool> RemoveWorkItemLink(int childWorkItemId, int parentWorkItemId);
+    Task AddWorkItemLink(int childWorkItemId, int parentWorkItemId);
+    Task RemoveWorkItemLink(int childWorkItemId, int parentWorkItemId);
 }
