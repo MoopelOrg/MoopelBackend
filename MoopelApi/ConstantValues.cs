@@ -1,7 +1,6 @@
 ﻿using System.Data;
-using MoopelApi.Models.Requests;
-using MoopelApi.Models.Configuration;
 using System.Text.RegularExpressions;
+using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Enums;
 
 namespace MoopelApi;
@@ -76,31 +75,6 @@ public class ConstantValues
                     Type = DatabaseConstraintType.Unique,
                     Fields = [GroupNameField]
                 }
-            ]
-        };
-        #endregion
-
-        #region Settings
-        public static readonly DatabaseField SettingsIdField =
-            new()
-            {
-                Name = "SettingId",
-                Type = SqlDbType.Int,
-                Nullable = false,
-                IsPrimaryKey = true,
-                IsIdentity = true
-            };
-
-        public static readonly DatabaseTable UserSettingsTable = new()
-        {
-            Name = "UserSettings",
-            Alias = "setting",
-            Fields =
-            [
-                SettingsIdField,
-            ],
-            Constraints =
-            [
             ]
         };
         #endregion
@@ -290,14 +264,6 @@ public class ConstantValues
                 Nullable = true
             };
 
-        public static readonly DatabaseField UserSettingsIdField =
-            new()
-            {
-                Name = "SettingId",
-                Type = SqlDbType.Int,
-                Nullable = true
-            };
-
         public static readonly DatabaseTable UsersTable = new()
         {
             Name = "Users",
@@ -313,7 +279,6 @@ public class ConstantValues
                 UserLastLoginUtcField,
                 UserDeactivatedField,
                 UserThemeIdField,
-                UserSettingsIdField,
             ],
             Constraints =
             [
@@ -340,19 +305,93 @@ public class ConstantValues
                 },
                 new()
                 {
-                    Name = "FK_Users_Settings",
-                    Type = DatabaseConstraintType.ForeignKey,
-                    Fields = [UserSettingsIdField],
-                    ReferenceTable = UserSettingsTable,
-                    ReferenceFields = [SettingsIdField],
-                    OnDelete = "SET NULL"
-                },
-                new()
-                {
                     Name = "CHK_Users_Role",
                     Type = DatabaseConstraintType.Check,
                     Fields = [UserRoleField],
                     CheckSql = $"{UserRoleField.SelectName} IN ('Admin','Standard')"
+                }
+            ]
+        };
+        #endregion
+
+        #region Settings
+        public static readonly DatabaseField SettingsIdField =
+            new()
+            {
+                Name = "SettingId",
+                Type = SqlDbType.Int,
+                Nullable = false,
+                IsPrimaryKey = true,
+                IsIdentity = true
+            };
+        public static readonly DatabaseField SettingsUserIdField =
+            new()
+            {
+                Name = "UserId",
+                Type = SqlDbType.Int,
+                Nullable = false
+            };
+        public static readonly DatabaseField SettingTimezoneField =
+            new()
+            {
+                Name = "Timezone",
+                Type = SqlDbType.VarChar,
+                FieldSize = 30,
+                Nullable = true,
+            };
+        public static readonly DatabaseField SettingDateFormatField =
+            new()
+            {
+                Name = "DateFormat",
+                Type = SqlDbType.VarChar,
+                FieldSize = 30,
+                Nullable = true,
+            };
+        public static readonly DatabaseField SettingsCreatedAtUtcField =
+            new()
+            {
+                Name = "CreatedAtUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
+        public static readonly DatabaseField SettingsLastUpdatedAtUtcField =
+            new()
+            {
+                Name = "LastUpdatedAtUtc",
+                Type = SqlDbType.DateTime2,
+                Nullable = false,
+                DefaultValue = "SYSUTCDATETIME()"
+            };
+
+        public static readonly DatabaseTable SettingsTable = new()
+        {
+            Name = "UserSettings",
+            Alias = "setting",
+            Fields =
+            [
+                SettingsIdField,
+                SettingsUserIdField,
+                SettingTimezoneField,
+                SettingsCreatedAtUtcField,
+                SettingsLastUpdatedAtUtcField
+            ],
+                    Constraints =
+            [
+                new()
+                {
+                    Name = "UQ_UserSettings_UserId",
+                    Type = DatabaseConstraintType.Unique,
+                    Fields = [SettingsUserIdField]
+                },
+                new()
+                {
+                    Name = "FK_UserSettings_Users",
+                    Type = DatabaseConstraintType.ForeignKey,
+                    Fields = [SettingsUserIdField],
+                    ReferenceTable = UsersTable,
+                    ReferenceFields = [UserIdField],
+                    OnDelete = "CASCADE"
                 }
             ]
         };
@@ -781,7 +820,7 @@ public class ConstantValues
                 Nullable = false
             };
 
-        public static readonly DatabaseTable WorkItemParentsTable = new()
+        public static readonly DatabaseTable WorkItemLinksTable = new()
         {
             Name = "WorkItemLinks",
             Alias = "workItemLink",
@@ -1296,6 +1335,15 @@ public class ConstantValues
                 Nullable = false,
                 FieldSize = 100
             };
+        public static readonly DatabaseField FridgeDescriptionField =
+            new()
+            {
+                Name = "Description",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 300,
+                DefaultValue = "''"
+            };
 
         public static readonly DatabaseField FridgeCreatedAtUtcField =
             new()
@@ -1315,6 +1363,7 @@ public class ConstantValues
                 FridgeIdField,
                 FridgeUserIdField,
                 FridgeNameField,
+                FridgeDescriptionField,
                 FridgeCreatedAtUtcField
             ],
             Constraints =
@@ -1792,7 +1841,7 @@ public class ConstantValues
         public static readonly List<DatabaseTable> DatabaseTables =
         [
             GroupsTable,
-            UserSettingsTable,
+            SettingsTable,
             ThemesTable,
             UsersTable,
 
@@ -1802,7 +1851,7 @@ public class ConstantValues
             GroupUsersTable,
 
             WorkItemsTable,
-            WorkItemParentsTable,
+            WorkItemLinksTable,
 
             UserTagsTable,
             GroupTagsTable,
