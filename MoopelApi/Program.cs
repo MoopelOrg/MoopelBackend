@@ -21,10 +21,9 @@ WebApplication app = await Startup.ConfigureApp(builder, deploymentInfo);
 string dbConnection = builder.Configuration.GetConnectionString("MoopelDB")
     ?? throw new("Failed to retrieve MoopelDB connection string.");
 
-Startup.BuildDatabase(dbConnection);
-
 try
 {
+    Startup.BuildDatabase(dbConnection);
 }
 catch (Exception ex)
 {

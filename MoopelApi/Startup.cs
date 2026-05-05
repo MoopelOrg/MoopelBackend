@@ -25,13 +25,17 @@ public class Startup
     {
         try
         {
-            string dbConnection = builder.Configuration.GetConnectionString("MoopelDB")
-                ?? throw new("Failed to retrieve MoopelDB connection string.");
+            DatabaseConnection databaseConnection = builder.Configuration
+            .GetRequiredSection("DatabaseConnection")
+            .Get<DatabaseConnection>()
+            ?? throw new("Failed to retrieve DatabaseConnection configuration.");
+
+            builder.Services.AddSingleton(databaseConnection);
 
             builder = AddServices(builder);
             builder = AddLifetimeServices(builder);
 
-            builder = AddLogging(builder, dbConnection);
+            builder = AddLogging(builder, databaseConnection.ConnectionString);
 
             return builder;
         }

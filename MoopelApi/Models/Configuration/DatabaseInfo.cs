@@ -17,7 +17,7 @@ public class DatabaseTable
 
     public string GenerateSelect()
     {
-        return $"SELECT {string.Join(", ", Fields.Select(f => f.SelectName))} FROM [{Name}]";
+        return $"SELECT {string.Join(", ", Fields.Select(f => f.SelectName))} FROM [{SelectName}]";
     }
     public string GetFields(string alias)
     {
