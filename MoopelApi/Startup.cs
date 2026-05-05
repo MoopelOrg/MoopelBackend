@@ -163,6 +163,8 @@ public class Startup
         // https://github.com/scalar/scalar/discussions/4468#discussioncomment-15371071
         app.UseForwardedHeaders();
 
+        app.UseMiddleware<GlobalExceptionMiddleware>();
+
         app.UseStaticFiles();
         app.MapOpenApi();
 
@@ -179,6 +181,7 @@ public class Startup
         app.UseHttpsRedirection();
         //app.UseCors(corsPolicyName);
 
+        app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapGet("/", () => Results.Ok(new
