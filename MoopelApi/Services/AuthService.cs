@@ -54,8 +54,8 @@ public class AuthService : IAuthService
                 PasswordHash = string.Empty,
                 Role = UserRole.Standard,
                 Deactivated = false,
-                Groups = [],
                 CreatedAtUtc = DateTime.UtcNow,
+                ThemeId = null
             };
             string hashedPassword = HashPassword(startingUser, request.Password);
             startingUser.PasswordHash = hashedPassword;
