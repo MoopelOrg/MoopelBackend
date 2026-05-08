@@ -1,0 +1,7 @@
+﻿[*.cs]
+
+# CA2016: Forward the 'CancellationToken' parameter to methods
+dotnet_diagnostic.CA2016.severity = error
+
+# IDE0052: Remove unread private members
+dotnet_diagnostic.IDE0052.severity = warning
