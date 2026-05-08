@@ -9,7 +9,7 @@ public interface IBankService
     public Task<List<BankAccount>> GetUserBankAccounts(int userId, CancellationToken cancelToken);
     public Task<BankAccount?> GetBankAccountById(int accountId);
 
-    public Task<BankAccount> CreateBankAccount(BankAccountCreateRequest request);
+    public Task<BankAccount> CreateBankAccount(int userId, BankAccountCreateRequest request);
 
     public Task<BankAccount> UpdateBankAccount(int accountId, BankAccountUpdateRequest request);
     public Task DeleteBankAccount(int accountId);
@@ -19,7 +19,7 @@ public interface IBankService
 
     public Task<Transaction?> GetTransactionById(int transactionId);
 
-    public Task<Transaction> CreateTransaction(int userId, TransactionCreateRequest request);
+    public Task<Transaction> CreateTransaction(int accountId, TransactionCreateRequest request);
 
     public Task DeleteTransaction(int transactionId);
 
