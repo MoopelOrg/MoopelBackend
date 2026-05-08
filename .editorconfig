@@ -3,5 +3,31 @@
 # CA2016: Forward the 'CancellationToken' parameter to methods
 dotnet_diagnostic.CA2016.severity = error
 
+# CA2017: Logging parameter count mismatch
+dotnet_diagnostic.CA2017.severity = error
+
+# CA2254: Logger message template should be a static expression
+dotnet_diagnostic.CA2254.severity = warning
+
 # IDE0052: Remove unread private members
 dotnet_diagnostic.IDE0052.severity = warning
+
+# IDE0060: Remove unused parameter
+dotnet_diagnostic.IDE0060.severity = warning
+
+# IDE0005: Remove unnecessary using
+dotnet_diagnostic.IDE0005.severity = warning
+
+# CA2208: Instantiate argument exceptions correctly
+dotnet_diagnostic.CA2208.severity = warning
+
+# CA1062: Validate arguments of public methods
+dotnet_diagnostic.CA1062.severity = warning
+
+# CA2007: Consider calling ConfigureAwait
+# For ASP.NET Core, I would usually disable this.
+dotnet_diagnostic.CA2007.severity = none
+
+# CA1848: Use LoggerMessage delegates
+# Useful, but very annoying for normal app code.
+dotnet_diagnostic.CA1848.severity = none
