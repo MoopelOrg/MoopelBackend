@@ -265,11 +265,11 @@ public class Startup
                 List<DatabaseField> fields = [];
                 while (reader.Read())
                 {
-                    string? columnName = SqlHelper.GetNullableString(reader, "COLUMN_NAME");
-                    string? dataType = SqlHelper.GetNullableString(reader, "DATA_TYPE");
-                    string? maxLength = SqlHelper.GetNullableString(reader, "CHARACTER_MAXIMUM_LENGTH");
-                    string? isNullable = SqlHelper.GetNullableString(reader, "IS_NULLABLE");
-                    string? columnDefault = SqlHelper.GetNullableString(reader, "COLUMN_DEFAULT");
+                    string? columnName = SqlReaderHelper.GetNullableString(reader, "COLUMN_NAME");
+                    string? dataType = SqlReaderHelper.GetNullableString(reader, "DATA_TYPE");
+                    string? maxLength = SqlReaderHelper.GetNullableString(reader, "CHARACTER_MAXIMUM_LENGTH");
+                    string? isNullable = SqlReaderHelper.GetNullableString(reader, "IS_NULLABLE");
+                    string? columnDefault = SqlReaderHelper.GetNullableString(reader, "COLUMN_DEFAULT");
                     int? fieldSize = null;
                     int? precision = null;
 
@@ -297,8 +297,8 @@ public class Startup
 
                     if (sqlType == SqlDbType.Decimal)
                     {
-                        string? numericPrecision = SqlHelper.GetNullableString(reader, "NUMERIC_PRECISION");
-                        string? numericScale = SqlHelper.GetNullableString(reader, "NUMERIC_SCALE");
+                        string? numericPrecision = SqlReaderHelper.GetNullableString(reader, "NUMERIC_PRECISION");
+                        string? numericScale = SqlReaderHelper.GetNullableString(reader, "NUMERIC_SCALE");
                         if (numericPrecision is null || numericScale is null)
                         {
                             throw new($"Missing precision or scale information for decimal field {columnName} in table {table.Name}");

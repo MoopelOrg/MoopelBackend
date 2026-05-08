@@ -1573,6 +1573,16 @@ public class ConstantValues
                 Nullable = false
             };
 
+        public static readonly DatabaseField TransactionNameField =
+            new()
+            {
+                Name = "Name",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 50,
+                DefaultValue = "''"
+            };
+
         public static readonly DatabaseField TransactionAmountField =
             new()
             {
@@ -1611,6 +1621,7 @@ public class ConstantValues
                 TransactionIdField,
                 TransactionBankAccountIdField,
                 TransactionAmountField,
+                TransactionNameField,
                 TransactionDescriptionField,
                 TransactionCreatedAtUtcField
             ],

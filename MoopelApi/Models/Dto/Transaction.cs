@@ -6,6 +6,7 @@ public record Transaction
     public required int AccountId { get; init; }
 
     public required decimal Amount { get; init; }
+    public required string Name { get; init; }
     public required string Description { get; init; }
     public required DateTime CreatedAtUtc { get; init; }
 }

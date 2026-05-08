@@ -2,5 +2,6 @@
 
 public record TransactionCreateRequest
 {
-    public required int AccountId { get; init; }
+    public required string Name { get; init; }
+    public required string Description { get; init; }
 }

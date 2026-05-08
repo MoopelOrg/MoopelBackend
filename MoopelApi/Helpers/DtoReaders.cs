@@ -188,6 +188,7 @@ public static class DtoReaders
             FridgeId = reader.GetInt(Col(alias, FridgeIdField.Name)),
             UserId = reader.GetInt(Col(alias, FridgeUserIdField.Name)),
             Name = reader.GetStringValue(Col(alias, FridgeNameField.Name)),
+            Description = reader.GetStringValue(Col(alias, FridgeDescriptionField.Name)),
             CreatedAtUtc = reader.GetDateTime(Col(alias, FridgeCreatedAtUtcField.Name))
         };
     }
@@ -223,6 +224,7 @@ public static class DtoReaders
             TransactionId = reader.GetInt(Col(alias, TransactionIdField.Name)),
             AccountId = reader.GetInt(Col(alias, TransactionBankAccountIdField.Name)),
             Amount = reader.GetDecimal(Col(alias, TransactionAmountField.Name)),
+            Name = reader.GetStringValue(Col(alias, TransactionNameField.Name)),
             Description = reader.GetStringValue(Col(alias, TransactionDescriptionField.Name)),
             CreatedAtUtc = reader.GetDateTime(Col(alias, TransactionCreatedAtUtcField.Name))
         };
