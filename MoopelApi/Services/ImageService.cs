@@ -6,6 +6,7 @@ using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
 
 using static MoopelApi.ConstantValues.Database;
+using SharpImage = SixLabors.ImageSharp.Image;
 
 namespace MoopelApi.Services;
 
@@ -40,7 +41,7 @@ public class ImageService : IImageService
 
         try
         {
-            using var img = Image.Load(imageBytes);
+            using var img = SharpImage.Load(imageBytes);
         }
         catch
         {
@@ -59,7 +60,7 @@ public class ImageService : IImageService
 
     private byte[] GenerateThumbnail(byte[] imageBytes)
     {
-        using Image image = Image.Load(imageBytes);
+        using SharpImage image = SharpImage.Load(imageBytes);
 
         image.Mutate(x => x.Resize(new ResizeOptions
         {
