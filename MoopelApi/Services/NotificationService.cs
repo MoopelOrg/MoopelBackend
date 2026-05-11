@@ -8,13 +8,11 @@ namespace MoopelApi.Services;
 public class NotificationService : INotificationService
 {
     private readonly ILogger<NotificationService> _logger;
-    private readonly INotificationService _notificationService;
     private readonly DatabaseConnection _connection;
 
-    public NotificationService(ILogger<NotificationService> logger, INotificationService notificationService, DatabaseConnection connection)
+    public NotificationService(ILogger<NotificationService> logger, DatabaseConnection connection)
     {
         _logger = logger;
-        _notificationService = notificationService;
         _connection = connection;
     }
 }

@@ -66,7 +66,7 @@ public class BanksController : ControllerBase
         User contextUser = await _contextService.GetContextUser(HttpContext);
         _logger.LogInformation("User {UserId} is creating a new bank account", contextUser.UserId);
 
-        BankAccount newAccount = await _bankService.CreateBankAccount(request);
+        BankAccount newAccount = await _bankService.CreateBankAccount(contextUser.UserId, request);
 
         return Ok(newAccount);
     }
