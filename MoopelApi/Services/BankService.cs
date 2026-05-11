@@ -564,18 +564,168 @@ public class BankService : IBankService
         }
     }
 
-    public async Task<List<BankAccount>> GetUserBankAccounts(int userId, CancellationToken cancelToken)
+    public async Task<List<BankAccount>?> GetUserBankAccounts(int userId, CancellationToken cancelToken)
     {
-        throw new NotImplementedException();
+        _logger.LogInformation("Getting bank accounts for user [{UserId}]", userId);
+        SqlCommand? command = null;
+
+        try
+        {
+            await using SqlConnection connection = new(_connection.ConnectionString);
+            await connection.OpenAsync(cancelToken);
+
+            command = connection.CreateCommand();
+
+            command.CommandText =
+            @$"
+                SELECT {BankAccountsTable.GenerateSelect()}
+                WHERE {BankAccountUserIdField.SelectName} = @UserId
+            ";
+            command.Parameters.Add(BankAccountUserIdField.GenerateParameter("@UserId", userId));
+
+            await using SqlDataReader reader = await command.ExecuteReaderAsync(cancelToken);
+
+            if (reader.HasRows is false)
+            {
+                _logger.LogInformation("No accounts found for user [{UserId}]", userId);
+                return null;
+            }
+
+            List<BankAccount> transactions = [];
+            while (await reader.ReadAsync(cancelToken))
+            {
+                transactions.Add(DtoReaders.ReadBankAccount(reader));
+            }
+
+            return transactions;
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("Request to get all bank accounts for user [{UserId}] was canceled",
+                userId);
+            return [];
+        }
+        catch (Exception ex)
+        {
+
+            string logErrorMessage = FormatHelper.FormatErrorLogMessage(
+                "Getting Bank Accounts By User",
+                ex.Message,
+                [
+                    ("UserId", userId)
+                ],
+                command: command);
+
+            _logger.LogCritical(ex, "{Error}", logErrorMessage);
+
+            throw;
+        }
     }
 
     public async Task<BankAccount> UpdateBankAccount(int accountId, BankAccountUpdateRequest request)
     {
-        throw new NotImplementedException();
+        _logger.LogInformation("Updating bank account [{AccountId}]", accountId);
+        SqlCommand? command = null;
+        SqlTransaction? transaction = null;
+
+        try
+        {
+            await using SqlConnection connection = new(_connection.ConnectionString);
+            await connection.OpenAsync();
+
+            transaction = connection.BeginTransaction();
+            command = connection.CreateCommand();
+            command.Transaction = transaction;
+
+            command.CommandText =
+            @$"
+                UPDATE {BankAccountsTable.SelectName}
+                SET {BankAccountNameField.SelectName} = @Name
+                OUTPUT INSERTED.{BankAccountsTable.GetFields()}
+                WHERE {BankAccountIdField.SelectName} = @AccountId
+            ";
+            command.Parameters.Add(BankAccountNameField.GenerateParameter("@Name", request.Name));
+            command.Parameters.Add(BankAccountIdField.GenerateParameter("@AccountId", accountId));
+            
+            using SqlDataReader reader = await command.ExecuteReaderAsync();
+
+            BankAccount account = DtoReaders.ReadBankAccount(reader);
+
+            await transaction.CommitAsync();
+
+            return account;
+        }
+        catch (Exception ex)
+        {
+            if (transaction is not null)
+                await transaction.RollbackAsync();
+
+            string logErrorMessage = FormatHelper.FormatErrorLogMessage(
+                "Updating Bank Account",
+                ex.Message,
+                [
+                    ("AccountId", accountId),
+                    ("UpdateRequest", request)
+                ],
+                command);
+
+            _logger.LogCritical(ex, "{Error}", logErrorMessage);
+
+            throw;
+        }
     }
 
     public async Task<TransactionItem> UpdateTransactionItem(int itemId, TransactionItemUpdateRequest request)
     {
-        throw new NotImplementedException();
+        _logger.LogInformation("Updating transaction item [{ItemId}]", itemId);
+        SqlCommand? command = null;
+        SqlTransaction? transaction = null;
+
+        try
+        {
+            await using SqlConnection connection = new(_connection.ConnectionString);
+            await connection.OpenAsync();
+
+            transaction = connection.BeginTransaction();
+            command = connection.CreateCommand();
+            command.Transaction = transaction;
+
+            command.CommandText =
+            @$"
+                UPDATE {TransactionItemsTable.SelectName}
+                SET {TransactionItemNameField.SelectName} = @Name,
+                    {TransactionItemAmountField.SelectName} = @Amount
+                OUTPUT INSERTED.{TransactionItemsTable.GetFields()}
+                WHERE {TransactionItemIdField.SelectName} = @ItemId
+            ";
+            command.Parameters.Add(TransactionItemNameField.GenerateParameter("@Name", request.Name));
+            command.Parameters.Add(TransactionItemAmountField.GenerateParameter("@Amount", request.Amount));
+            command.Parameters.Add(TransactionItemIdField.GenerateParameter("@ItemId", itemId));
+
+            using SqlDataReader reader = await command.ExecuteReaderAsync();
+
+            TransactionItem item = DtoReaders.ReadTransactionItem(reader);
+            await transaction.CommitAsync();
+
+            return item;
+        }
+        catch (Exception ex)
+        {
+            if (transaction is not null)
+                await transaction.RollbackAsync();
+
+            string logErrorMessage = FormatHelper.FormatErrorLogMessage(
+                "Updating Transaction Item",
+                ex.Message,
+                [
+                    ("ItemId", itemId),
+                    ("UpdateRequest", request)
+                ],
+                command);
+
+            _logger.LogCritical(ex, "{Error}", logErrorMessage);
+
+            throw;
+        }
     }
 }

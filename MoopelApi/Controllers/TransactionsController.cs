@@ -96,20 +96,20 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost(Routes.Transaction.CreateTransaction)]
-    public async Task<ActionResult<Transaction>> CreateTransaction([FromBody] TransactionCreateRequest createRequest)
+    public async Task<ActionResult<Transaction>> CreateTransaction(int accountId, [FromBody] TransactionCreateRequest createRequest)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
         RequestContext requestContext = await _contextService.GetRequestContext(HttpContext);
 
-        _logger.LogInformation("Received request to create transaction from [{Context}]",
-            requestContext);
+        _logger.LogInformation("Received request to create transaction for account[{AccountId}] from [{Context}]",
+            accountId, requestContext);
 
-        BankAccount? account = await _bankService.GetBankAccountById(createRequest.AccountId);
+        BankAccount? account = await _bankService.GetBankAccountById(accountId);
 
         if (account is null || account.UserId != contextUser.UserId)
         {
             _logger.LogWarning("Request[{Context}] attempted to create a transaction for account[{Id}] but was forbidden",
-                requestContext, createRequest.AccountId);
+                requestContext, accountId);
             return Forbid();
         }
 
