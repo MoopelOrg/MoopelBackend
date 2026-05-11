@@ -1852,9 +1852,9 @@ public class ConstantValues
         public static readonly List<DatabaseTable> DatabaseTables =
         [
             GroupsTable,
-            SettingsTable,
             ThemesTable,
             UsersTable,
+            SettingsTable,
 
             LoginsTable,
             SessionsTable,

@@ -21,7 +21,7 @@ namespace MoopelApi;
 
 public class Startup
 {
-    public static WebApplicationBuilder CreateBuilder(WebApplicationBuilder builder)
+    public async static Task<WebApplicationBuilder> CreateBuilder(WebApplicationBuilder builder)
     {
         try
         {
@@ -29,6 +29,12 @@ public class Startup
             .GetRequiredSection("DatabaseConnection")
             .Get<DatabaseConnection>()
             ?? throw new("Failed to retrieve DatabaseConnection configuration.");
+
+            if (databaseConnection.ConnectionString.Contains("localhost"))
+            {
+                Console.WriteLine("Running in development environment. Waiting for database to be ready...");
+                await Task.Delay(TimeSpan.FromSeconds(20));
+            }
 
             builder.Services.AddSingleton(databaseConnection);
 
@@ -126,7 +132,23 @@ public class Startup
 
         builder.Services.AddScoped<IAuthService, AuthService>();
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<IThemeService, ThemeService>();
+        
+        builder.Services.AddScoped<IContextService, ContextService>();
+        builder.Services.AddScoped<INotificationService, NotificationService>();
+        builder.Services.AddScoped<ISessionService, SessionService>();
 
+        builder.Services.AddScoped<IImageService, ImageService>();
+
+        builder.Services.AddScoped<IBankService, BankService>();
+        builder.Services.AddScoped<IFridgeService, FridgeService>();
+        builder.Services.AddScoped<IStorageService, StorageService>();
+        builder.Services.AddScoped<INoteService, NoteService>();
+
+        builder.Services.AddScoped<ITagService, TagService>();
+
+        builder.Services.AddScoped<IGroupService, GroupService>();
+        builder.Services.AddScoped<IWorkItemService, WorkItemService>();
 
         return builder;
     }

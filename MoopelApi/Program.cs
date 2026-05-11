@@ -5,7 +5,7 @@ using Serilog;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder = Startup.CreateBuilder(builder);
+builder = await Startup.CreateBuilder(builder);
 
 DeploymentInfo deploymentInfo = new()
 {
@@ -18,12 +18,14 @@ DeploymentInfo deploymentInfo = new()
 
 WebApplication app = await Startup.ConfigureApp(builder, deploymentInfo);
 
-string dbConnection = builder.Configuration.GetConnectionString("MoopelDB")
-    ?? throw new("Failed to retrieve MoopelDB connection string.");
+DatabaseConnection databaseConnection = builder.Configuration
+            .GetRequiredSection("DatabaseConnection")
+            .Get<DatabaseConnection>()
+            ?? throw new("Failed to retrieve DatabaseConnection configuration.");
 
 try
 {
-    Startup.BuildDatabase(dbConnection);
+    Startup.BuildDatabase(databaseConnection.ConnectionString);
 }
 catch (Exception ex)
 {
