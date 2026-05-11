@@ -24,10 +24,5 @@ dotnet_diagnostic.CA2208.severity = warning
 # CA1062: Validate arguments of public methods
 dotnet_diagnostic.CA1062.severity = warning
 
-# CA2007: Consider calling ConfigureAwait
-# For ASP.NET Core, I would usually disable this.
-dotnet_diagnostic.CA2007.severity = none
-
-# CA1848: Use LoggerMessage delegates
-# Useful, but very annoying for normal app code.
-dotnet_diagnostic.CA1848.severity = none
+# CS8613: Nullability of reference types in return type doesn't match implicitly implemented member.
+dotnet_diagnostic.CS8613.severity = error

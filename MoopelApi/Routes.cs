@@ -284,7 +284,7 @@ public static class Routes
             public const string CreateTransaction = "/create";
             public const string UpdateTransaction = "/update/{transactionId:int}";
             public const string DeleteTransaction = "/delete/{transactionId:int}";
-            public const string CreateTransactionItem = "/{transactionId:int}/items/create";
+            public const string CreateTransactionItem = "/{accountId:int}/items/create";
             public const string UpdateTransactionItem = "/items/update/{transactionItemId:int}";
             public const string DeleteTransactionItem = "/items/delete/{transactionItemId:int}";
         }

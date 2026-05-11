@@ -56,7 +56,7 @@ public class UserSettingsController : ControllerBase
         return Ok(settings);
     }
 
-    [HttpPatch(Routes.UserSettings.UpdateSettings)]
+    [HttpPut(Routes.UserSettings.UpdateSettings)]
     public async Task<ActionResult<UserSettings>> UpdateSettings([FromBody] UserSettingsUpdateRequest updateRequest)
     {
         ArgumentNullException.ThrowIfNull(updateRequest);

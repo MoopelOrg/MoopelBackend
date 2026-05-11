@@ -6,7 +6,7 @@ namespace MoopelApi.Services.Interfaces;
 
 public interface IBankService
 {
-    public Task<List<BankAccount>> GetUserBankAccounts(int userId, CancellationToken cancelToken);
+    public Task<List<BankAccount>?> GetUserBankAccounts(int userId, CancellationToken cancelToken);
     public Task<BankAccount?> GetBankAccountById(int accountId);
 
     public Task<BankAccount> CreateBankAccount(int userId, BankAccountCreateRequest request);

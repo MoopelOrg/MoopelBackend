@@ -101,8 +101,8 @@ public class TransactionsController : ControllerBase
         User contextUser = await _contextService.GetContextUser(HttpContext);
         RequestContext requestContext = await _contextService.GetRequestContext(HttpContext);
 
-        _logger.LogInformation("Received request to create transaction from [{Context}]",
-            requestContext);
+        _logger.LogInformation("Received request to create transaction for account[{AccountId}] from [{Context}]",
+            accountId, requestContext);
 
         BankAccount? account = await _bankService.GetBankAccountById(accountId);
 

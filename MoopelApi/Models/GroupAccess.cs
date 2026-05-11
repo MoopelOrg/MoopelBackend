@@ -1,11 +1,9 @@
-﻿using MoopelApi.Models.Dto;
-
-namespace MoopelApi.Models;
+﻿namespace MoopelApi.Models;
 
 public class GroupAccess
 {
-    public required User User { get; init; }
-    public required Group Group { get; init; }
+    public required int UserId { get; init; }
+    public required int GroupId { get; init; }
 
     public required bool CanViewWorkItems { get; init; } = false;
     public required bool CanCreateWorkItems { get; init; } = false;

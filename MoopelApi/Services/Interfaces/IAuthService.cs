@@ -13,7 +13,8 @@ public interface IAuthService
 
 
 
-    public Task<GroupAccess> GetGroupAccess(User user, Group group);
+    public Task<GroupAccess> GetUserGroupAccess(User user, Group group);
+    public Task<List<GroupAccess>> GetGroupAccess(Group group);
 
     public Task<bool> CanUserUpdateTheme(User user, Theme theme);
 }
