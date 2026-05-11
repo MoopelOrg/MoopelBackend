@@ -2,4 +2,5 @@
 
 public record BankAccountUpdateRequest
 {
+    public required string Name { get; init; }
 }
