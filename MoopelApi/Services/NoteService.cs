@@ -23,9 +23,9 @@ public class NoteService : INoteService
         _connection = connection;
     }
 
-    public async Task<Note> CreateNote(NoteCreationRequest request)
+    public async Task<Note> CreateNote(NoteCreationRequest request, int userId)
     {
-        _logger.LogInformation("Creating note for user [{UserId}]", request.UserId);
+        _logger.LogInformation("Creating note for user [{UserId}]", userId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
 
@@ -49,7 +49,7 @@ public class NoteService : INoteService
                 VALUES
                 (@UserId, @Type, @Title, @Content)
             ";
-            command.Parameters.Add(NoteUserIdField.GenerateParameter("@UserId", request.UserId));
+            command.Parameters.Add(NoteUserIdField.GenerateParameter("@UserId", userId));
             command.Parameters.Add(NoteTypeField.GenerateParameter("@Type", request.Type));
             command.Parameters.Add(NoteTitleField.GenerateParameter("@Title", request.Title));
             command.Parameters.Add(NoteContentField.GenerateParameter("@Content", request.Content));
@@ -238,9 +238,9 @@ public class NoteService : INoteService
         }
     }
 
-    public async Task<Note?> UpdateNote(NoteUpdateRequest request)
+    public async Task<Note?> UpdateNote(NoteUpdateRequest request, int noteId)
     {
-        _logger.LogInformation("Updating note [{NoteId}]", request.NoteId);
+        _logger.LogInformation("Updating note [{NoteId}]", noteId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
 
@@ -262,7 +262,7 @@ public class NoteService : INoteService
                 OUTPUT INSERTED.{NotesTable.GetFields()}
                 WHERE {NoteIdField.SelectName} = @NoteId
             ";
-            command.Parameters.Add(NoteIdField.GenerateParameter("@NoteId", request.NoteId));
+            command.Parameters.Add(NoteIdField.GenerateParameter("@NoteId", noteId));
             command.Parameters.Add(NoteTypeField.GenerateParameter("@Type", request.Type));
             command.Parameters.Add(NoteTitleField.GenerateParameter("@Title", request.Title));
             command.Parameters.Add(NoteContentField.GenerateParameter("@Content", request.Content));
@@ -279,7 +279,7 @@ public class NoteService : INoteService
 
             if (await reader.ReadAsync())
             {
-                throw new InvalidOperationException($"Updated more than one note for NoteId [{request.NoteId}].");
+                throw new InvalidOperationException($"Updated more than one note for NoteId [{noteId}].");
             }
 
             await transaction.CommitAsync();
@@ -295,7 +295,8 @@ public class NoteService : INoteService
                 "Updating Note",
                 ex.Message,
                 [
-                    ("UpdateRequest", request)
+                    ("UpdateRequest", request),
+                    ("NoteId", noteId)
                 ],
                 command);
 

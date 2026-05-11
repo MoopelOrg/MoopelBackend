@@ -1180,6 +1180,16 @@ public class ConstantValues
                 Nullable = false,
                 FieldSize = 100
             };
+        
+        public static readonly DatabaseField StorageDescriptionField =
+            new()
+            {
+                Name = "Description",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 300,
+                DefaultValue = "''"
+            };
 
         public static readonly DatabaseField StorageCreatedAtUtcField =
             new()
@@ -1199,6 +1209,7 @@ public class ConstantValues
                 StorageIdField,
                 StorageUserIdField,
                 StorageNameField,
+                StorageDescriptionField,
                 StorageCreatedAtUtcField
             ],
             Constraints =
@@ -1248,6 +1259,16 @@ public class ConstantValues
                 Type = SqlDbType.NVarChar,
                 Nullable = false,
                 FieldSize = 100
+            };
+        
+        public static readonly DatabaseField StorageItemDescriptionField =
+            new()
+            {
+                Name = "Description",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 300,
+                DefaultValue = "''"
             };
 
         public static readonly DatabaseField StorageItemQuantityField =

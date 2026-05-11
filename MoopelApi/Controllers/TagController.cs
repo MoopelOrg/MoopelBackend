@@ -100,7 +100,7 @@ public class TagController : ControllerBase
             return Forbid();
         }
 
-        UserTag? updatedTag = await _tagService.UpdateUserTag(tagId, updateRequest, contextUser.UserId);
+        UserTag? updatedTag = await _tagService.UpdateUserTag(updateRequest, tagId);
 
         if (updatedTag is null)
         {
@@ -187,7 +187,7 @@ public class TagController : ControllerBase
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
         _logger.LogInformation("Received request to create group tag from requestContext[{Context}]", context);
 
-        GroupTag createdTag = await _tagService.CreateGroupTag(creationRequest, groupId, contextUser);
+        GroupTag createdTag = await _tagService.CreateGroupTag(creationRequest, groupId);
         return CreatedAtAction(nameof(GetGroupTagById), new { tagId = createdTag.TagId }, createdTag);
     }
 
@@ -205,7 +205,7 @@ public class TagController : ControllerBase
                 context, tagId);
             return NotFound();
         }
-        GroupTag? updatedTag = await _tagService.UpdateGroupTag(updateRequest, tagId, contextUser);
+        GroupTag? updatedTag = await _tagService.UpdateGroupTag(updateRequest, tagId);
         if (updatedTag is null)
         {
             return NotFound();
@@ -229,7 +229,7 @@ public class TagController : ControllerBase
             return NotFound();
         }
 
-        bool deleted = await _tagService.DeleteGroupTag(tagId, contextUser);
+        bool deleted = await _tagService.DeleteGroupTag(tagId);
         if (!deleted)
         {
             return NotFound();

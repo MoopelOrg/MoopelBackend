@@ -36,8 +36,9 @@ public class GroupsController : ControllerBase
 
         _logger.LogInformation("Received request to retrieve groups for user[{Id}] from context[{Context}]", contextUser.UserId, context);
 
-        List<Group> groups = await _groupService.GetUserGroups(contextUser.UserId);
-        return Ok(groups);
+        List<Group>? groups = await _groupService.GetUserGroups(contextUser.UserId);
+
+        return Ok(groups ?? []);
     }
 
     [HttpGet(Routes.Group.GroupById)]
@@ -60,15 +61,15 @@ public class GroupsController : ControllerBase
 
         _logger.LogInformation("Received request[{Request}] to create group from context[{Context}]", request, context);
 
-        List<Group> groups = await _groupService.GetUserGroups(contextUser.UserId);
+        List<Group>? groups = await _groupService.GetUserGroups(contextUser.UserId);
 
-        if (groups.Count >= 5)
+        if (groups is not null && groups.Count >= 5)
         {
             _logger.LogWarning("User[{Id}] has reached the maximum number of groups[{Count}]", contextUser.UserId, groups.Count);
             return BadRequest("You have reached the maximum number of groups.");
         }
 
-        Group? group = await _groupService.CreateGroup(request);
+        Group? group = await _groupService.CreateGroup(contextUser, request);
 
         if (group is null)
             return BadRequest();
@@ -77,12 +78,12 @@ public class GroupsController : ControllerBase
     }
 
     [HttpPatch(Routes.Group.UpdateGroup)]
-    public async Task<ActionResult<Group>> UpdateGroup([FromBody] GroupUpdateRequest request)
+    public async Task<ActionResult<Group>> UpdateGroup(int groupId, [FromBody] GroupUpdateRequest request)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
         _logger.LogInformation("Received request[{Request}] to update group from context[{Context}]", request, context);
 
-        Group? group = await _groupService.UpdateGroup(request);
+        Group? group = await _groupService.UpdateGroup(groupId, request);
 
         if (group is null)
             return NotFound();
@@ -101,15 +102,12 @@ public class GroupsController : ControllerBase
         if (group is null)
             return NotFound();
 
-        GroupAccess groupAccess = await _authService.GetGroupAccess(contextUser, group);
+        GroupAccess groupAccess = await _authService.GetUserGroupAccess(contextUser, group);
 
         if (groupAccess.CanDeleteGroup() is false)
             return Forbid();
 
-        bool deleted = await _groupService.DeleteGroup(groupId);
-
-        if (!deleted)
-            return NotFound();
+        await _groupService.DeleteGroup(groupId);
 
         return NoContent();
     }

@@ -183,9 +183,9 @@ public class TagService : ITagService
         }
     }
 
-    public async Task<UserTag?> UpdateUserTag(TagUpdateRequest request, int tagId, int userId)
+    public async Task<UserTag?> UpdateUserTag(TagUpdateRequest request, int tagId)
     {
-        _logger.LogInformation("Updating user tag [{TagId}] for user [{UserId}]", tagId, userId);
+        _logger.LogInformation("Updating user tag [{TagId}]", tagId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
 
@@ -205,12 +205,10 @@ public class TagService : ITagService
                     {UserTagColorField.SelectName} = @TagColor
                 OUTPUT INSERTED.{UserTagsTable.GetFields()}
                 WHERE {UserTagIdField.SelectName} = @TagId
-                  AND {UserTagUserIdField.SelectName} = @UserId
             ";
             command.Parameters.Add(UserTagNameField.GenerateParameter("@TagName", request.Name));
             command.Parameters.Add(UserTagColorField.GenerateParameter("@TagColor", request.Color));
             command.Parameters.Add(UserTagIdField.GenerateParameter("@TagId", tagId));
-            command.Parameters.Add(UserTagUserIdField.GenerateParameter("@UserId", userId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
 
@@ -241,7 +239,6 @@ public class TagService : ITagService
                 ex.Message,
                 [
                     ("TagId", tagId),
-                    ("UserId", userId),
                     ("UpdateRequest", request)
                 ],
                 command);
@@ -467,9 +464,9 @@ public class TagService : ITagService
         }
     }
 
-    public async Task<GroupTag?> UpdateGroupTag(TagUpdateRequest request, int tagId, int groupId)
+    public async Task<GroupTag?> UpdateGroupTag(TagUpdateRequest request, int tagId)
     {
-        _logger.LogInformation("Updating group tag [{TagId}] for group [{GroupId}]", tagId, groupId);
+        _logger.LogInformation("Updating group tag [{TagId}]", tagId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
 
@@ -489,12 +486,10 @@ public class TagService : ITagService
                     {GroupTagColorField.SelectName} = @TagColor
                 OUTPUT INSERTED.{GroupTagsTable.GetFields()}
                 WHERE {GroupTagIdField.SelectName} = @TagId
-                  AND {GroupTagGroupIdField.SelectName} = @GroupId
             ";
             command.Parameters.Add(GroupTagNameField.GenerateParameter("@TagName", request.Name));
             command.Parameters.Add(GroupTagColorField.GenerateParameter("@TagColor", request.Color));
             command.Parameters.Add(GroupTagIdField.GenerateParameter("@TagId", tagId));
-            command.Parameters.Add(GroupTagGroupIdField.GenerateParameter("@GroupId", groupId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
 
@@ -525,7 +520,6 @@ public class TagService : ITagService
                 ex.Message,
                 [
                     ("TagId", tagId),
-                    ("GroupId", groupId),
                     ("UpdateRequest", request)
                 ],
                 command);
@@ -536,9 +530,9 @@ public class TagService : ITagService
         }
     }
 
-    public async Task<bool> DeleteGroupTag(int tagId, int groupId)
+    public async Task<bool> DeleteGroupTag(int tagId)
     {
-        _logger.LogInformation("Deleting group tag [{TagId}] for group [{GroupId}]", tagId, groupId);
+        _logger.LogInformation("Deleting group tag [{TagId}]", tagId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
 
@@ -555,10 +549,8 @@ public class TagService : ITagService
             @$"
                 DELETE FROM {GroupTagsTable.SelectName}
                 WHERE {GroupTagIdField.SelectName} = @TagId
-                  AND {GroupTagGroupIdField.SelectName} = @GroupId
             ";
             command.Parameters.Add(GroupTagIdField.GenerateParameter("@TagId", tagId));
-            command.Parameters.Add(GroupTagGroupIdField.GenerateParameter("@GroupId", groupId));
 
             int rowsAffected = await command.ExecuteNonQueryAsync();
 
@@ -581,7 +573,6 @@ public class TagService : ITagService
                 ex.Message,
                 [
                     ("TagId", tagId),
-                    ("GroupId", groupId)
                 ],
                 command);
 

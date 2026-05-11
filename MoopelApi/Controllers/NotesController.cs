@@ -69,30 +69,30 @@ public class NotesController : ControllerBase
         User contextUser = await _contextService.GetContextUser(HttpContext);
         _logger.LogInformation("User {UserId} is creating a new note", contextUser.UserId);
 
-        Note createdNote = await _noteService.CreateNote(request);
+        Note createdNote = await _noteService.CreateNote(request, contextUser.UserId);
 
         return CreatedAtAction(nameof(GetNoteById), new { noteId = createdNote.NoteId }, createdNote);
     }
 
     [HttpPatch(Routes.Note.UpdateNote)]
-    public async Task<ActionResult<Note>> UpdateNote([FromBody] NoteUpdateRequest request)
+    public async Task<ActionResult<Note>> UpdateNote(int noteId, [FromBody] NoteUpdateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
-        _logger.LogInformation("User {UserId} is updating note {NoteId}", contextUser.UserId, request.NoteId);
+        _logger.LogInformation("User {UserId} is updating note {NoteId}", contextUser.UserId, noteId);
 
-        Note? noteToBeUpdated = await _noteService.GetNoteById(request.NoteId);
+        Note? noteToBeUpdated = await _noteService.GetNoteById(noteId);
         if (noteToBeUpdated is null)
         {
-            _logger.LogWarning("Note {NoteId} not found for user {UserId}", request.NoteId, contextUser.UserId);
+            _logger.LogWarning("Note {NoteId} not found for user {UserId}", noteId, contextUser.UserId);
             return NotFound();
         }
         if (noteToBeUpdated.UserId != contextUser.UserId)
         {
-            _logger.LogWarning("User {UserId} attempted to update note {NoteId} which they do not own", contextUser.UserId, request.NoteId);
+            _logger.LogWarning("User {UserId} attempted to update note {NoteId} which they do not own", contextUser.UserId, noteId);
             return Forbid();
         }
 
-        Note? updatedNote = await _noteService.UpdateNote(request);
+        Note? updatedNote = await _noteService.UpdateNote(request, noteId);
         if (updatedNote is null)
         {
             _logger.LogCritical("Note could note be found, which should have been caught");

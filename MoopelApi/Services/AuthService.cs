@@ -166,4 +166,14 @@ public class AuthService : IAuthService
     {
         throw new NotImplementedException();
     }
+
+    public Task<GroupAccess> GetUserGroupAccess(User user, Group group)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<List<GroupAccess>> GetGroupAccess(Group group)
+    {
+        throw new NotImplementedException();
+    }
 }

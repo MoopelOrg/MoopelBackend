@@ -47,7 +47,7 @@ public class WorkItemsController : ControllerBase
         {
             return NotFound();
         }
-        GroupAccess userAccess = await _authService.GetGroupAccess(contextUser, group);
+        GroupAccess userAccess = await _authService.GetUserGroupAccess(contextUser, group);
 
         if (userAccess.CanViewWorkItems is false)
         {
@@ -86,7 +86,7 @@ public class WorkItemsController : ControllerBase
         {
             return NotFound();
         }
-        GroupAccess userAccess = await _authService.GetGroupAccess(contextUser, group);
+        GroupAccess userAccess = await _authService.GetUserGroupAccess(contextUser, group);
 
         if (userAccess.CanViewWorkItems is false)
         {
@@ -110,7 +110,7 @@ public class WorkItemsController : ControllerBase
         if (group is null)
             return NotFound();
 
-        GroupAccess access = await _authService.GetGroupAccess(contextUser, group);
+        GroupAccess access = await _authService.GetUserGroupAccess(contextUser, group);
         if (!access.CanViewWorkItems)
             return Forbid();
 
@@ -126,7 +126,7 @@ public class WorkItemsController : ControllerBase
         if (group is null)
             return NotFound();
 
-        GroupAccess access = await _authService.GetGroupAccess(contextUser, group);
+        GroupAccess access = await _authService.GetUserGroupAccess(contextUser, group);
         if (!access.CanCreateWorkItems)
             return Forbid();
 
@@ -151,7 +151,7 @@ public class WorkItemsController : ControllerBase
         if (group is null)
             return NotFound();
 
-        GroupAccess access = await _authService.GetGroupAccess(contextUser, group);
+        GroupAccess access = await _authService.GetUserGroupAccess(contextUser, group);
         if (!access.CanUpdateWorkItems)
             return Forbid();
 
@@ -173,7 +173,7 @@ public class WorkItemsController : ControllerBase
         if (group is null)
             return NotFound();
 
-        GroupAccess access = await _authService.GetGroupAccess(contextUser, group);
+        GroupAccess access = await _authService.GetUserGroupAccess(contextUser, group);
         if (!access.CanDeleteWorkItems)
             return Forbid();
 
@@ -203,7 +203,7 @@ public class WorkItemsController : ControllerBase
         if (group is null)
             return NotFound();
 
-        GroupAccess access = await _authService.GetGroupAccess(contextUser, group);
+        GroupAccess access = await _authService.GetUserGroupAccess(contextUser, group);
         if (!access.CanUpdateWorkItems)
             return Forbid();
 
@@ -230,7 +230,7 @@ public class WorkItemsController : ControllerBase
         if (group is null)
             return NotFound();
 
-        GroupAccess access = await _authService.GetGroupAccess(contextUser, group);
+        GroupAccess access = await _authService.GetUserGroupAccess(contextUser, group);
         if (!access.CanCreateWorkItems)
             return Forbid();
 
