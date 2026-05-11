@@ -84,10 +84,7 @@ public class UserController : ControllerBase
 
         _logger.LogInformation("Received request to disable user[{Id}] from context[{Context}]", userId, context);
 
-        bool success = await _userService.DisableUser(userId);
-
-        if (!success)
-            return NotFound();
+        await _userService.DisableUser(userId);
 
         return NoContent();
     }
