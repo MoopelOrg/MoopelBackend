@@ -1,31 +1,17 @@
 using MoopelApi;
-using MoopelApi.Helpers;
-using MoopelApi.Models.Configuration;
 using Serilog;
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+Console.WriteLine("Starting...");
+Startup startup = new(args);
 
-builder = await Startup.CreateBuilder(builder);
+await startup.CreateBuilder();
+WebApplication app = await startup.ConfigureApp();
 
-DeploymentInfo deploymentInfo = new()
-{
-    BuildDate = builder.Configuration["DEPLOYED_AT"] ?? "Date Not Found. Date Now: " + FormatHelper.FormatDate(DateTime.UtcNow),
-    Environment = builder.Configuration["ASPNETCORE_ENVIRONMENT"] ?? "Unknown",
-    Version = builder.Configuration["VERSION"] ?? "Unknown",
-    CommitName = builder.Configuration["COMMIT_NAME"] ?? "Unknown",
-    Tag = builder.Configuration["GIT_TAG"] ?? "Unknown"
-};
-
-WebApplication app = await Startup.ConfigureApp(builder, deploymentInfo);
-
-DatabaseConnection databaseConnection = builder.Configuration
-            .GetRequiredSection("DatabaseConnection")
-            .Get<DatabaseConnection>()
-            ?? throw new("Failed to retrieve DatabaseConnection configuration.");
-
+Console.WriteLine("Created app...");
 try
 {
-    Startup.BuildDatabase(databaseConnection.ConnectionString);
+    Console.WriteLine("Building Database...");
+    startup.BuildDatabase();
 }
 catch (Exception ex)
 {
@@ -33,4 +19,6 @@ catch (Exception ex)
     throw;
 }
 
+
+Console.WriteLine("Running App...");
 app.Run();

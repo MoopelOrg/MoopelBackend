@@ -1,5 +1,5 @@
-﻿using System.Net;
-using System.Text.Json;
+﻿using System.Text.Json;
+
 using MoopelApi.Exceptions;
 
 namespace MoopelApi;
@@ -17,13 +17,15 @@ public class GlobalExceptionMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
+        ArgumentNullException.ThrowIfNull(context, nameof(context));
         try
         {
             await _next(context);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception occurred");
+            string httpContextInfo = Helpers.FormatHelper.FormatHttpContext(context);
+            _logger.LogError(ex, "Unhandled exception occurred. Context: {Context}", httpContextInfo);
 
             await HandleExceptionAsync(context, ex);
         }
@@ -59,6 +61,8 @@ public class GlobalExceptionMiddleware
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = statusCode;
 
-        return context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        string jsonResponse = JsonSerializer.Serialize(response);
+
+        return context.Response.WriteAsync(jsonResponse);
     }
 }

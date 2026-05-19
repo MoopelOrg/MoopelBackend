@@ -1,5 +1,8 @@
 ﻿using System.Data;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Enums;
 
@@ -10,6 +13,19 @@ public class ConstantValues
     public const StringComparison OrdinalIgnoreCase = StringComparison.OrdinalIgnoreCase;
     public const StringComparison InvariantIgnoreCase = StringComparison.InvariantCultureIgnoreCase;
     public const StringComparison CurrentIgnoreCase = StringComparison.CurrentCultureIgnoreCase;
+
+
+    public static void ConfigureJsonSerializerOptions(JsonSerializerOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options, nameof(options));
+
+        options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+        options.WriteIndented = false;
+        options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        options.Converters.Add(new JsonStringEnumConverter());
+        options.ReadCommentHandling = JsonCommentHandling.Skip;
+    }
 
     // Issues here: This does not create the database.
     public const string DB_DOCKER_RUN =
@@ -376,7 +392,7 @@ public class ConstantValues
                 SettingsCreatedAtUtcField,
                 SettingsLastUpdatedAtUtcField
             ],
-                    Constraints =
+            Constraints =
             [
                 new()
                 {
@@ -1180,7 +1196,7 @@ public class ConstantValues
                 Nullable = false,
                 FieldSize = 100
             };
-        
+
         public static readonly DatabaseField StorageDescriptionField =
             new()
             {
@@ -1260,7 +1276,7 @@ public class ConstantValues
                 Nullable = false,
                 FieldSize = 100
             };
-        
+
         public static readonly DatabaseField StorageItemDescriptionField =
             new()
             {
@@ -1520,6 +1536,15 @@ public class ConstantValues
                 Type = SqlDbType.NVarChar,
                 Nullable = false,
                 FieldSize = 100
+            };
+        public static readonly DatabaseField BankAccountDescriptionField =
+            new()
+            {
+                Name = "Description",
+                Type = SqlDbType.NVarChar,
+                Nullable = false,
+                FieldSize = 300,
+                DefaultValue = "''"
             };
 
         public static readonly DatabaseField BankAccountBalanceField =

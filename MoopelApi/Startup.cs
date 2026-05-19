@@ -1,17 +1,23 @@
 ﻿using System.Data;
 using System.Text;
 using System.Threading.RateLimiting;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
+
 using MoopelApi.Helpers;
+using MoopelApi.Models;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
+using MoopelApi.Models.Enums;
 using MoopelApi.Services;
 using MoopelApi.Services.Interfaces;
+
 using Scalar.AspNetCore;
+
 using Serilog;
 using Serilog.Sinks.MSSqlServer;
 
@@ -21,29 +27,47 @@ namespace MoopelApi;
 
 public class Startup
 {
-    public async static Task<WebApplicationBuilder> CreateBuilder(WebApplicationBuilder builder)
+    private WebApplicationBuilder _builder;
+    private readonly DeploymentInfo _deploymentInfo;
+    private readonly DatabaseConnection _databaseConnection;
+
+    public Startup(string[] args)
     {
-        try
+        _builder = WebApplication.CreateBuilder(args);
+
+        _deploymentInfo = new()
         {
-            DatabaseConnection databaseConnection = builder.Configuration
+            BuildDate = _builder.Configuration["DEPLOYED_AT"] ?? "Date Not Found. Date Now: " + FormatHelper.FormatDate(DateTime.UtcNow),
+            Environment = _builder.Configuration["ASPNETCORE_ENVIRONMENT"] ?? "Unknown",
+            Version = _builder.Configuration["VERSION"] ?? "Unknown",
+            CommitName = _builder.Configuration["COMMIT_NAME"] ?? "Unknown",
+            Tag = _builder.Configuration["GIT_TAG"] ?? "Unknown"
+        };
+
+        _databaseConnection = _builder.Configuration
             .GetRequiredSection("DatabaseConnection")
             .Get<DatabaseConnection>()
             ?? throw new("Failed to retrieve DatabaseConnection configuration.");
+    }
 
-            if (databaseConnection.ConnectionString.Contains("localhost"))
+    public async Task<WebApplicationBuilder> CreateBuilder()
+    {
+        try
+        {
+            if (_databaseConnection.ConnectionString.Contains("localhost"))
             {
                 Console.WriteLine("Running in development environment. Waiting for database to be ready...");
                 await Task.Delay(TimeSpan.FromSeconds(20));
             }
 
-            builder.Services.AddSingleton(databaseConnection);
+            _builder.Services.AddSingleton(_databaseConnection);
 
-            builder = AddServices(builder);
-            builder = AddLifetimeServices(builder);
+            _builder = AddServices();
+            _builder = AddLifetimeServices();
 
-            builder = AddLogging(builder, databaseConnection.ConnectionString);
+            _builder = AddLogging();
 
-            return builder;
+            return _builder;
         }
         catch (Exception ex)
         {
@@ -53,10 +77,10 @@ public class Startup
         }
     }
 
-    public static WebApplicationBuilder AddServices(WebApplicationBuilder builder)
+    public WebApplicationBuilder AddServices()
     {
         //https://github.com/scalar/scalar/discussions/4468#discussioncomment-15371071
-        builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        _builder.Services.Configure<ForwardedHeadersOptions>(options =>
         {
             //https://learn.microsoft.com/en-us/azure/container-apps/dotnet-overview#define-x-forwarded-headers
             options.ForwardedHeaders =
@@ -65,12 +89,18 @@ public class Startup
             options.KnownProxies.Clear();
         });
 
-        JwtSettings jwt = builder.Configuration.GetRequiredSection("JwtSettings").Get<JwtSettings>()!;
+        JwtSettings jwt = _builder.Configuration.GetRequiredSection("JwtSettings").Get<JwtSettings>()!;
 
-        builder.Services.AddControllers();
-        builder.Services.AddOpenApi("v1", options => { options.AddDocumentTransformer<BearerSecuritySchemeTransformer>(); });
+        _builder.Services
+            .AddControllers()
+            .AddJsonOptions(options =>
+            {
+                ConstantValues.ConfigureJsonSerializerOptions(options.JsonSerializerOptions);
+            });
 
-        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        _builder.Services.AddOpenApi("v1", options => { options.AddDocumentTransformer<BearerSecuritySchemeTransformer>(); });
+
+        _builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new()
@@ -88,7 +118,20 @@ public class Startup
                 };
             });
 
-        builder.Services.AddRateLimiter(options =>
+        _builder.Services.AddAuthorizationBuilder()
+            .AddPolicy(Policies.NotGuest, policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireRole(Roles.Standard, Roles.Admin);
+            })
+            .AddPolicy(Policies.AdminOnly, policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireRole(Roles.Admin);
+            });
+
+
+        _builder.Services.AddRateLimiter(options =>
         {
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
                 RateLimitPartition.GetFixedWindowLimiter(
@@ -103,7 +146,7 @@ public class Startup
         });
 
         /*
-        builder.Services.AddCors(options =>
+        _builder.Services.AddCors(options =>
         {
             options.AddPolicy(corsPolicyName, policy =>
             {
@@ -115,45 +158,45 @@ public class Startup
         });
         */
 
-        return builder;
+        return _builder;
     }
 
-    public static WebApplicationBuilder AddLifetimeServices(WebApplicationBuilder builder)
+    public WebApplicationBuilder AddLifetimeServices()
     {
-        builder.Services.Configure<JwtSettings>(builder.Configuration.GetRequiredSection("JwtSettings"));
+        _builder.Services.Configure<JwtSettings>(_builder.Configuration.GetRequiredSection("JwtSettings"));
 
-        builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-        builder.Services.Configure<PasswordHasherOptions>(options =>
+        _builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+        _builder.Services.Configure<PasswordHasherOptions>(options =>
         {
             options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV3;
             options.IterationCount = 100_000;
         });
 
 
-        builder.Services.AddScoped<IAuthService, AuthService>();
-        builder.Services.AddScoped<IUserService, UserService>();
-        builder.Services.AddScoped<IThemeService, ThemeService>();
-        
-        builder.Services.AddScoped<IContextService, ContextService>();
-        builder.Services.AddScoped<INotificationService, NotificationService>();
-        builder.Services.AddScoped<ISessionService, SessionService>();
+        _builder.Services.AddScoped<IAuthService, AuthService>();
+        _builder.Services.AddScoped<IUserService, UserService>();
+        _builder.Services.AddScoped<IThemeService, ThemeService>();
 
-        builder.Services.AddScoped<IImageService, ImageService>();
+        _builder.Services.AddScoped<IContextService, ContextService>();
+        _builder.Services.AddScoped<INotificationService, NotificationService>();
+        _builder.Services.AddScoped<ISessionService, SessionService>();
 
-        builder.Services.AddScoped<IBankService, BankService>();
-        builder.Services.AddScoped<IFridgeService, FridgeService>();
-        builder.Services.AddScoped<IStorageService, StorageService>();
-        builder.Services.AddScoped<INoteService, NoteService>();
+        _builder.Services.AddScoped<IImageService, ImageService>();
 
-        builder.Services.AddScoped<ITagService, TagService>();
+        _builder.Services.AddScoped<IBankService, BankService>();
+        _builder.Services.AddScoped<IFridgeService, FridgeService>();
+        _builder.Services.AddScoped<IStorageService, StorageService>();
+        _builder.Services.AddScoped<INoteService, NoteService>();
 
-        builder.Services.AddScoped<IGroupService, GroupService>();
-        builder.Services.AddScoped<IWorkItemService, WorkItemService>();
+        _builder.Services.AddScoped<ITagService, TagService>();
 
-        return builder;
+        _builder.Services.AddScoped<IGroupService, GroupService>();
+        _builder.Services.AddScoped<IWorkItemService, WorkItemService>();
+
+        return _builder;
     }
 
-    public static WebApplicationBuilder AddLogging(WebApplicationBuilder builder, string dbConnection)
+    public WebApplicationBuilder AddLogging()
     {
         ColumnOptions logColumns = new();
         logColumns.Id.ColumnName = "LogId";
@@ -168,7 +211,7 @@ public class Startup
             .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Error)
             .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Error)
             .WriteTo.MSSqlServer(
-                connectionString: dbConnection,
+                connectionString: _databaseConnection.ConnectionString,
                 columnOptions: logColumns,
                 sinkOptions: new MSSqlServerSinkOptions
                 {
@@ -179,12 +222,12 @@ public class Startup
             //.WriteTo.Seq()
             .CreateLogger();
 
-        return builder;
+        return _builder;
     }
 
-    public static async Task<WebApplication> ConfigureApp(WebApplicationBuilder builder, DeploymentInfo deploymentInfo)
+    public async Task<WebApplication> ConfigureApp()
     {
-        WebApplication app = builder.Build();
+        WebApplication app = _builder.Build();
 
         // https://github.com/scalar/scalar/discussions/4468#discussioncomment-15371071
         app.UseForwardedHeaders();
@@ -196,7 +239,7 @@ public class Startup
 
         app.MapScalarApiReference(options =>
         {
-            options.WithTitle($"[{deploymentInfo.Environment}] Moopel API")
+            options.WithTitle($"[{_deploymentInfo.Environment}] Moopel API")
                    .WithFavicon("/favicon.png")
                    .WithTheme(ScalarTheme.Kepler)
                    .AddPreferredSecuritySchemes(JwtBearerDefaults.AuthenticationScheme);
@@ -214,7 +257,7 @@ public class Startup
         {
             status = "Healthy",
             time = DateTime.UtcNow,
-            deploymentInfo
+            _deploymentInfo
         }));
 
         app.MapControllers();
@@ -224,11 +267,11 @@ public class Startup
 
 
     #region Database
-    public static bool BuildDatabase(string connectionString)
+    public bool BuildDatabase()
     {
         try
         {
-            using SqlConnection conn = new(connectionString);
+            using SqlConnection conn = new(_databaseConnection.ConnectionString);
             conn.Open();
 
             CreateTables(conn);
