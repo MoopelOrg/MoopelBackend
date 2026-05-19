@@ -22,7 +22,20 @@ dotnet_diagnostic.IDE0005.severity = warning
 dotnet_diagnostic.CA2208.severity = warning
 
 # CA1062: Validate arguments of public methods
-dotnet_diagnostic.CA1062.severity = warning
+dotnet_diagnostic.CA1062.severity = error
 
 # CS8613: Nullability of reference types in return type doesn't match implicitly implemented member.
 dotnet_diagnostic.CS8613.severity = error
+
+# IDE0301: Simplify collection initialization
+dotnet_diagnostic.IDE0301.severity = error
+
+# CA2264: Do not pass a non-nullable value to 'ArgumentNullException.ThrowIfNull'
+dotnet_diagnostic.CA2264.severity = error
+
+dotnet_diagnostic.IDE0290.severity = none
+
+dotnet_diagnostic.IDE0008.severity = warning
+
+# IDE0090: Use 'new(...)'
+dotnet_diagnostic.IDE0090.severity = error
