@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using MoopelApi.Helpers;
 using MoopelApi.Models;
 using MoopelApi.Models.Dto;
@@ -32,11 +33,13 @@ public class AuthController : ControllerBase
     [HttpPost(Routes.Auth.Login)]
     public async Task<ActionResult<LoginResult>> Login([FromBody] LoginRequest request, CancellationToken cancelToken)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
         _logger.LogInformation("Received Login request for {User} with {Context}",
             request.Username, context);
 
-        LoginResult? loginResult = await _authService.Login(request);
+        LoginResult? loginResult = await _authService.Login(request, cancelToken);
         if (loginResult is not null)
         {
             return Ok(loginResult);
@@ -47,9 +50,23 @@ public class AuthController : ControllerBase
         }
     }
 
+    [HttpPost(Routes.Auth.GuestLogin)]
+    public async Task<ActionResult<LoginResult>> GuestLogin(CancellationToken cancelToken)
+    {
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
+        _logger.LogInformation("Received Guest Login request with {Context}", context);
+
+        LoginResult loginResult = await _authService.GuestLogin(cancelToken)
+            ?? throw new("Failed to complete guest login");
+
+        return Ok(loginResult);
+    }
+
     [HttpPost(Routes.Auth.Register)]
     public async Task<ActionResult<UserRead>> Register([FromBody] RegistrationRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
         _logger.LogInformation("Received Registration request for {User} with {Context}",
             request.Username, context);
@@ -94,7 +111,7 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpPost(Routes.Auth.Logout)]
-    public async Task<ActionResult<bool>> Logout(CancellationToken cancelToken)
+    public async Task<ActionResult<bool>> Logout()
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
 
@@ -102,14 +119,18 @@ public class AuthController : ControllerBase
         _logger.LogInformation("Received logout request for {Context}", context);
 
         bool loggedOut = await _authService.LogoutUser(contextUser.UserId);
+
+        _logger.LogInformation("Logout request for {Context} resulted in {Result}", context, loggedOut);
         return Ok(loggedOut);
     }
 
     [Authorize]
     [HttpGet(Routes.Auth.Me)]
-    public async Task<ActionResult<UserRead>> Me(CancellationToken cancelToken)
+    public async Task<ActionResult<UserRead>> Me()
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
+        _logger.LogInformation("Received me request for {Context}", context);
 
         return Ok(contextUser);
     }

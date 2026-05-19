@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using MoopelApi.Models;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Requests.Creation;
@@ -37,7 +38,11 @@ public class UserSettingsController : ControllerBase
         UserSettings? settings = await _userService.GetSettingsFromUserId(contextUser.UserId);
 
         if (settings is null)
+        {
+            _logger.LogInformation("Request[{Context}] attempted to get settings for user[{Id}] which was not found.",
+                context, contextUser.UserId);
             return NotFound();
+        }
 
         return Ok(settings);
     }
@@ -51,7 +56,11 @@ public class UserSettingsController : ControllerBase
         UserSettings? settings = await _userService.GetSettingsFromSettingId(settingsId);
 
         if (settings is null)
+        {
+            _logger.LogInformation("Request[{Context}] attempted to get settings[{Id}] which was not found.",
+                context, settingsId);
             return NotFound();
+        }
 
         return Ok(settings);
     }
@@ -67,21 +76,23 @@ public class UserSettingsController : ControllerBase
         _logger.LogInformation("Received request to update settings for user[{Id}] from context[{Context}]", contextUser.UserId, context);
 
         UserSettings? existingSettings = await _userService.GetSettingsFromUserId(contextUser.UserId);
+
         if (existingSettings is null)
         {
+            _logger.LogInformation("Request[{Context}] attempted to update settings but did not have settings already. Creating new settings.",
+                context);
             UserSettingsCreateRequest createRequest = new()
             {
                 Timezone = updateRequest.Timezone,
                 DateFormat = updateRequest.DateFormat
             };
-            await _userService.CreateUserSettings(contextUser.UserId, createRequest);
+            existingSettings = await _userService.CreateUserSettings(createRequest, contextUser.UserId);
         }
 
 
-        UserSettings? userSettings = await _userService.UpdateUserSettings(updateRequest);
+        UserSettings userSettings = await _userService.UpdateUserSettings(updateRequest, existingSettings.SettingId)
+            ?? throw new InvalidOperationException($"Attempted to update user settings [{existingSettings.SettingId}] but it returned null");
 
-        if (userSettings is null)
-            return NotFound();
 
         return Ok(userSettings);
     }

@@ -42,6 +42,12 @@ public class StoragesController : ControllerBase
 
         List<Storage>? userStorages = await _storageService.GetStoragesByUserId(contextUser.UserId, cancelToken);
 
+        if (userStorages is null)
+        {
+            _logger.LogInformation("Request[{Context}] attempted to get storages for user[{Id}] but none were found.",
+                requestContext, contextUser.UserId);
+        }
+
         return Ok(userStorages ?? []);
     }
 

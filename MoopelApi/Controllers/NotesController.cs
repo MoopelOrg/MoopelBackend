@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MoopelApi.Models;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Requests.Creation;
 using MoopelApi.Models.Requests.Update;
@@ -45,18 +46,22 @@ public class NotesController : ControllerBase
     [HttpGet(Routes.Note.NoteById)]
     public async Task<ActionResult<Note>> GetNoteById(int noteId)
     {
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
         User contextUser = await _contextService.GetContextUser(HttpContext);
-        _logger.LogInformation("User {UserId} requested note {NoteId}", contextUser.UserId, noteId);
+
+        _logger.LogInformation("Received request to retrieve note [{NoteId}] from context[{Context}]", noteId, context);
 
         Note? note = await _noteService.GetNoteById(noteId);
         if (note is null)
         {
-            _logger.LogWarning("Note {NoteId} not found for user {UserId}", noteId, contextUser.UserId);
+            _logger.LogInformation("Request[{Context}] attempted to get note[{NoteId}] which was not found.",
+                context, noteId);
             return NotFound();
         }
         if (note.UserId != contextUser.UserId)
         {
-            _logger.LogWarning("User {UserId} attempted to access note {NoteId} which they do not own", contextUser.UserId, noteId);
+            _logger.LogWarning("Request[{Context}] attempted to get note[{NoteId}] without sufficient permissions.",
+                context, noteId);
             return Forbid();
         }
 
@@ -66,8 +71,10 @@ public class NotesController : ControllerBase
     [HttpPost(Routes.Note.CreateNote)]
     public async Task<ActionResult<Note>> CreateNote([FromBody] NoteCreationRequest request)
     {
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
         User contextUser = await _contextService.GetContextUser(HttpContext);
-        _logger.LogInformation("User {UserId} is creating a new note", contextUser.UserId);
+
+        _logger.LogInformation("Received request to create note from context[{Context}]", context);
 
         Note createdNote = await _noteService.CreateNote(request, contextUser.UserId);
 
@@ -77,27 +84,27 @@ public class NotesController : ControllerBase
     [HttpPatch(Routes.Note.UpdateNote)]
     public async Task<ActionResult<Note>> UpdateNote(int noteId, [FromBody] NoteUpdateRequest request)
     {
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
         User contextUser = await _contextService.GetContextUser(HttpContext);
-        _logger.LogInformation("User {UserId} is updating note {NoteId}", contextUser.UserId, noteId);
+
+        _logger.LogInformation("Received request to update note [{NoteId}] from context[{Context}]", noteId, context);
 
         Note? noteToBeUpdated = await _noteService.GetNoteById(noteId);
         if (noteToBeUpdated is null)
         {
-            _logger.LogWarning("Note {NoteId} not found for user {UserId}", noteId, contextUser.UserId);
+            _logger.LogInformation("Request[{Context}] attempted to update note[{NoteId}] which was not found.",
+                context, noteId);
             return NotFound();
         }
         if (noteToBeUpdated.UserId != contextUser.UserId)
         {
-            _logger.LogWarning("User {UserId} attempted to update note {NoteId} which they do not own", contextUser.UserId, noteId);
+            _logger.LogWarning("Request[{Context}] attempted to update note[{NoteId}] without sufficient permissions.",
+                context, noteId);
             return Forbid();
         }
 
-        Note? updatedNote = await _noteService.UpdateNote(request, noteId);
-        if (updatedNote is null)
-        {
-            _logger.LogCritical("Note could note be found, which should have been caught");
-            return NotFound();
-        }
+        Note updatedNote = await _noteService.UpdateNote(request, noteId)
+            ?? throw new("Note could note be found, which should have been caught");
 
 
         return Ok(updatedNote);
@@ -106,27 +113,26 @@ public class NotesController : ControllerBase
     [HttpDelete(Routes.Note.DeleteNote)]
     public async Task<ActionResult> DeleteNote(int noteId)
     {
+        RequestContext context = await _contextService.GetRequestContext(HttpContext);
         User contextUser = await _contextService.GetContextUser(HttpContext);
-        _logger.LogInformation("User {UserId} is deleting note {NoteId}", contextUser.UserId, noteId);
+
+        _logger.LogInformation("Received request to delete note [{NoteId}] from context[{Context}]", noteId, context);
 
         Note? noteToBeDeleted = await _noteService.GetNoteById(noteId);
         if (noteToBeDeleted is null)
         {
-            _logger.LogWarning("Note {NoteId} not found for user {UserId}", noteId, contextUser.UserId);
+            _logger.LogInformation("Request[{Context}] attempted to delete note[{NoteId}] which was not found.",
+                context, noteId);
             return NotFound();
         }
         if (noteToBeDeleted.UserId != contextUser.UserId)
         {
-            _logger.LogWarning("User {UserId} attempted to delete note {NoteId} which they do not own", contextUser.UserId, noteId);
+            _logger.LogWarning("Request[{Context}] attempted to delete note[{NoteId}] without sufficient permissions.",
+                context, noteId);
             return Forbid();
         }
 
-        bool deleted = await _noteService.DeleteNote(noteId);
-        if (!deleted)
-        {
-            _logger.LogError("Failed to delete note {NoteId} for user {UserId}", noteId, contextUser.UserId);
-            return StatusCode(500, "Failed to delete the note");
-        }
+        await _noteService.DeleteNote(noteId);
 
         return NoContent();
     }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using MoopelApi.Models;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Dto.Read;
@@ -35,7 +36,11 @@ public class UserController : ControllerBase
         User? user = await _userService.GetUserFromUserId(userId);
 
         if (user is null)
+        {
+            _logger.LogInformation("Request[{Context}] attempted to get user[{Id}] which was not found.",
+                context, userId);
             return NotFound();
+        }
 
         return Ok(user);
     }
@@ -50,7 +55,11 @@ public class UserController : ControllerBase
         User? user = await _userService.GetUserFromUserName(username);
 
         if (user is null)
+        {
+            _logger.LogInformation("Request[{Context}] attempted to get user[{Name}] which was not found.",
+                context, username);
             return NotFound();
+        }
 
         return Ok(user);
     }
@@ -63,26 +72,26 @@ public class UserController : ControllerBase
 
         _logger.LogInformation("Received request to update user[{Id}] from context[{Context}]", contextUser.UserId, context);
 
-        User? updatedUser = await _userService.UpdateUser(updateRequest);
+        User updatedUser = await _userService.UpdateUser(updateRequest, contextUser.UserId)
+            ?? throw new($"Could not find user to update [{contextUser.UserId}]");
 
-        if (updatedUser is null)
-            return NotFound();
         return Ok(updatedUser.ToRead());
     }
 
+    [Authorize(Policy = Policies.AdminOnly)]
     [HttpPatch(Routes.User.DisableUser)]
     public async Task<ActionResult> DisableUser(int userId)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
         User contextUser = await _contextService.GetContextUser(HttpContext);
 
+        _logger.LogInformation("Received request to disable user[{Id}] from context[{Context}]", userId, context);
+
         if (contextUser.UserId != userId)
         {
             _logger.LogWarning("User[{ContextUserId}] attempted to disable user[{TargetUserId}] from context[{Context}]", contextUser.UserId, userId, context);
             return Forbid();
         }
-
-        _logger.LogInformation("Received request to disable user[{Id}] from context[{Context}]", userId, context);
 
         await _userService.DisableUser(userId);
 

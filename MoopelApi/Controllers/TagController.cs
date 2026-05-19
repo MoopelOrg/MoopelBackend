@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using MoopelApi.Models;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Requests.Creation;
@@ -100,12 +101,8 @@ public class TagController : ControllerBase
             return Forbid();
         }
 
-        UserTag? updatedTag = await _tagService.UpdateUserTag(updateRequest, tagId);
-
-        if (updatedTag is null)
-        {
-            return NotFound();
-        }
+        UserTag updatedTag = await _tagService.UpdateUserTag(updateRequest, tagId)
+            ?? throw new($"Attempted to update usertag [{tagId}] but it returned null");
 
         return Ok(updatedTag);
     }
@@ -130,11 +127,7 @@ public class TagController : ControllerBase
             return Forbid();
         }
 
-        bool deleted = await _tagService.DeleteUserTag(tagId, contextUser.UserId);
-        if (!deleted)
-        {
-            return NotFound();
-        }
+        await _tagService.DeleteUserTag(tagId, contextUser.UserId);
 
         return NoContent();
     }
@@ -158,6 +151,15 @@ public class TagController : ControllerBase
             return NotFound();
         }
 
+        GroupAccess access = await _authService.GetUserGroupAccess(contextUser, group);
+
+        if (access.CanViewGroupDetails() is false)
+        {
+            _logger.LogWarning("Request[{Context}] attempted to get group tags for group[{Id}] which they do not have access to.",
+                context, groupId);
+            return Forbid();
+        }
+
         List<GroupTag> tags = await _tagService.GetGroupTags(groupId);
         return Ok(tags);
     }
@@ -177,6 +179,18 @@ public class TagController : ControllerBase
             return NotFound();
         }
 
+        Group group = await _groupService.GetGroup(tag.GroupId)
+            ?? throw new($"Could not find group for group tag [{tag}]");
+
+        GroupAccess access = await _authService.GetUserGroupAccess(contextUser, group);
+
+        if (access.CanViewGroupDetails() is false)
+        {
+            _logger.LogWarning("Request[{Context}] attempted to get group tags for group[{Id}] which they do not have access to.",
+                context, group.GroupId);
+            return Forbid();
+        }
+
         return Ok(tag);
     }
 
@@ -186,6 +200,24 @@ public class TagController : ControllerBase
         User contextUser = await _contextService.GetContextUser(HttpContext);
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
         _logger.LogInformation("Received request to create group tag from requestContext[{Context}]", context);
+
+        Group? group = await _groupService.GetGroup(groupId);
+
+        if (group is null)
+        {
+            _logger.LogInformation("Request[{Context}] attempted to get group[{Id}] which was not found.",
+                context, groupId);
+            return NotFound();
+        }
+
+        GroupAccess access = await _authService.GetUserGroupAccess(contextUser, group);
+
+        if (access.CanCreateTag() is false)
+        {
+            _logger.LogWarning("Request[{Context}] attempted to create group tag for group[{Id}] which they do not have access to.",
+                context, group.GroupId);
+            return Forbid();
+        }
 
         GroupTag createdTag = await _tagService.CreateGroupTag(creationRequest, groupId);
         return CreatedAtAction(nameof(GetGroupTagById), new { tagId = createdTag.TagId }, createdTag);
@@ -205,6 +237,19 @@ public class TagController : ControllerBase
                 context, tagId);
             return NotFound();
         }
+
+        Group group = await _groupService.GetGroup(groupTag.GroupId)
+            ?? throw new($"Could not find group for group tag [{groupTag}]");
+
+        GroupAccess access = await _authService.GetUserGroupAccess(contextUser, group);
+
+        if (access.CanUpdateTag() is false)
+        {
+            _logger.LogWarning("Request[{Context}] attempted to get group tags for group[{Id}] which they do not have access to.",
+                context, group.GroupId);
+            return Forbid();
+        }
+
         GroupTag? updatedTag = await _tagService.UpdateGroupTag(updateRequest, tagId);
         if (updatedTag is null)
         {
@@ -229,11 +274,19 @@ public class TagController : ControllerBase
             return NotFound();
         }
 
-        bool deleted = await _tagService.DeleteGroupTag(tagId);
-        if (!deleted)
+        Group group = await _groupService.GetGroup(groupTag.GroupId)
+            ?? throw new($"Could not find group for group tag [{groupTag}]");
+
+        GroupAccess access = await _authService.GetUserGroupAccess(contextUser, group);
+
+        if (access.CanDeleteTag() is false)
         {
-            return NotFound();
+            _logger.LogWarning("Request[{Context}] attempted to get group tags for group[{Id}] which they do not have access to.",
+                context, group.GroupId);
+            return Forbid();
         }
+
+        await _tagService.DeleteGroupTag(tagId);
 
         return NoContent();
     }
