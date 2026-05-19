@@ -14,16 +14,14 @@ public class GroupsController : ControllerBase
 {
     private readonly ILogger<GroupsController> _logger;
     private readonly IAuthService _authService;
-    private readonly IUserService _userService;
     private readonly IContextService _contextService;
     private readonly IGroupService _groupService;
 
     public GroupsController(ILogger<GroupsController> logger, IContextService contextService,
-        IAuthService authService, IUserService userService, IGroupService groupService)
+        IAuthService authService, IGroupService groupService)
     {
         _logger = logger;
         _authService = authService;
-        _userService = userService;
         _contextService = contextService;
         _groupService = groupService;
     }
@@ -49,7 +47,12 @@ public class GroupsController : ControllerBase
 
         Group? group = await _groupService.GetGroup(groupId);
         if (group is null)
+        {
+            _logger.LogInformation("Request[{Context}] attempted to get group[{GroupId}] which was not found.",
+                context, groupId);
             return NotFound();
+        }
+
         return Ok(group);
     }
 
@@ -69,10 +72,7 @@ public class GroupsController : ControllerBase
             return BadRequest("You have reached the maximum number of groups.");
         }
 
-        Group? group = await _groupService.CreateGroup(contextUser, request);
-
-        if (group is null)
-            return BadRequest();
+        Group group = await _groupService.CreateGroup(contextUser, request);
 
         return Ok(group);
     }
@@ -80,15 +80,32 @@ public class GroupsController : ControllerBase
     [HttpPatch(Routes.Group.UpdateGroup)]
     public async Task<ActionResult<Group>> UpdateGroup(int groupId, [FromBody] GroupUpdateRequest request)
     {
+        User contextUser = await _contextService.GetContextUser(HttpContext);
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
         _logger.LogInformation("Received request[{Request}] to update group from context[{Context}]", request, context);
 
-        Group? group = await _groupService.UpdateGroup(groupId, request);
+        Group? groupToUpdate = await _groupService.GetGroup(groupId);
 
-        if (group is null)
+        if (groupToUpdate is null)
+        {
+            _logger.LogInformation("Request[{Context}] attempted to update group[{GroupId}] which was not found.",
+                context, groupId);
             return NotFound();
+        }
 
-        return Ok(group);
+        GroupAccess groupAccess = await _authService.GetUserGroupAccess(contextUser, groupToUpdate);
+
+        if (groupAccess.CanUpdateGroup() is false)
+        {
+            _logger.LogWarning("Request[{Context}] attempted to update group[{GroupId}] without sufficient permissions.",
+                context, groupId);
+            return Forbid();
+        }
+
+        Group updatedGroup = await _groupService.UpdateGroup(groupId, request)
+            ?? throw new Exception("Group update returned null.");
+
+        return Ok(updatedGroup);
     }
 
     [HttpDelete(Routes.Group.DeleteGroup)]
@@ -100,12 +117,20 @@ public class GroupsController : ControllerBase
 
         Group? group = await _groupService.GetGroup(groupId);
         if (group is null)
+        {
+            _logger.LogInformation("Request[{Context}] attempted to delete group[{GroupId}] which was not found.",
+                context, groupId);
             return NotFound();
+        }
 
         GroupAccess groupAccess = await _authService.GetUserGroupAccess(contextUser, group);
 
         if (groupAccess.CanDeleteGroup() is false)
+        {
+            _logger.LogWarning("Request[{Context}] attempted to delete group[{GroupId}] without sufficient permissions.",
+                context, groupId);
             return Forbid();
+        }
 
         await _groupService.DeleteGroup(groupId);
 
