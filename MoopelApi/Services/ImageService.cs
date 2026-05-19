@@ -1,12 +1,14 @@
-﻿using MoopelApi.Models.Configuration;
+﻿using Microsoft.Data.SqlClient;
+using MoopelApi.Models;
+using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
 using MoopelApi.Services.Interfaces;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
+using SharpImage = SixLabors.ImageSharp.Image;
 
 using static MoopelApi.ConstantValues.Database;
-using SharpImage = SixLabors.ImageSharp.Image;
 
 namespace MoopelApi.Services;
 
@@ -25,14 +27,20 @@ public class ImageService : IImageService
 
     public async Task<int> UploadImage(IFormFile imageFile)
     {
-        if (imageFile.Length > 5 * 1024 * 1024)
-            throw new ArgumentException("File too large");
-
-        if (imageFile == null || imageFile.Length == 0)
+        if (imageFile is null || imageFile.Length == 0)
+        {
             throw new ArgumentException("Invalid image file");
+        }
+
+        if (imageFile.Length > 5 * 1024 * 1024)
+        {
+            throw new ArgumentException("File too large");
+        }
 
         if (!imageFile.ContentType.StartsWith("image/"))
+        {
             throw new ArgumentException("File must be an image");
+        }
 
         using var memoryStream = new MemoryStream();
         await imageFile.CopyToAsync(memoryStream);
@@ -41,21 +49,99 @@ public class ImageService : IImageService
 
         try
         {
-            using var img = SharpImage.Load(imageBytes);
+            using SharpImage img = SharpImage.Load(imageBytes);
         }
         catch
         {
             throw new ArgumentException("Invalid image file");
         }
 
-        // Generate thumbnail
         byte[] thumbnailBytes = GenerateThumbnail(imageBytes);
 
-        throw new NotImplementedException();
+        await using SqlConnection connection = new(_connection.ConnectionString);
+        await connection.OpenAsync();
+
+        await using SqlCommand command = connection.CreateCommand();
+
+        command.CommandText =
+        $@"
+            INSERT INTO {ImagesTable.SelectName}
+            (
+                {ImageNameField.SelectName},
+                {ImageContentTypeField.SelectName},
+                {ImageDataField.SelectName},
+                {ImageThumbnailField.SelectName}
+            )
+            OUTPUT INSERTED.{ImageIdField.SelectName}
+            VALUES
+            (
+                @Name,
+                @ContentType,
+                @Data,
+                @Thumbnail
+            );
+        ";
+
+        command.Parameters.Add(ImageNameField.GenerateParameter("@Name", imageFile.FileName));
+        command.Parameters.Add(ImageContentTypeField.GenerateParameter("@ContentType", imageFile.ContentType));
+        command.Parameters.Add(ImageDataField.GenerateParameter("@Data", imageBytes));
+        command.Parameters.Add(ImageThumbnailField.GenerateParameter("@Thumbnail", thumbnailBytes));
+
+        int imageId = (int)(await command.ExecuteScalarAsync()
+            ?? throw new InvalidOperationException("Failed to upload image."));
+
+        return imageId;
     }
+
     public async Task<MoopelImage> GetImage(int id)
     {
-        throw new NotImplementedException();
+        await using SqlConnection connection = new(_connection.ConnectionString);
+        await connection.OpenAsync();
+
+        await using SqlCommand command = connection.CreateCommand();
+
+        command.CommandText =
+        $@"
+            SELECT 
+                {ImageIdField.SelectName},
+                {ImageContentTypeField.SelectName},
+                {ImageDataField.SelectName},
+                {ImageThumbnailField.SelectName}
+            FROM {ImagesTable.SelectName}
+            WHERE {ImageIdField.SelectName} = @ImageId;
+        ";
+
+        command.Parameters.Add(ImageIdField.GenerateParameter("@ImageId", id));
+
+        await using SqlDataReader reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            throw new KeyNotFoundException($"Image [{id}] was not found.");
+        }
+
+        string contentType = reader.GetString(reader.GetOrdinal(ImageContentTypeField.Name));
+        byte[] imageData = (byte[])reader[ImageDataField.Name];
+        byte[]? thumbnailData = reader[ImageThumbnailField.Name] is DBNull
+            ? null
+            : (byte[])reader[ImageThumbnailField.Name];
+
+        return new MoopelImage
+        {
+            Id = id,
+            FullImage = new MoopelFile
+            {
+                ContentType = contentType,
+                Data = imageData
+            },
+            Thumbnail = thumbnailData is null
+                ? null
+                : new MoopelFile
+                {
+                    ContentType = "image/jpeg",
+                    Data = thumbnailData
+                }
+        };
     }
 
     private byte[] GenerateThumbnail(byte[] imageBytes)
