@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+
 using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
@@ -25,6 +26,8 @@ public class NoteService : INoteService
 
     public async Task<Note> CreateNote(NoteCreationRequest request, int userId)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Creating note for user [{UserId}]", userId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -86,7 +89,7 @@ public class NoteService : INoteService
         }
     }
 
-    public async Task<bool> DeleteNote(int noteId)
+    public async Task DeleteNote(int noteId)
     {
         _logger.LogInformation("Deleting note [{NoteId}]", noteId);
         SqlCommand? command = null;
@@ -116,8 +119,14 @@ public class NoteService : INoteService
             }
 
             await transaction.CommitAsync();
-
-            return rowsAffected == 1;
+            if (rowsAffected == 0)
+            {
+                _logger.LogInformation("No note found to delete for [{NoteId}]", noteId);
+            }
+            else if (rowsAffected > 1)
+            {
+                throw new InvalidOperationException($"Deleted [{rowsAffected}] notes when only one note should have been deleted.");
+            }
         }
         catch (Exception ex)
         {
@@ -240,6 +249,8 @@ public class NoteService : INoteService
 
     public async Task<Note?> UpdateNote(NoteUpdateRequest request, int noteId)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Updating note [{NoteId}]", noteId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;

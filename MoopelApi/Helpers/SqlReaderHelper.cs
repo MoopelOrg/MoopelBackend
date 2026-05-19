@@ -26,6 +26,8 @@ public static class SqlReaderHelper
 
     public static string GetStringValue(this SqlDataReader reader, string columnName)
     {
+        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
+
         object value = reader.GetRootFieldValue(columnName)
             ?? throw new InvalidOperationException($"Column '{columnName}' was null.");
 
@@ -35,12 +37,16 @@ public static class SqlReaderHelper
 
     public static string? GetNullableString(this SqlDataReader reader, string columnName)
     {
+        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
+
         object? value = reader.GetRootFieldValue(columnName);
         return value?.ToString();
     }
 
     public static int GetInt(this SqlDataReader reader, string columnName)
     {
+        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
+
         object value = reader.GetRootFieldValue(columnName)
             ?? throw new InvalidOperationException($"Column '{columnName}' was null.");
 
@@ -49,12 +55,16 @@ public static class SqlReaderHelper
 
     public static int? GetNullableInt(this SqlDataReader reader, string columnName)
     {
+        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
+
         object? value = reader.GetRootFieldValue(columnName);
         return value is null ? null : Convert.ToInt32(value);
     }
 
     public static DateTime GetDateTime(this SqlDataReader reader, string columnName)
     {
+        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
+
         object value = reader.GetRootFieldValue(columnName)
             ?? throw new InvalidOperationException($"Column '{columnName}' was null.");
 
@@ -63,12 +73,16 @@ public static class SqlReaderHelper
 
     public static DateTime? GetNullableDateTime(this SqlDataReader reader, string columnName)
     {
+        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
+
         object? value = reader.GetRootFieldValue(columnName);
         return value is null ? null : Convert.ToDateTime(value);
     }
 
     public static bool GetBool(this SqlDataReader reader, string columnName)
     {
+        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
+
         object value = reader.GetRootFieldValue(columnName)
             ?? throw new InvalidOperationException($"Column '{columnName}' was null.");
 
@@ -77,12 +91,16 @@ public static class SqlReaderHelper
 
     public static bool? GetNullableBool(this SqlDataReader reader, string columnName)
     {
+        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
+
         object? value = reader.GetRootFieldValue(columnName);
         return value is null ? null : Convert.ToBoolean(value);
     }
 
     public static decimal GetDecimal(this SqlDataReader reader, string columnName)
     {
+        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
+
         object value = reader.GetRootFieldValue(columnName)
             ?? throw new InvalidOperationException($"Column '{columnName}' was null.");
 
@@ -91,12 +109,16 @@ public static class SqlReaderHelper
 
     public static decimal? GetNullableDecimal(this SqlDataReader reader, string columnName)
     {
+        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
+
         object? value = reader.GetRootFieldValue(columnName);
         return value is null ? null : Convert.ToDecimal(value);
     }
 
     public static long GetLong(this SqlDataReader reader, string columnName)
     {
+        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
+
         object value = reader.GetRootFieldValue(columnName)
             ?? throw new InvalidOperationException($"Column '{columnName}' was null.");
 
@@ -105,12 +127,16 @@ public static class SqlReaderHelper
 
     public static long? GetNullableLong(this SqlDataReader reader, string columnName)
     {
+        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
+
         object? value = reader.GetRootFieldValue(columnName);
         return value is null ? null : Convert.ToInt64(value);
     }
 
     public static byte[] GetBytes(this SqlDataReader reader, string columnName)
     {
+        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
+
         object value = reader.GetRootFieldValue(columnName)
             ?? throw new InvalidOperationException($"Column '{columnName}' was null.");
 
@@ -119,6 +145,8 @@ public static class SqlReaderHelper
 
     public static byte[]? GetNullableBytes(this SqlDataReader reader, string columnName)
     {
+        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
+
         object? value = reader.GetRootFieldValue(columnName);
         return value is null ? null : (byte[])value;
     }
@@ -128,6 +156,8 @@ public static class SqlReaderHelper
     public static TEnum GetEnum<TEnum>(this SqlDataReader reader, string columnName)
     where TEnum : struct, Enum
     {
+        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
+
         object value = reader.GetRootFieldValue(columnName)
             ?? throw new InvalidOperationException($"Column '{columnName}' was null.");
 
@@ -145,6 +175,8 @@ public static class SqlReaderHelper
     public static TEnum? GetNullableEnum<TEnum>(this SqlDataReader reader, string columnName)
     where TEnum : struct, Enum
     {
+        ArgumentNullException.ThrowIfNull(reader, nameof(reader));
+
         object? value = reader.GetRootFieldValue(columnName);
 
         if (value is null)

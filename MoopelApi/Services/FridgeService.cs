@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+
 using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
@@ -25,6 +26,8 @@ public class FridgeService : IFridgeService
 
     public async Task<Fridge> CreateFridge(int userId, FridgeCreateRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Creating fridge for user [{UserId}]", userId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -88,6 +91,8 @@ public class FridgeService : IFridgeService
 
     public async Task<FridgeItem> CreateFridgeItem(int fridgeId, FridgeItemCreateRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Creating fridge item under fridge [{FridgeId}]", fridgeId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -394,6 +399,8 @@ public class FridgeService : IFridgeService
 
     public async Task<Fridge> UpdateFridge(int fridgeId, FridgeUpdateRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Updating fridge [{FridgeId}]", fridgeId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -456,6 +463,8 @@ public class FridgeService : IFridgeService
 
     public async Task<FridgeItem> UpdateFridgeItem(int itemId, FridgeItemUpdateRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Updating fridge item [{ItemId}]", itemId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;

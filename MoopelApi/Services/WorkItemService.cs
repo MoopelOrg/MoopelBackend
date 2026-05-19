@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+
 using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
@@ -116,6 +117,8 @@ public class WorkItemService : IWorkItemService
 
     public async Task<WorkItem> CreateWorkItem(WorkItemCreateRequest request, int groupId)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Creating work item for group [{Id}]", groupId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -266,7 +269,7 @@ public class WorkItemService : IWorkItemService
         }
         catch (OperationCanceledException)
         {
-            _logger.LogWarning("Request to get all children work items for Parent[{ParentItemId}] was canceled", 
+            _logger.LogWarning("Request to get all children work items for Parent[{ParentItemId}] was canceled",
                 parentItemId);
             return [];
         }
@@ -453,6 +456,8 @@ public class WorkItemService : IWorkItemService
 
     public async Task<WorkItem> UpdateWorkItem(WorkItemUpdateRequest request, int groupId)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Updating work item for group [{Id}]", groupId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;

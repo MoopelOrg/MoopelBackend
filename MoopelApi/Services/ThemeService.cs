@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+
 using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
@@ -25,6 +26,9 @@ public class ThemeService : IThemeService
 
     public async Task<Theme> CreateTheme(ThemeCreateRequest request, User creatingUser)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+        ArgumentNullException.ThrowIfNull(creatingUser, nameof(creatingUser));
+
         _logger.LogInformation("Creating theme for user [{UserId}]", creatingUser.UserId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -48,7 +52,7 @@ public class ThemeService : IThemeService
                 VALUES
                 (@CreatorUser, @Name, @Description, @Settings)
             ";
-            command.Parameters.Add(ThemeCreatorDescriptorField.GenerateParameter("@CreatorUser", GenerateUserDescriptor(creatingUser)));
+            command.Parameters.Add(ThemeCreatorDescriptorField.GenerateParameter("@CreatorUser", FormatHelper.GenerateUserDescriptor(creatingUser)));
             command.Parameters.Add(ThemeNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(ThemeDescriptionField.GenerateParameter("@Description", request.Description));
 
@@ -236,6 +240,8 @@ public class ThemeService : IThemeService
 
     public async Task<Theme> UpdateTheme(int themeId, ThemeUpdateRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Updating theme [{ThemeId}]", themeId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -297,12 +303,5 @@ public class ThemeService : IThemeService
 
             throw;
         }
-    }
-
-    private static string GenerateUserDescriptor(User user)
-    {
-        ArgumentNullException.ThrowIfNull(user);
-
-        return $"User [{user.UserId}] - {user.Username}";
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+
 using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
@@ -68,7 +69,7 @@ public class SessionService : ISessionService
         }
     }
 
-    public async Task<List<Session>> GetUserSessions(int userId)
+    public async Task<List<Session>> GetUserSessions(int userId, CancellationToken cancelToken)
     {
         _logger.LogInformation("Getting sessions for user [{UserId}]", userId);
         SqlCommand? command = null;
@@ -76,7 +77,7 @@ public class SessionService : ISessionService
         try
         {
             await using SqlConnection connection = new(_connection.ConnectionString);
-            await connection.OpenAsync();
+            await connection.OpenAsync(cancelToken);
 
             command = connection.CreateCommand();
 
@@ -87,11 +88,11 @@ public class SessionService : ISessionService
             ";
             command.Parameters.Add(SessionUserIdField.GenerateParameter("@UserId", userId));
 
-            await using SqlDataReader reader = await command.ExecuteReaderAsync();
+            await using SqlDataReader reader = await command.ExecuteReaderAsync(cancelToken);
 
             List<Session> sessions = [];
 
-            while (await reader.ReadAsync())
+            while (await reader.ReadAsync(cancelToken))
             {
                 sessions.Add(DtoReaders.ReadSession(reader));
             }
@@ -168,7 +169,7 @@ public class SessionService : ISessionService
         }
     }
 
-    public async Task<bool> RevokeSession(int sessionId)
+    public async Task RevokeSession(int sessionId)
     {
         _logger.LogInformation("Revoking session [{SessionId}]", sessionId);
         SqlCommand? command = null;
@@ -194,14 +195,12 @@ public class SessionService : ISessionService
 
             int rowsAffected = await command.ExecuteNonQueryAsync();
 
-            if (rowsAffected > 1)
+            if (rowsAffected != 1)
             {
                 throw new InvalidOperationException($"Revoked [{rowsAffected}] sessions when only one session should have been revoked.");
             }
 
             await transaction.CommitAsync();
-
-            return rowsAffected == 1;
         }
         catch (Exception ex)
         {

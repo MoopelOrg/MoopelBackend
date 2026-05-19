@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+
 using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
@@ -25,6 +26,8 @@ public class BankService : IBankService
 
     public async Task<BankAccount> CreateBankAccount(int userId, BankAccountCreateRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Creating bank account for user [{UserId}]", userId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -41,13 +44,15 @@ public class BankService : IBankService
             command.CommandText =
             @$"
                 INSERT INTO {BankAccountsTable.SelectName}
-                ({BankAccountNameField.SelectName}, 
+                ({BankAccountNameField.SelectName},
+                 {BankAccountDescriptionField.SelectName},
                  {BankAccountUserIdField.SelectName}
                 OUTPUT INSERTED.{BankAccountIdField.SelectName} 
                 VALUES
-                (@AccountName, @UserId)
+                (@AccountName, @Description, @UserId)
             ";
             command.Parameters.Add(BankAccountNameField.GenerateParameter("@AccountName", request.Name));
+            command.Parameters.Add(BankAccountDescriptionField.GenerateParameter("@Description", request.Description));
             command.Parameters.Add(BankAccountUserIdField.GenerateParameter("@UserId", userId));
 
             int accountId = (int)(await command.ExecuteScalarAsync()
@@ -61,6 +66,7 @@ public class BankService : IBankService
                 UserId = userId,
 
                 Name = request.Name,
+                Description = request.Description,
                 Balance = 0m,
 
                 CreatedAtUtc = DateTime.UtcNow,
@@ -88,6 +94,8 @@ public class BankService : IBankService
 
     public async Task<Transaction> CreateTransaction(int accountId, TransactionCreateRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Creating transaction for account [{AccountId}]", accountId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -153,6 +161,8 @@ public class BankService : IBankService
 
     public async Task<TransactionItem> CreateTransactionItem(int transactionId, TransactionItemCreateRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Creating transaction item for transaction [{TransactionId}]", transactionId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -624,6 +634,8 @@ public class BankService : IBankService
 
     public async Task<BankAccount> UpdateBankAccount(int accountId, BankAccountUpdateRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Updating bank account [{AccountId}]", accountId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -646,7 +658,7 @@ public class BankService : IBankService
             ";
             command.Parameters.Add(BankAccountNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(BankAccountIdField.GenerateParameter("@AccountId", accountId));
-            
+
             using SqlDataReader reader = await command.ExecuteReaderAsync();
 
             BankAccount account = DtoReaders.ReadBankAccount(reader);
@@ -677,6 +689,8 @@ public class BankService : IBankService
 
     public async Task<TransactionItem> UpdateTransactionItem(int itemId, TransactionItemUpdateRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Updating transaction item [{ItemId}]", itemId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;

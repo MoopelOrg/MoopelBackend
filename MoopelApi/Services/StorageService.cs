@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+
 using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
@@ -25,6 +26,8 @@ public class StorageService : IStorageService
 
     public async Task<Storage> CreateStorage(int userId, StorageCreateRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Creating storage for user [{UserId}]", userId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -87,6 +90,8 @@ public class StorageService : IStorageService
 
     public async Task<StorageItem> CreateStorageItem(int storageId, StorageCreateRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Creating storage item for storage [{StorageId}]", storageId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -400,6 +405,8 @@ public class StorageService : IStorageService
 
     public async Task<Storage> UpdateStorage(int storageId, StorageUpdateRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Updating storage [{StorageId}]", storageId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -465,6 +472,8 @@ public class StorageService : IStorageService
 
     public async Task<StorageItem> UpdateStorageItem(int itemId, StorageUpdateRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Updating storage item [{ItemId}]", itemId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;

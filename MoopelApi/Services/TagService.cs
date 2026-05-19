@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+
 using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
@@ -123,6 +124,8 @@ public class TagService : ITagService
 
     public async Task<UserTag> CreateUserTag(TagCreateRequest request, int userId)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Creating user tag for user [{UserId}]", userId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -185,6 +188,8 @@ public class TagService : ITagService
 
     public async Task<UserTag?> UpdateUserTag(TagUpdateRequest request, int tagId)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Updating user tag [{TagId}]", tagId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -249,7 +254,7 @@ public class TagService : ITagService
         }
     }
 
-    public async Task<bool> DeleteUserTag(int tagId, int userId)
+    public async Task DeleteUserTag(int tagId, int userId)
     {
         _logger.LogInformation("Deleting user tag [{TagId}] for user [{UserId}]", tagId, userId);
         SqlCommand? command = null;
@@ -275,14 +280,12 @@ public class TagService : ITagService
 
             int rowsAffected = await command.ExecuteNonQueryAsync();
 
-            if (rowsAffected > 1)
+            if (rowsAffected != 1)
             {
-                throw new InvalidOperationException($"Deleted [{rowsAffected}] user tags when only one user tag should have been deleted.");
+                throw new InvalidOperationException($"Deleted [{rowsAffected}] user tags when one user tag should have been deleted.");
             }
 
             await transaction.CommitAsync();
-
-            return rowsAffected == 1;
         }
         catch (Exception ex)
         {
@@ -404,6 +407,8 @@ public class TagService : ITagService
 
     public async Task<GroupTag> CreateGroupTag(TagCreateRequest request, int groupId)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Creating group tag for group [{GroupId}]", groupId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -466,6 +471,8 @@ public class TagService : ITagService
 
     public async Task<GroupTag?> UpdateGroupTag(TagUpdateRequest request, int tagId)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         _logger.LogInformation("Updating group tag [{TagId}]", tagId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -530,7 +537,7 @@ public class TagService : ITagService
         }
     }
 
-    public async Task<bool> DeleteGroupTag(int tagId)
+    public async Task DeleteGroupTag(int tagId)
     {
         _logger.LogInformation("Deleting group tag [{TagId}]", tagId);
         SqlCommand? command = null;
@@ -554,14 +561,12 @@ public class TagService : ITagService
 
             int rowsAffected = await command.ExecuteNonQueryAsync();
 
-            if (rowsAffected > 1)
+            if (rowsAffected != 1)
             {
-                throw new InvalidOperationException($"Deleted [{rowsAffected}] group tags when only one group tag should have been deleted.");
+                throw new InvalidOperationException($"Deleted [{rowsAffected}] group tags when one group tag should have been deleted.");
             }
 
             await transaction.CommitAsync();
-
-            return rowsAffected == 1;
         }
         catch (Exception ex)
         {

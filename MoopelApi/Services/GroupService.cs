@@ -1,6 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
+
 using MoopelApi.Helpers;
-using MoopelApi.Models;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Requests.Creation;
@@ -26,6 +26,8 @@ public class GroupService : IGroupService
 
     public async Task<Group> CreateGroup(User creator, GroupCreateRequest createRequest)
     {
+        ArgumentNullException.ThrowIfNull(createRequest, nameof(createRequest));
+
         _logger.LogInformation("Creating group for [{User}]", creator);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -291,8 +293,10 @@ public class GroupService : IGroupService
         }
     }
 
-    public async Task<Group> UpdateGroup(int groupId, GroupUpdateRequest updateRequest)
+    public async Task<Group?> UpdateGroup(int groupId, GroupUpdateRequest updateRequest)
     {
+        ArgumentNullException.ThrowIfNull(updateRequest, nameof(updateRequest));
+
         _logger.LogInformation("Updating group [{GroupId}]", groupId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
@@ -326,6 +330,10 @@ public class GroupService : IGroupService
                 updatedGroups.Add(DtoReaders.ReadGroup(reader, GroupsTable.Alias));
             }
 
+            if (updatedGroups.Count == 0)
+            {
+                return null;
+            }
             if (updatedGroups.Count != 1)
                 throw new InvalidOperationException($"Failed to update group. Groups updated: {updatedGroups.Count}");
 
@@ -402,6 +410,8 @@ public class GroupService : IGroupService
 
     public async Task<GroupUser> UpdateGroupUser(int groupId, int userId, GroupUserUpdateRequest updateRequest)
     {
+        ArgumentNullException.ThrowIfNull(updateRequest, nameof(updateRequest));
+
         _logger.LogInformation("Updating group user access for user [{UserId}] in group [{GroupId}]", userId, groupId);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;

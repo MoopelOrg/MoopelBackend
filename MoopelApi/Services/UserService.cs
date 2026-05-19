@@ -1,5 +1,5 @@
-﻿using System.Xml.Linq;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
+
 using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
@@ -172,7 +172,7 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<User?> UpdateUser(UserUpdateRequest updateRequest)
+    public async Task<User?> UpdateUser(UserUpdateRequest updateRequest, int userId)
     {
         throw new NotImplementedException();
     }
@@ -330,13 +330,15 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<UserSettings?> UpdateUserSettings(UserSettingsUpdateRequest updateRequest)
+    public async Task<UserSettings?> UpdateUserSettings(UserSettingsUpdateRequest updateRequest, int settingsId)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<UserSettings> CreateUserSettings(int userId, UserSettingsCreateRequest createRequest)
+    public async Task<UserSettings> CreateUserSettings(UserSettingsCreateRequest createRequest, int userId)
     {
+        ArgumentNullException.ThrowIfNull(createRequest, nameof(createRequest));
+
         _logger.LogInformation("Creating user settings for user[{Id}]", userId);
         SqlCommand? command = null;
 

@@ -44,6 +44,8 @@ public class AuthService : IAuthService
 
     public async Task<User?> Register(RegistrationRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
         try
         {
             _logger.LogInformation("Attempting to register user with username: {Username}", request.Username);
@@ -68,9 +70,7 @@ public class AuthService : IAuthService
             @$"
                 INSERT INTO {UsersTable.SelectName}
                 ({UserNameField.SelectName}, {UserPasswordHashField.SelectName}, {UserRoleField.SelectName}, {UserDeactivatedField.SelectName})     
-                
-                OUTPUT INSERTED.{UserIdField.SelectName};
-
+                OUTPUT INSERTED.{UserIdField.SelectName}
                 VALUES (@Username, @PasswordHash, @Role, @Deactivated);
             ";
 
