@@ -10,11 +10,11 @@ public interface ITagService
     Task<UserTag> GetUserTagById(int tagId);
     Task<UserTag> CreateUserTag(TagCreateRequest request, int userId);
     Task<UserTag?> UpdateUserTag(TagUpdateRequest request, int tagId);
-    Task<bool> DeleteUserTag(int tagId, int userId);
+    Task DeleteUserTag(int tagId, int userId);
 
     Task<List<GroupTag>> GetGroupTags(int groupId);
     Task<GroupTag> GetGroupTagById(int groupTagId);
     Task<GroupTag> CreateGroupTag(TagCreateRequest request, int groupId);
     Task<GroupTag?> UpdateGroupTag(TagUpdateRequest request, int tagId);
-    Task<bool> DeleteGroupTag(int tagId);
+    Task DeleteGroupTag(int tagId);
 }

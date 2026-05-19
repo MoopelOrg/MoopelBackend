@@ -8,7 +8,8 @@ namespace MoopelApi.Services.Interfaces;
 public interface IAuthService
 {
     public Task<User?> Register(RegistrationRequest request);
-    public Task<LoginResult?> Login(LoginRequest request);
+    public Task<LoginResult?> Login(LoginRequest request, CancellationToken cancelToken);
+    public Task<LoginResult?> GuestLogin(CancellationToken cancelToken);
     public Task<bool> LogoutUser(int userId);
 
 

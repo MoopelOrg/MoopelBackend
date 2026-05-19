@@ -4,10 +4,10 @@ namespace MoopelApi.Services.Interfaces;
 
 public interface ISessionService
 {
-    Task<List<Session>> GetUserSessions(int userId);
+    Task<List<Session>> GetUserSessions(int userId, CancellationToken cancelToken);
     Task<Session> GetSessionById(int sessionId);
 
-    Task<bool> RevokeSession(int sessionId);
+    Task RevokeSession(int sessionId);
 
     Task<bool> RevokeAllSessions();
 }

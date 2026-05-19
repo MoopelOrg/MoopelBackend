@@ -1,5 +1,4 @@
-﻿using MoopelApi.Models;
-using MoopelApi.Models.Dto;
+﻿using MoopelApi.Models.Dto;
 using MoopelApi.Models.Requests.Creation;
 using MoopelApi.Models.Requests.Update;
 
@@ -14,7 +13,7 @@ public interface IGroupService
 
     public Task<Group> CreateGroup(User creator, GroupCreateRequest creationRequest);
 
-    public Task<Group> UpdateGroup(int groupId, GroupUpdateRequest updateRequest);
+    public Task<Group?> UpdateGroup(int groupId, GroupUpdateRequest updateRequest);
 
     public Task DeleteGroup(int groupId);
 

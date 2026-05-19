@@ -12,5 +12,5 @@ public interface INoteService
     public Task<Note> CreateNote(NoteCreationRequest request, int userId);
     public Task<Note?> UpdateNote(NoteUpdateRequest request, int noteId);
 
-    public Task<bool> DeleteNote(int noteId);
+    public Task DeleteNote(int noteId);
 }
