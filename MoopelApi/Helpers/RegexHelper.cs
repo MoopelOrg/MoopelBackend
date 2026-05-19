@@ -15,6 +15,7 @@ public static class RegexHelper
     public static bool CheckWithRegex(string input, Regex regex)
     {
         ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(regex, nameof(regex));
 
         return regex.IsMatch(input);
     }

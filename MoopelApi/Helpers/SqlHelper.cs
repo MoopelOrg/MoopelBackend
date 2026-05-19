@@ -1,4 +1,5 @@
 ﻿using System.Data;
+
 using Microsoft.Data.SqlClient;
 
 namespace MoopelApi.Helpers;
@@ -22,6 +23,7 @@ public static class SqlHelper
 
     public static SqlDbType GetSqlDbType(string type)
     {
+        ArgumentNullException.ThrowIfNull(type, nameof(type));
         return type.ToLower() switch
         {
             // Integers
