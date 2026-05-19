@@ -1,8 +1,6 @@
 ﻿using MoopelApi.Models.Configuration;
 using MoopelApi.Services.Interfaces;
 
-using static MoopelApi.ConstantValues.Database;
-
 namespace MoopelApi.Services;
 
 public class NotificationService : INotificationService
