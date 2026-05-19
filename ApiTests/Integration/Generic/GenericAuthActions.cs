@@ -1,4 +1,7 @@
 ﻿using System.Net.Http.Json;
+
+using ApiTests.TestData;
+
 using MoopelApi;
 using MoopelApi.Helpers;
 using MoopelApi.Models.Dto.Read;
@@ -15,6 +18,12 @@ public static class GenericAuthActions
         return await ApiHelper.GetClassFromResponse<LoginResult>(response, cancelToken);
     }
 
+    public async static Task<LoginResult?> GuestLogin(HttpClient client, CancellationToken cancelToken)
+    {
+        HttpResponseMessage response = await client.PostAsJsonAsync(Routes.Auth.GuestLogin, cancelToken);
+        return await ApiHelper.GetClassFromResponse<LoginResult>(response, cancelToken);
+    }
+
     public async static Task<UserRead?> Register(HttpClient client, RegistrationRequest request, CancellationToken cancelToken)
     {
         HttpResponseMessage response = await client.PostAsJsonAsync(Routes.Auth.Register, request, cancelToken);
@@ -23,6 +32,8 @@ public static class GenericAuthActions
 
     public static HttpClient AttachBearer(HttpClient client, string? token)
     {
+        ArgumentNullException.ThrowIfNull(client, nameof(client));
+
         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token ?? "");
         return client;
     }
@@ -51,5 +62,13 @@ public static class GenericAuthActions
         AttachBearer(client, loginResult.Token);
 
         return client;
+    }
+
+    public async static Task<HttpClient> CreateAuthenticatedClient(HttpClient client, CancellationToken cancelToken)
+    {
+        string userName = AuthTestData.ValidUserName + Guid.NewGuid();
+        string password = AuthTestData.ValidPassword + Guid.NewGuid();
+
+        return await CreateAuthenticatedClient(client, userName, password, cancelToken);
     }
 }

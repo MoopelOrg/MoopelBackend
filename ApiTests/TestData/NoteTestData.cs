@@ -1,0 +1,90 @@
+﻿using MoopelApi.Models.Enums;
+using MoopelApi.Models.Requests.Creation;
+using MoopelApi.Models.Requests.Update;
+
+namespace ApiTests.TestData;
+
+internal static class NoteTestData
+{
+    public static readonly NoteCreationRequest ValidCreateRequest = new()
+    {
+        Type = NoteType.Note,
+        Title = "NoteTitle",
+        Content = "Note content example"
+    };
+
+    public static readonly NoteUpdateRequest ValidUpdateRequest = new()
+    {
+        Type = NoteType.Note,
+        Title = "UpdatedNoteTitle",
+        Content = "Updated note content"
+    };
+
+    public static IEnumerable<NoteCreationRequest> ValidNoteCreateRequestValues()
+    {
+        yield return new NoteCreationRequest { Type = NoteType.Note, Title = "Shopping List", Content = "Milk, Eggs, Bread" };
+        yield return new NoteCreationRequest { Type = NoteType.Fridge, Title = "Fridge Inventory", Content = "Tomatoes, Cucumbers" };
+        yield return new NoteCreationRequest { Type = NoteType.Storage, Title = "Storage Note", Content = "Boxes in attic" };
+        yield return new NoteCreationRequest { Type = NoteType.WorkItem, Title = "Work Task", Content = "Complete ticket #123" };
+        yield return new NoteCreationRequest { Type = NoteType.Recipe, Title = "Pancake Recipe", Content = "Flour, Milk, Egg" };
+        yield return new NoteCreationRequest { Type = NoteType.Note, Title = "Empty Content", Content = "" };
+        yield return new NoteCreationRequest { Type = NoteType.Note, Title = "A", Content = "Min title" };
+    }
+
+    public static IEnumerable<NoteUpdateRequest> ValidNoteUpdateRequestValues()
+    {
+        yield return new NoteUpdateRequest { Type = NoteType.Note, Title = "Updated Shopping List", Content = "Milk, Eggs, Bread, Butter" };
+        yield return new NoteUpdateRequest { Type = NoteType.Fridge, Title = "Updated Fridge Inventory", Content = "Tomatoes (2), Cucumbers (1)" };
+        yield return new NoteUpdateRequest { Type = NoteType.Storage, Title = "Updated Storage Note", Content = "Moved boxes to garage" };
+        yield return new NoteUpdateRequest { Type = NoteType.WorkItem, Title = "Updated Work Task", Content = "Follow up on ticket #123" };
+        yield return new NoteUpdateRequest { Type = NoteType.Recipe, Title = "Updated Pancake Recipe", Content = "Add vanilla" };
+        yield return new NoteUpdateRequest { Type = NoteType.Note, Title = "Empty Content Update", Content = "" };
+        yield return new NoteUpdateRequest { Type = NoteType.Note, Title = "A", Content = "Min title update" };
+    }
+
+    public static TheoryData<NoteCreationRequest> ValidNoteCreateRequests
+    {
+        get
+        {
+            TheoryData<NoteCreationRequest> data = [];
+            foreach (NoteCreationRequest r in ValidNoteCreateRequestValues())
+            {
+                data.Add(r);
+            }
+
+            return data;
+        }
+    }
+
+    public static TheoryData<NoteUpdateRequest> ValidNoteUpdateRequests
+    {
+        get
+        {
+            TheoryData<NoteUpdateRequest> data = [];
+            foreach (NoteUpdateRequest r in ValidNoteUpdateRequestValues())
+            {
+                data.Add(r);
+            }
+
+            return data;
+        }
+    }
+
+    public static TheoryData<NoteCreationRequest, NoteUpdateRequest> ValidNoteUpdateCreateRequests
+    {
+        get
+        {
+            TheoryData<NoteCreationRequest, NoteUpdateRequest> data = [];
+
+            foreach (NoteCreationRequest createRequest in ValidNoteCreateRequestValues())
+            {
+                foreach (NoteUpdateRequest updateRequest in ValidNoteUpdateRequestValues())
+                {
+                    data.Add(createRequest, updateRequest);
+                }
+            }
+
+            return data;
+        }
+    }
+}

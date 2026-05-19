@@ -1,8 +1,10 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
+
 using MoopelApi;
 using MoopelApi.Models.Dto.Read;
 using MoopelApi.Models.Requests;
@@ -20,6 +22,8 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         _apiFactory = apiFactory;
         _cancelToken = TestContext.Current.CancellationToken;
     }
+
+    #region Register
 
     [Theory]
     [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
@@ -91,6 +95,45 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
 
     [Theory]
     [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
+    public async Task DuplicateRegistration_DoesNotBreakOriginalLogin(string username, string password)
+    {
+        // Arrange
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        RegistrationRequest registerRequest = new()
+        {
+            Username = username,
+            Password = password
+        };
+
+        LoginRequest loginRequest = new()
+        {
+            Username = username,
+            Password = password
+        };
+
+        // Act
+        UserRead? firstUser = await GenericAuthActions.Register(client, registerRequest, _cancelToken);
+        UserRead? secondUser = await GenericAuthActions.Register(client, registerRequest, _cancelToken);
+        LoginResult? loginResult = await GenericAuthActions.Login(client, loginRequest, _cancelToken);
+
+        // Assert
+        Assert.NotNull(firstUser);
+        Assert.Null(secondUser);
+
+        Assert.NotNull(loginResult);
+        Assert.NotNull(loginResult.User);
+        Assert.NotNull(loginResult.Token);
+        Assert.Equal(username, loginResult.User.Username);
+    }
+
+    #endregion
+
+    #region Login
+
+    [Theory]
+    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
     public async Task Login_ReturnsToken_AfterRegisteringAndLoggingInWithValidCredentials(string username, string password)
     {
         // Arrange
@@ -122,6 +165,29 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
 
         Assert.Equal(username, user.Username);
         Assert.Equal(username, loginResult.User.Username);
+
+        Assert.False(string.IsNullOrWhiteSpace(loginResult.Token));
+        Assert.Equal(3, loginResult.Token.Split('.').Length);
+        Assert.StartsWith("ey", loginResult.Token);
+    }
+
+    [Fact]
+    public async Task GuestLogin_ReturnsToken_WithNoCredentials()
+    {
+        // Arrange
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        // Act
+        LoginResult? loginResult = await GenericAuthActions.GuestLogin(client, _cancelToken);
+
+        // Assert
+        Assert.NotNull(loginResult);
+        Assert.NotNull(loginResult.User);
+        Assert.NotNull(loginResult.Token);
+        Assert.Null(loginResult.Error);
+
+        Assert.StartsWith("Guest_", loginResult.User.Username);
 
         Assert.False(string.IsNullOrWhiteSpace(loginResult.Token));
         Assert.Equal(3, loginResult.Token.Split('.').Length);
@@ -196,6 +262,36 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
 
     [Theory]
     [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
+    public async Task Login_ReturnsDifferentTokenShapeThanEmptyString(string username, string password)
+    {
+        // Arrange
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        await GenericAuthActions.Register(
+            client,
+            new RegistrationRequest { Username = username, Password = password },
+            _cancelToken);
+
+        // Act
+        LoginResult? loginResult = await GenericAuthActions.Login(
+            client,
+            new LoginRequest { Username = username, Password = password },
+            _cancelToken);
+
+        // Assert
+        Assert.NotNull(loginResult);
+        Assert.False(string.IsNullOrWhiteSpace(loginResult.Token));
+        Assert.NotEqual(string.Empty, loginResult.Token);
+        Assert.Contains(".", loginResult.Token);
+    }
+
+    #endregion
+
+    #region Me
+
+    [Theory]
+    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
     public async Task Me_ReturnsMyInfo_AfterRegisteringAndLoggingInWithValidCredentials(string username, string password)
     {
         // Arrange
@@ -266,66 +362,9 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(HttpStatusCode.Unauthorized, meResponse.StatusCode);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task DuplicateRegistration_DoesNotBreakOriginalLogin(string username, string password)
-    {
-        // Arrange
-        await _apiFactory.ResetDatabaseAsync();
-        HttpClient client = _apiFactory.CreateClient();
+    #endregion
 
-        RegistrationRequest registerRequest = new()
-        {
-            Username = username,
-            Password = password
-        };
-
-        LoginRequest loginRequest = new()
-        {
-            Username = username,
-            Password = password
-        };
-
-        // Act
-        UserRead? firstUser = await GenericAuthActions.Register(client, registerRequest, _cancelToken);
-        UserRead? secondUser = await GenericAuthActions.Register(client, registerRequest, _cancelToken);
-        LoginResult? loginResult = await GenericAuthActions.Login(client, loginRequest, _cancelToken);
-
-        // Assert
-        Assert.NotNull(firstUser);
-        Assert.Null(secondUser);
-
-        Assert.NotNull(loginResult);
-        Assert.NotNull(loginResult.User);
-        Assert.NotNull(loginResult.Token);
-        Assert.Equal(username, loginResult.User.Username);
-    }
-
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task Login_ReturnsDifferentTokenShapeThanEmptyString(string username, string password)
-    {
-        // Arrange
-        await _apiFactory.ResetDatabaseAsync();
-        HttpClient client = _apiFactory.CreateClient();
-
-        await GenericAuthActions.Register(
-            client,
-            new RegistrationRequest { Username = username, Password = password },
-            _cancelToken);
-
-        // Act
-        LoginResult? loginResult = await GenericAuthActions.Login(
-            client,
-            new LoginRequest { Username = username, Password = password },
-            _cancelToken);
-
-        // Assert
-        Assert.NotNull(loginResult);
-        Assert.False(string.IsNullOrWhiteSpace(loginResult.Token));
-        Assert.NotEqual(string.Empty, loginResult.Token);
-        Assert.Contains(".", loginResult.Token);
-    }
+    #region Register -> Login -> Me flow
 
     [Theory]
     [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
@@ -362,4 +401,6 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(registeredUser.Username, loginResult.User.Username);
         Assert.Equal(registeredUser.Username, me.Username);
     }
+
+    #endregion
 }
