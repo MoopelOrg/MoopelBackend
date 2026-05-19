@@ -6,6 +6,7 @@ public record Storage
     public required int UserId { get; init; }
 
     public required string Name { get; init; }
+    public required string Description { get; init; }
 
     public required DateTime CreatedAtUtc { get; init; }
 }

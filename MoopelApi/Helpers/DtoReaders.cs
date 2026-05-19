@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
+
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Enums;
-using Serilog.Events;
 
 using static MoopelApi.ConstantValues.Database;
 
@@ -165,6 +165,7 @@ public static class DtoReaders
             StorageId = reader.GetInt(Col(alias, StorageIdField.Name)),
             UserId = reader.GetInt(Col(alias, StorageUserIdField.Name)),
             Name = reader.GetStringValue(Col(alias, StorageNameField.Name)),
+            Description = reader.GetStringValue(Col(alias, StorageDescriptionField.Name)),
             CreatedAtUtc = reader.GetDateTime(Col(alias, StorageCreatedAtUtcField.Name))
         };
     }
@@ -212,6 +213,7 @@ public static class DtoReaders
             AccountId = reader.GetInt(Col(alias, BankAccountIdField.Name)),
             UserId = reader.GetInt(Col(alias, BankAccountUserIdField.Name)),
             Name = reader.GetStringValue(Col(alias, BankAccountNameField.Name)),
+            Description = reader.GetStringValue(Col(alias, BankAccountDescriptionField.Name)),
             Balance = reader.GetDecimal(Col(alias, BankAccountBalanceField.Name)),
             CreatedAtUtc = reader.GetDateTime(Col(alias, BankAccountCreatedAtUtcField.Name))
         };

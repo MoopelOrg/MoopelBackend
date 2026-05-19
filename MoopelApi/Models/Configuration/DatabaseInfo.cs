@@ -1,7 +1,7 @@
 ﻿namespace MoopelApi.Models.Configuration;
 
-using System.Data;
 using Microsoft.Data.SqlClient;
+using System.Data;
 
 public class DatabaseTable
 {
