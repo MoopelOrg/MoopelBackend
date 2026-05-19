@@ -9,12 +9,14 @@ public static class Routes
         public static class Actions
         {
             public const string Login = "/login";
+            public const string GuestLogin = "/guest-login";
             public const string Logout = "/logout";
             public const string Register = "/register";
             public const string Me = "/me";
         }
 
         public const string Login = Base + Actions.Login;
+        public const string GuestLogin = Base + Actions.GuestLogin;
         public const string Logout = Base + Actions.Logout;
         public const string Register = Base + Actions.Register;
         public const string Me = Base + Actions.Me;
@@ -27,14 +29,22 @@ public static class Routes
         public static class Actions
         {
             public const string UserById = "/{userId:int}";
+            public const string UserByName = "/{username}";
             public const string UpdateUser = "/update/{userId:int}";
             public const string DisableUser = "/disable/{userId:int}";
         }
 
         public const string UserById = Base + Actions.UserById;
-        public const string UserByName = Base + "/{username}";
+        public const string UserByName = Base + Actions.UserByName;
         public const string UpdateUser = Base + Actions.UpdateUser;
         public const string DisableUser = Base + Actions.DisableUser;
+
+        public static class Generate
+        {
+            public static string UserById(int userId) => User.UserById.Replace("{userId:int}", userId.ToString());
+            public static string UserByName(string username) => User.UserByName.Replace("{username}", Uri.EscapeDataString(username));
+            public static string DisableUser(int userId) => User.DisableUser.Replace("{userId:int}", userId.ToString());
+        }
     }
 
     public static class UserSettings
@@ -54,6 +64,13 @@ public static class Routes
         public const string SettingsById = Base + Actions.SettingsById;
         public const string CreateSettings = Base + Actions.CreateSettings;
         public const string UpdateSettings = Base + Actions.UpdateSettings;
+        public const string DeleteSettings = Base + Actions.DeleteSettings;
+
+        public static class Generate
+        {
+            public static string SettingsById(int settingId) => UserSettings.SettingsById.Replace("{settingId:int}", settingId.ToString());
+            public static string DeleteSettings(int settingId) => UserSettings.DeleteSettings.Replace("{settingId:int}", settingId.ToString());
+        }
     }
 
     public static class Group
@@ -74,6 +91,12 @@ public static class Routes
         public const string CreateGroup = Base + Actions.CreateGroup;
         public const string UpdateGroup = Base + Actions.UpdateGroup;
         public const string DeleteGroup = Base + Actions.DeleteGroup;
+        public static class Generate
+        {
+            public static string GroupById(int groupId) => Group.GroupById.Replace("{groupId:int}", groupId.ToString());
+            public static string UpdateGroup(int groupId) => Group.UpdateGroup.Replace("{groupId:int}", groupId.ToString());
+            public static string DeleteGroup(int groupId) => Group.DeleteGroup.Replace("{groupId:int}", groupId.ToString());
+        }
     }
 
     public static class Note
@@ -94,6 +117,12 @@ public static class Routes
         public const string CreateNote = Base + Actions.CreateNote;
         public const string UpdateNote = Base + Actions.UpdateNote;
         public const string DeleteNote = Base + Actions.DeleteNote;
+        public static class Generate
+        {
+            public static string NoteById(int noteId) => Note.NoteById.Replace("{noteId:int}", noteId.ToString());
+            public static string UpdateNote(int noteId) => Note.UpdateNote.Replace("{noteId:int}", noteId.ToString());
+            public static string DeleteNote(int noteId) => Note.DeleteNote.Replace("{noteId:int}", noteId.ToString());
+        }
     }
 
     public static class Tag
@@ -127,6 +156,18 @@ public static class Routes
         public const string CreateGroupTag = Base + Actions.CreateGroupTag;
         public const string UpdateGroupTag = Base + Actions.UpdateGroupTag;
         public const string DeleteGroupTag = Base + Actions.DeleteGroupTag;
+        public static class Generate
+        {
+            public static string UserTagById(int tagId) => Tag.UserTagById.Replace("{tagId:int}", tagId.ToString());
+            public static string UpdateUserTag(int tagId) => Tag.UpdateUserTag.Replace("{tagId:int}", tagId.ToString());
+            public static string DeleteUserTag(int tagId) => Tag.DeleteUserTag.Replace("{tagId:int}", tagId.ToString());
+
+            public static string GroupTagsByGroupId(int groupId) => Tag.GroupTagsByGroupId.Replace("{groupId:int}", groupId.ToString());
+            public static string GroupTagById(int tagId) => Tag.GroupTagById.Replace("{tagId:int}", tagId.ToString());
+            public static string CreateGroupTag(int groupId) => Tag.CreateGroupTag.Replace("{groupId:int}", groupId.ToString());
+            public static string UpdateGroupTag(int tagId) => Tag.UpdateGroupTag.Replace("{tagId:int}", tagId.ToString());
+            public static string DeleteGroupTag(int tagId) => Tag.DeleteGroupTag.Replace("{tagId:int}", tagId.ToString());
+        }
     }
 
     public static class Theme
@@ -151,6 +192,13 @@ public static class Routes
         public const string UpdateTheme = Base + Actions.UpdateTheme;
         public const string DeleteTheme = Base + Actions.DeleteTheme;
         public const string SetMyTheme = Base + Actions.SetMyTheme;
+        public static class Generate
+        {
+            public static string ThemeById(int themeId) => Theme.ThemeById.Replace("{themeId:int}", themeId.ToString());
+            public static string UpdateTheme(int themeId) => Theme.UpdateTheme.Replace("{themeId:int}", themeId.ToString());
+            public static string DeleteTheme(int themeId) => Theme.DeleteTheme.Replace("{themeId:int}", themeId.ToString());
+            public static string SetMyTheme(int themeId) => Theme.SetMyTheme.Replace("{themeId:int}", themeId.ToString());
+        }
     }
 
     public static class Session
@@ -169,6 +217,11 @@ public static class Routes
         public const string SessionById = Base + Actions.SessionById;
         public const string RevokeSession = Base + Actions.RevokeSession;
         public const string RevokeAll = Base + Actions.RevokeAll;
+        public static class Generate
+        {
+            public static string SessionById(int sessionId) => Session.SessionById.Replace("{sessionId:int}", sessionId.ToString());
+            public static string RevokeSession(int sessionId) => Session.RevokeSession.Replace("{sessionId:int}", sessionId.ToString());
+        }
     }
 
     public static class WorkItem
@@ -195,6 +248,15 @@ public static class Routes
         public const string DeleteWorkItem = Base + Actions.DeleteWorkItem;
         public const string AddLink = Base + Actions.AddLink;
         public const string RemoveLink = Base + Actions.RemoveLink;
+        public static class Generate
+        {
+            public static string WorkItemsByGroupId(int groupId) => WorkItem.WorkItemsByGroupId.Replace("{groupId:int}", groupId.ToString());
+            public static string WorkItemsByGroupIdAndType(int groupId, string type) => WorkItem.WorkItemsByGroupIdAndType.Replace("{groupId:int}", groupId.ToString()).Replace("{type}", Uri.EscapeDataString(type));
+            public static string WorkItemById(int workItemId) => WorkItem.WorkItemById.Replace("{workItemId:int}", workItemId.ToString());
+            public static string CreateWorkItem(int groupId) => WorkItem.CreateWorkItem.Replace("{groupId:int}", groupId.ToString());
+            public static string UpdateWorkItem(int workItemId) => WorkItem.UpdateWorkItem.Replace("{workItemId:int}", workItemId.ToString());
+            public static string DeleteWorkItem(int workItemId) => WorkItem.DeleteWorkItem.Replace("{workItemId:int}", workItemId.ToString());
+        }
     }
 
     public static class Storage
@@ -223,6 +285,16 @@ public static class Routes
         public const string CreateStorageItem = Base + Actions.CreateStorageItem;
         public const string UpdateStorageItem = Base + Actions.UpdateStorageItem;
         public const string DeleteStorageItem = Base + Actions.DeleteStorageItem;
+        public static class Generate
+        {
+            public static string StorageById(int storageId) => Storage.StorageById.Replace("{storageId:int}", storageId.ToString());
+            public static string UpdateStorage(int storageId) => Storage.UpdateStorage.Replace("{storageId:int}", storageId.ToString());
+            public static string DeleteStorage(int storageId) => Storage.DeleteStorage.Replace("{storageId:int}", storageId.ToString());
+
+            public static string CreateStorageItem(int storageId) => Storage.CreateStorageItem.Replace("{storageId:int}", storageId.ToString());
+            public static string UpdateStorageItem(int storageItemId) => Storage.UpdateStorageItem.Replace("{storageItemId:int}", storageItemId.ToString());
+            public static string DeleteStorageItem(int storageItemId) => Storage.DeleteStorageItem.Replace("{storageItemId:int}", storageItemId.ToString());
+        }
     }
 
     public static class Fridge
@@ -251,6 +323,17 @@ public static class Routes
         public const string CreateFridgeItem = Base + Actions.CreateFridgeItem;
         public const string UpdateFridgeItem = Base + Actions.UpdateFridgeItem;
         public const string DeleteFridgeItem = Base + Actions.DeleteFridgeItem;
+
+        public static class Generate
+        {
+            public static string FridgeById(int fridgeId) => Fridge.FridgeById.Replace("{fridgeId:int}", fridgeId.ToString());
+            public static string UpdateFridge(int fridgeId) => Fridge.UpdateFridge.Replace("{fridgeId:int}", fridgeId.ToString());
+            public static string DeleteFridge(int fridgeId) => Fridge.DeleteFridge.Replace("{fridgeId:int}", fridgeId.ToString());
+
+            public static string CreateFridgeItem(int fridgeId) => Fridge.CreateFridgeItem.Replace("{fridgeId:int}", fridgeId.ToString());
+            public static string UpdateFridgeItem(int fridgeItemId) => Fridge.UpdateFridgeItem.Replace("{fridgeItemId:int}", fridgeItemId.ToString());
+            public static string DeleteFridgeItem(int fridgeItemId) => Fridge.DeleteFridgeItem.Replace("{fridgeItemId:int}", fridgeItemId.ToString());
+        }
     }
 
     public static class Bank
@@ -271,6 +354,12 @@ public static class Routes
         public const string CreateAccount = Base + Actions.CreateAccount;
         public const string UpdateAccount = Base + Actions.UpdateAccount;
         public const string DeleteAccount = Base + Actions.DeleteAccount;
+        public static class Generate
+        {
+            public static string AccountById(int accountId) => Bank.AccountById.Replace("{accountId:int}", accountId.ToString());
+            public static string UpdateAccount(int accountId) => Bank.UpdateAccount.Replace("{accountId:int}", accountId.ToString());
+            public static string DeleteAccount(int accountId) => Bank.DeleteAccount.Replace("{accountId:int}", accountId.ToString());
+        }
     }
 
     public static class Transaction
@@ -298,6 +387,17 @@ public static class Routes
         public const string CreateTransactionItem = Base + Actions.CreateTransactionItem;
         public const string UpdateTransactionItem = Base + Actions.UpdateTransactionItem;
         public const string DeleteTransactionItem = Base + Actions.DeleteTransactionItem;
+        public static class Generate
+        {
+            public static string TransactionsByAccountId(int accountId) => Transaction.TransactionsByAccountId.Replace("{accountId:int}", accountId.ToString());
+            public static string TransactionById(int transactionId) => Transaction.TransactionById.Replace("{transactionId:int}", transactionId.ToString());
+            public static string UpdateTransaction(int transactionId) => Transaction.UpdateTransaction.Replace("{transactionId:int}", transactionId.ToString());
+            public static string DeleteTransaction(int transactionId) => Transaction.DeleteTransaction.Replace("{transactionId:int}", transactionId.ToString());
+
+            public static string CreateTransactionItem(int accountId) => Transaction.CreateTransactionItem.Replace("{accountId:int}", accountId.ToString());
+            public static string UpdateTransactionItem(int transactionItemId) => Transaction.UpdateTransactionItem.Replace("{transactionItemId:int}", transactionItemId.ToString());
+            public static string DeleteTransactionItem(int transactionItemId) => Transaction.DeleteTransactionItem.Replace("{transactionItemId:int}", transactionItemId.ToString());
+        }
     }
 
     public static class Report
@@ -318,6 +418,11 @@ public static class Routes
         public const string GroupSummary = Base + Actions.GroupSummary;
         public const string FinanceSummary = Base + Actions.FinanceSummary;
         public const string StorageSummary = Base + Actions.StorageSummary;
+        public static class Generate
+        {
+            public static string UserSummary(int userId) => Report.UserSummary.Replace("{userId:int}", userId.ToString());
+            public static string GroupSummary(int groupId) => Report.GroupSummary.Replace("{groupId:int}", groupId.ToString());
+        }
     }
 
     public static class Image
@@ -334,5 +439,10 @@ public static class Routes
         public const string Upload = Base + Actions.Upload;
         public const string ImageById = Base + Actions.ImageById;
         public const string DeleteImage = Base + Actions.DeleteImage;
+        public static class Generate
+        {
+            public static string ImageById(int imageId) => Image.ImageById.Replace("{imageId:int}", imageId.ToString());
+            public static string DeleteImage(int imageId) => Image.DeleteImage.Replace("{imageId:int}", imageId.ToString());
+        }
     }
 }
