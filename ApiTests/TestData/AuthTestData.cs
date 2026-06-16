@@ -2,11 +2,17 @@
 
 public static class AuthTestData
 {
-    public const string ValidUserName = "user";
+    public const string ValidUserName = "validUser1";
     public const string ValidPassword = "pAssword1#!";
+
+    public const string ValidUserName2 = "validUser2";
+    public const string ValidPassword2 = "pAssword1#!";
+
 
     public static IEnumerable<(string Username, string Password)> ValidUserValues()
     {
+        yield return (ValidUserName, ValidPassword);
+        yield return (ValidUserName2, ValidPassword2);
         yield return ("user1", "Password1!");
         yield return ("user2", "Secure2@A");
         yield return ("user3", "Valid3#Pass");

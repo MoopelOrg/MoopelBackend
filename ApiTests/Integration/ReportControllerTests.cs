@@ -204,7 +204,7 @@ public class ReportControllerTests : IClassFixture<MoopelApiFactory>
 
         await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        CreateGroupRequest createRequest = new()
+        GroupCreateRequest createRequest = new()
         {
             Name = "Report Group"
         };
@@ -238,7 +238,7 @@ public class ReportControllerTests : IClassFixture<MoopelApiFactory>
         await GenericAuthActions.CreateAuthenticatedClient(user1, "groupreport1", "Password123!", _cancelToken);
         await GenericAuthActions.CreateAuthenticatedClient(user2, "groupreport2", "Password123!", _cancelToken);
 
-        CreateGroupRequest createRequest = new()
+        GroupCreateRequest createRequest = new()
         {
             Name = "Private Report Group"
         };

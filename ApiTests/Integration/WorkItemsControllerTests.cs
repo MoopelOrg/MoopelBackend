@@ -461,7 +461,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
     private async Task<GroupRead> CreateGroupAsync(HttpClient client, string name)
     {
-        CreateGroupRequest request = new()
+        GroupCreateRequest request = new()
         {
             Name = name
         };

@@ -1,8 +1,13 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
+
 using MoopelApi;
+using MoopelApi.Models.Dto;
+using MoopelApi.Models.Requests.Creation;
+using MoopelApi.Models.Requests.Update;
 
 namespace ApiTests.Integration;
 
@@ -45,7 +50,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        CreateTransactionRequest request = new()
+        TransactionCreateRequest request = new()
         {
             AccountId = 1,
             Name = "Groceries",
@@ -64,7 +69,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        UpdateTransactionRequest request = new()
+        TransactionUpdateRequest request = new()
         {
             Name = "Updated",
             Amount = 10m
@@ -96,13 +101,13 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
         await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        BankAccountRead account = await CreateBankAccountAsync(client, "Checking");
+        BankAccount account = await CreateBankAccountAsync(client, "Checking");
 
         HttpResponseMessage response =
             await client.GetAsync($"transaction/account/{account.AccountId}", _cancelToken);
 
-        List<TransactionRead>? result =
-            await response.Content.ReadFromJsonAsync<List<TransactionRead>>(_cancelToken);
+        List<Transaction>? result =
+            await response.Content.ReadFromJsonAsync<List<Transaction>>(_cancelToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(result);
@@ -130,9 +135,9 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
         await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        BankAccountRead account = await CreateBankAccountAsync(client, "Spending");
+        BankAccount account = await CreateBankAccountAsync(client, "Spending");
 
-        CreateTransactionRequest request = new()
+        TransactionCreateRequest request = new()
         {
             AccountId = account.AccountId,
             Name = "Groceries",
@@ -142,8 +147,8 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage response =
             await client.PostAsJsonAsync(Routes.Transaction.CreateTransaction, request, _cancelToken);
 
-        TransactionRead? created =
-            await response.Content.ReadFromJsonAsync<TransactionRead>(_cancelToken);
+        Transaction? created =
+            await response.Content.ReadFromJsonAsync<Transaction>(_cancelToken);
 
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
@@ -163,7 +168,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
         await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        CreateTransactionRequest request = new()
+        TransactionCreateRequest request = new()
         {
             AccountId = 999999,
             Name = "Bad Transaction",
@@ -184,14 +189,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
         await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        BankAccountRead account = await CreateBankAccountAsync(client, "Main");
-        TransactionRead created = await CreateTransactionAsync(client, account.AccountId, "Rent", 1200m);
+        BankAccount account = await CreateBankAccountAsync(client, "Main");
+        Transaction created = await CreateTransactionAsync(client, account.AccountId, "Rent", 1200m);
 
         HttpResponseMessage response =
             await client.GetAsync($"transaction/{created.TransactionId}", _cancelToken);
 
-        TransactionRead? result =
-            await response.Content.ReadFromJsonAsync<TransactionRead>(_cancelToken);
+        Transaction? result =
+            await response.Content.ReadFromJsonAsync<Transaction>(_cancelToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(result);
@@ -221,10 +226,10 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
         await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        BankAccountRead account = await CreateBankAccountAsync(client, "Bills");
-        TransactionRead created = await CreateTransactionAsync(client, account.AccountId, "Power", 85m);
+        BankAccount account = await CreateBankAccountAsync(client, "Bills");
+        Transaction created = await CreateTransactionAsync(client, account.AccountId, "Power", 85m);
 
-        UpdateTransactionRequest request = new()
+        TransactionUpdateRequest request = new()
         {
             Name = "Electric Bill",
             Amount = 90m
@@ -233,8 +238,8 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage response =
             await client.PutAsJsonAsync($"transaction/update/{created.TransactionId}", request, _cancelToken);
 
-        TransactionRead? updated =
-            await response.Content.ReadFromJsonAsync<TransactionRead>(_cancelToken);
+        Transaction? updated =
+            await response.Content.ReadFromJsonAsync<Transaction>(_cancelToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(updated);
@@ -250,7 +255,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
         await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        UpdateTransactionRequest request = new()
+        TransactionUpdateRequest request = new()
         {
             Name = "Missing",
             Amount = 1m
@@ -270,8 +275,8 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
         await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        BankAccountRead account = await CreateBankAccountAsync(client, "Delete Account");
-        TransactionRead created = await CreateTransactionAsync(client, account.AccountId, "Delete Me", 5m);
+        BankAccount account = await CreateBankAccountAsync(client, "Delete Account");
+        Transaction created = await CreateTransactionAsync(client, account.AccountId, "Delete Me", 5m);
 
         HttpResponseMessage deleteResponse =
             await client.DeleteAsync($"transaction/delete/{created.TransactionId}", _cancelToken);
@@ -311,8 +316,8 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         await GenericAuthActions.CreateAuthenticatedClient(user1, "transactionuser1", "Password123!", _cancelToken);
         await GenericAuthActions.CreateAuthenticatedClient(user2, "transactionuser2", "Password123!", _cancelToken);
 
-        BankAccountRead account = await CreateBankAccountAsync(user1, "Private Checking");
-        TransactionRead created = await CreateTransactionAsync(user1, account.AccountId, "Private Purchase", 25m);
+        BankAccount account = await CreateBankAccountAsync(user1, "Private Checking");
+        Transaction created = await CreateTransactionAsync(user1, account.AccountId, "Private Purchase", 25m);
 
         HttpResponseMessage response =
             await user2.GetAsync($"transaction/{created.TransactionId}", _cancelToken);
@@ -333,7 +338,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         await GenericAuthActions.CreateAuthenticatedClient(user1, "accounttxuser1", "Password123!", _cancelToken);
         await GenericAuthActions.CreateAuthenticatedClient(user2, "accounttxuser2", "Password123!", _cancelToken);
 
-        BankAccountRead account = await CreateBankAccountAsync(user1, "Private Account");
+        BankAccount account = await CreateBankAccountAsync(user1, "Private Account");
 
         HttpResponseMessage response =
             await user2.GetAsync($"transaction/account/{account.AccountId}", _cancelToken);
@@ -343,7 +348,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             response.StatusCode == HttpStatusCode.NotFound);
     }
 
-    private async Task<BankAccountRead> CreateBankAccountAsync(HttpClient client, string name)
+    private async Task<BankAccount> CreateBankAccountAsync(HttpClient client, string name)
     {
         CreateBankAccountRequest request = new()
         {
@@ -358,20 +363,20 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Created);
 
-        BankAccountRead? created =
-            await response.Content.ReadFromJsonAsync<BankAccountRead>(_cancelToken);
+        BankAccount? created =
+            await response.Content.ReadFromJsonAsync<BankAccount>(_cancelToken);
 
         Assert.NotNull(created);
         return created;
     }
 
-    private async Task<TransactionRead> CreateTransactionAsync(
+    private async Task<Transaction> CreateTransactionAsync(
         HttpClient client,
         int accountId,
         string name,
         decimal amount)
     {
-        CreateTransactionRequest request = new()
+        TransactionCreateRequest request = new()
         {
             AccountId = accountId,
             Name = name,
@@ -385,8 +390,8 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Created);
 
-        TransactionRead? created =
-            await response.Content.ReadFromJsonAsync<TransactionRead>(_cancelToken);
+        Transaction? created =
+            await response.Content.ReadFromJsonAsync<Transaction>(_cancelToken);
 
         Assert.NotNull(created);
         return created;

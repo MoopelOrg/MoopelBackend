@@ -17,6 +17,8 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         _cancelToken = TestContext.Current.CancellationToken;
     }
 
+    #region Get My Notes
+
     [Fact]
     public async Task MyNotes_ReturnsUnauthorized_WhenNotAuthenticated()
     {
@@ -24,35 +26,6 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         HttpResponseMessage response = await client.GetAsync(Routes.Note.MyNotes, _cancelToken);
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task NoteById_ReturnsUnauthorized_WhenNotAuthenticated()
-    {
-        await _apiFactory.ResetDatabaseAsync();
-        HttpClient client = _apiFactory.CreateClient();
-
-        HttpResponseMessage response = await client.GetAsync("note/1", _cancelToken);
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task CreateNote_ReturnsUnauthorized_WhenNotAuthenticated()
-    {
-        await _apiFactory.ResetDatabaseAsync();
-        HttpClient client = _apiFactory.CreateClient();
-
-        CreateNoteRequest request = new()
-        {
-            Title = "Test Note",
-            Content = "Test Content"
-        };
-
-        HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Note.CreateNote, request, _cancelToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -73,33 +46,19 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         Assert.NotNull(notes);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task CreateNote_ReturnsNote_WhenValid(string username, string password)
+    #endregion
+
+    #region Get Note By Id
+
+    [Fact]
+    public async Task NoteById_ReturnsUnauthorized_WhenNotAuthenticated()
     {
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync("note/1", _cancelToken);
 
-        CreateNoteRequest request = new()
-        {
-            Title = "Groceries",
-            Content = "Milk, Bread, Eggs"
-        };
-
-        HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Note.CreateNote, request, _cancelToken);
-
-        NoteRead? created = await response.Content.ReadFromJsonAsync<NoteRead>(_cancelToken);
-
-        Assert.True(
-            response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.Created);
-
-        Assert.NotNull(created);
-        Assert.True(created.NoteId > 0);
-        Assert.Equal("Groceries", created.Title);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Theory]
@@ -149,6 +108,93 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    [Fact]
+    public async Task OneUser_CannotAccess_AnotherUsersNote()
+    {
+        await _apiFactory.ResetDatabaseAsync();
+
+        HttpClient user1 = _apiFactory.CreateClient();
+        HttpClient user2 = _apiFactory.CreateClient();
+
+        await GenericAuthActions.CreateAuthenticatedClient(user1, "noteuser1", "Password123!", _cancelToken);
+        await GenericAuthActions.CreateAuthenticatedClient(user2, "noteuser2", "Password123!", _cancelToken);
+
+        CreateNoteRequest request = new()
+        {
+            Title = "Private Note",
+            Content = "User1 only"
+        };
+
+        HttpResponseMessage createResponse =
+            await user1.PostAsJsonAsync(Routes.Note.CreateNote, request, _cancelToken);
+
+        NoteRead? created = await createResponse.Content.ReadFromJsonAsync<NoteRead>(_cancelToken);
+
+        Assert.NotNull(created);
+
+        HttpResponseMessage response =
+            await user2.GetAsync($"note/{created.NoteId}", _cancelToken);
+
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Forbidden ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    #endregion
+
+    #region Create Note
+
+    [Fact]
+    public async Task CreateNote_ReturnsUnauthorized_WhenNotAuthenticated()
+    {
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        CreateNoteRequest request = new()
+        {
+            Title = "Test Note",
+            Content = "Test Content"
+        };
+
+        HttpResponseMessage response =
+            await client.PostAsJsonAsync(Routes.Note.CreateNote, request, _cancelToken);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Theory]
+    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
+    public async Task CreateNote_ReturnsNote_WhenValid(string username, string password)
+    {
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+
+        CreateNoteRequest request = new()
+        {
+            Title = "Groceries",
+            Content = "Milk, Bread, Eggs"
+        };
+
+        HttpResponseMessage response =
+            await client.PostAsJsonAsync(Routes.Note.CreateNote, request, _cancelToken);
+
+        NoteRead? created = await response.Content.ReadFromJsonAsync<NoteRead>(_cancelToken);
+
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK ||
+            response.StatusCode == HttpStatusCode.Created);
+
+        Assert.NotNull(created);
+        Assert.True(created.NoteId > 0);
+        Assert.Equal("Groceries", created.Title);
+    }
+
+    #endregion
+
+    #region Update Note
 
     [Theory]
     [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
@@ -211,6 +257,10 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    #endregion
+
+    #region Delete Note
+
     [Theory]
     [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
     public async Task DeleteNote_RemovesNote_WhenValid(string username, string password)
@@ -261,35 +311,5 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
-    public async Task OneUser_CannotAccess_AnotherUsersNote()
-    {
-        await _apiFactory.ResetDatabaseAsync();
-
-        HttpClient user1 = _apiFactory.CreateClient();
-        HttpClient user2 = _apiFactory.CreateClient();
-
-        await GenericAuthActions.CreateAuthenticatedClient(user1, "noteuser1", "Password123!", _cancelToken);
-        await GenericAuthActions.CreateAuthenticatedClient(user2, "noteuser2", "Password123!", _cancelToken);
-
-        CreateNoteRequest request = new()
-        {
-            Title = "Private Note",
-            Content = "User1 only"
-        };
-
-        HttpResponseMessage createResponse =
-            await user1.PostAsJsonAsync(Routes.Note.CreateNote, request, _cancelToken);
-
-        NoteRead? created = await createResponse.Content.ReadFromJsonAsync<NoteRead>(_cancelToken);
-
-        Assert.NotNull(created);
-
-        HttpResponseMessage response =
-            await user2.GetAsync($"note/{created.NoteId}", _cancelToken);
-
-        Assert.True(
-            response.StatusCode == HttpStatusCode.Forbidden ||
-            response.StatusCode == HttpStatusCode.NotFound);
-    }
+    #endregion
 }
