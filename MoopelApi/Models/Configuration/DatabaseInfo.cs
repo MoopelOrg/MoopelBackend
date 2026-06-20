@@ -1,7 +1,8 @@
 ﻿namespace MoopelApi.Models.Configuration;
 
-using Microsoft.Data.SqlClient;
 using System.Data;
+
+using Microsoft.Data.SqlClient;
 
 public class DatabaseTable
 {
@@ -17,7 +18,7 @@ public class DatabaseTable
 
     public string GenerateSelect()
     {
-        return $"SELECT {string.Join(", ", Fields.Select(f => f.SelectName))} FROM [{SelectName}]";
+        return $"SELECT {string.Join(", ", Fields.Select(f => f.SelectName))} FROM {SelectName}";
     }
     public string GetFields(string alias)
     {
@@ -36,16 +37,28 @@ public class DatabaseTable
             tableParts.AddRange(Fields.Select(field =>
                 $"    {field.SelectName} {field.FieldDataType}"));
 
-            tableParts.AddRange(Constraints.Select(constraint =>
-                $"    {constraint.GenerateSql()}"));
+            tableParts.AddRange(Constraints
+                .Where(c => c.FilterExpression is null)
+                .Select(constraint => $"    {constraint.GenerateSql()}"));
 
-            return $@"
-            IF OBJECT_ID('dbo.{Name}', 'U') IS NULL
-            BEGIN
-            CREATE TABLE {SelectName} (
-            {string.Join(",\n", tableParts)}
-            );
-            END";
+            List<DatabaseConstraint> filteredConstraints = Constraints
+                .Where(c => c.FilterExpression is not null)
+                .ToList();
+
+            string filteredIndexesSql = filteredConstraints.Count > 0
+                ? "\n                                " + string.Join("\n                                ",
+                    filteredConstraints.Select(c => c.GenerateFilteredIndexSql(Name) + ";"))
+                : string.Empty;
+
+            return $"""
+
+                                IF OBJECT_ID('dbo.{Name}', 'U') IS NULL
+                                BEGIN
+                                CREATE TABLE {SelectName} (
+                                {string.Join(",\n", tableParts)}
+                                );{filteredIndexesSql}
+                                END
+                    """;
         }
         catch (Exception ex)
         {
@@ -152,6 +165,7 @@ public class DatabaseConstraint
 
     public string? CheckSql { get; init; } = null;
     public string OnDelete { get; init; } = "NO ACTION";
+    public string? FilterExpression { get; init; } = null;
 
     public string GenerateSql()
     {
@@ -173,6 +187,18 @@ public class DatabaseConstraint
 
             _ => throw new NotSupportedException($"Unsupported constraint type: {Type}")
         };
+    }
+
+    public string GenerateFilteredIndexSql(string tableName)
+    {
+        if (Type != DatabaseConstraintType.Unique)
+            throw new InvalidOperationException($"FilterExpression is only supported on Unique constraints (constraint '{Name}').");
+
+        if (FilterExpression is null)
+            throw new InvalidOperationException($"Constraint '{Name}' has no FilterExpression.");
+
+        string fields = string.Join(", ", Fields.Select(f => f.SelectName));
+        return $"CREATE UNIQUE INDEX [{Name}] ON [{tableName}]({fields}) WHERE {FilterExpression}";
     }
 
     private string GenerateForeignKeySql(string fields)
