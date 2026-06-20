@@ -24,7 +24,7 @@ public class NoteService : INoteService
         _connection = connection;
     }
 
-    public async Task<Note> CreateNote(NoteCreationRequest request, int userId)
+    public async Task<Note> CreateNote(NoteCreateRequest request, int userId)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
@@ -42,16 +42,18 @@ public class NoteService : INoteService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                INSERT INTO {NotesTable.SelectName}
-                ({NoteUserIdField.SelectName},
-                 {NoteTypeField.SelectName},
-                 {NoteTitleField.SelectName},
-                 {NoteContentField.SelectName})
-                OUTPUT INSERTED.{NotesTable.GetFields()}
-                VALUES
-                (@UserId, @Type, @Title, @Content)
-            ";
+                $"""
+
+                                 INSERT INTO {NotesTable.SelectName}
+                                 ({NoteUserIdField.SelectName},
+                                  {NoteTypeField.SelectName},
+                                  {NoteTitleField.SelectName},
+                                  {NoteContentField.SelectName})
+                                 OUTPUT INSERTED.{NotesTable.GetFields()}
+                                 VALUES
+                                 (@UserId, @Type, @Title, @Content)
+                             
+                 """;
             command.Parameters.Add(NoteUserIdField.GenerateParameter("@UserId", userId));
             command.Parameters.Add(NoteTypeField.GenerateParameter("@Type", request.Type));
             command.Parameters.Add(NoteTitleField.GenerateParameter("@Title", request.Title));
@@ -105,10 +107,12 @@ public class NoteService : INoteService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                DELETE FROM {NotesTable.SelectName}
-                WHERE {NoteIdField.SelectName} = @NoteId
-            ";
+                $"""
+
+                                 DELETE FROM {NotesTable.SelectName}
+                                 WHERE {NoteIdField.SelectName} = @NoteId
+                             
+                 """;
             command.Parameters.Add(NoteIdField.GenerateParameter("@NoteId", noteId));
 
             int rowsAffected = await command.ExecuteNonQueryAsync();
@@ -160,10 +164,12 @@ public class NoteService : INoteService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {NotesTable.GenerateSelect()}
-                WHERE {NoteIdField.SelectName} = @NoteId
-            ";
+                $"""
+
+                                 SELECT {NotesTable.GenerateSelect()}
+                                 WHERE {NoteIdField.SelectName} = @NoteId
+                             
+                 """;
             command.Parameters.Add(NoteIdField.GenerateParameter("@NoteId", noteId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -209,10 +215,10 @@ public class NoteService : INoteService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {NotesTable.GenerateSelect()}
-                WHERE {NoteUserIdField.SelectName} = @UserId
-            ";
+            $"""
+                 SELECT {NotesTable.GenerateSelect()}
+                 WHERE {NoteUserIdField.SelectName} = @UserId
+             """;
             command.Parameters.Add(NoteUserIdField.GenerateParameter("@UserId", userId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -265,14 +271,16 @@ public class NoteService : INoteService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                UPDATE {NotesTable.SelectName}
-                SET {NoteTypeField.SelectName} = @Type,
-                    {NoteTitleField.SelectName} = @Title,
-                    {NoteContentField.SelectName} = @Content
-                OUTPUT INSERTED.{NotesTable.GetFields()}
-                WHERE {NoteIdField.SelectName} = @NoteId
-            ";
+                $"""
+
+                                 UPDATE {NotesTable.SelectName}
+                                 SET {NoteTypeField.SelectName} = @Type,
+                                     {NoteTitleField.SelectName} = @Title,
+                                     {NoteContentField.SelectName} = @Content
+                                 OUTPUT INSERTED.{NotesTable.GetFields()}
+                                 WHERE {NoteIdField.SelectName} = @NoteId
+                             
+                 """;
             command.Parameters.Add(NoteIdField.GenerateParameter("@NoteId", noteId));
             command.Parameters.Add(NoteTypeField.GenerateParameter("@Type", request.Type));
             command.Parameters.Add(NoteTitleField.GenerateParameter("@Title", request.Title));

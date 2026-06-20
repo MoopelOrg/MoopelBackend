@@ -69,7 +69,7 @@ public class NotesController : ControllerBase
     }
 
     [HttpPost(Routes.Note.CreateNote)]
-    public async Task<ActionResult<Note>> CreateNote([FromBody] NoteCreationRequest request)
+    public async Task<ActionResult<Note>> CreateNote([FromBody] NoteCreateRequest request)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
         User contextUser = await _contextService.GetContextUser(HttpContext);

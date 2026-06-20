@@ -2,7 +2,7 @@
 
 namespace MoopelApi.Models.Requests.Creation;
 
-public record NoteCreationRequest
+public record NoteCreateRequest
 {
     public required NoteType Type { get; init; }
     public required string Title { get; init; }
