@@ -35,10 +35,12 @@ public class SessionService : ISessionService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {SessionsTable.GenerateSelect()}
-                WHERE {SessionIdField.SelectName} = @SessionId
-            ";
+                $"""
+
+                                 SELECT {SessionsTable.GenerateSelect()}
+                                 WHERE {SessionIdField.SelectName} = @SessionId
+                             
+                 """;
             command.Parameters.Add(SessionIdField.GenerateParameter("@SessionId", sessionId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -82,10 +84,12 @@ public class SessionService : ISessionService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {SessionsTable.GenerateSelect()}
-                WHERE {SessionUserIdField.SelectName} = @UserId
-            ";
+                $"""
+
+                                 SELECT {SessionsTable.GenerateSelect()}
+                                 WHERE {SessionUserIdField.SelectName} = @UserId
+                             
+                 """;
             command.Parameters.Add(SessionUserIdField.GenerateParameter("@UserId", userId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync(cancelToken);
@@ -136,11 +140,13 @@ public class SessionService : ISessionService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                UPDATE {SessionsTable.SelectName}
-                SET {SessionRevokedField.SelectName} = @Revoked
-                WHERE {SessionRevokedField.SelectName} = @NotRevoked
-            ";
+                $"""
+
+                                 UPDATE {SessionsTable.SelectName}
+                                 SET {SessionRevokedField.SelectName} = @Revoked
+                                 WHERE {SessionRevokedField.SelectName} = @NotRevoked
+                             
+                 """;
             command.Parameters.Add(SessionRevokedField.GenerateParameter("@Revoked", true));
             command.Parameters.Add(SessionRevokedField.GenerateParameter("@NotRevoked", false));
 
@@ -185,11 +191,13 @@ public class SessionService : ISessionService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                UPDATE {SessionsTable.SelectName}
-                SET {SessionRevokedField.SelectName} = @Revoked
-                WHERE {SessionIdField.SelectName} = @SessionId
-            ";
+                $"""
+
+                                 UPDATE {SessionsTable.SelectName}
+                                 SET {SessionRevokedField.SelectName} = @Revoked
+                                 WHERE {SessionIdField.SelectName} = @SessionId
+                             
+                 """;
             command.Parameters.Add(SessionRevokedField.GenerateParameter("@Revoked", true));
             command.Parameters.Add(SessionIdField.GenerateParameter("@SessionId", sessionId));
 

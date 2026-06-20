@@ -37,9 +37,11 @@ public class UserService : IUserService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                {UsersTable.GenerateSelect()}
-            ";
+                $"""
+
+                                 {UsersTable.GenerateSelect()}
+                             
+                 """;
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync(cancelToken);
 
@@ -85,10 +87,12 @@ public class UserService : IUserService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                {UsersTable.GenerateSelect()}
-                WHERE {UserIdField.SelectName} = @UserId
-            ";
+                $"""
+
+                                 {UsersTable.GenerateSelect()}
+                                 WHERE {UserIdField.SelectName} = @UserId
+                             
+                 """;
             command.Parameters.Add(UserIdField.GenerateParameter("@UserId", userId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -135,10 +139,12 @@ public class UserService : IUserService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                {UsersTable.GenerateSelect()}
-                WHERE {UserNameField.SelectName} = @UserName
-            ";
+                $"""
+
+                                 {UsersTable.GenerateSelect()}
+                                 WHERE {UserNameField.SelectName} = @UserName
+                             
+                 """;
             command.Parameters.Add(UserNameField.GenerateParameter("@UserName", userName));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -194,11 +200,13 @@ public class UserService : IUserService
             command.Transaction = transaction;
 
             command.CommandText =
-            $@"
-                UPDATE {UsersTable.SelectName}
-                SET {UserDeactivatedField} = 1
-                WHERE {UserIdField.SelectName} = @UserId
-            ";
+                $"""
+
+                                 UPDATE {UsersTable.SelectName}
+                                 SET {UserDeactivatedField} = 1
+                                 WHERE {UserIdField.SelectName} = @UserId
+                             
+                 """;
 
             command.Parameters.Add(UserIdField.GenerateParameter("@UserId", userId));
 
@@ -243,10 +251,12 @@ public class UserService : IUserService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                {SettingsTable.GenerateSelect()}
-                WHERE {SettingsUserIdField.SelectName} = @SettingsId
-            ";
+                $"""
+
+                                 {SettingsTable.GenerateSelect()}
+                                 WHERE {SettingsUserIdField.SelectName} = @SettingsId
+                             
+                 """;
             command.Parameters.Add(SettingsUserIdField.GenerateParameter("@UserId", userId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -293,10 +303,12 @@ public class UserService : IUserService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                {SettingsTable.GenerateSelect()}
-                WHERE {SettingsIdField.SelectName} = @SettingsId
-            ";
+                $"""
+
+                                 {SettingsTable.GenerateSelect()}
+                                 WHERE {SettingsIdField.SelectName} = @SettingsId
+                             
+                 """;
             command.Parameters.Add(SettingsIdField.GenerateParameter("@SettingsId", settingsId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -350,12 +362,14 @@ public class UserService : IUserService
             command = connection.CreateCommand();
 
             command.CommandText =
-            $@"
-                INSERT INTO {SettingsTable.SelectName}
-                ({SettingsUserIdField}, {SettingTimezoneField.SelectName}, {SettingDateFormatField.SelectName})
-                OUTPUT INSERTED.{SettingsIdField.SelectName}
-                VALUES(@UserId, @Timezone, @DateFormat)
-            ";
+                $"""
+
+                                 INSERT INTO {SettingsTable.SelectName}
+                                 ({SettingsUserIdField}, {SettingTimezoneField.SelectName}, {SettingDateFormatField.SelectName})
+                                 OUTPUT INSERTED.{SettingsIdField.SelectName}
+                                 VALUES(@UserId, @Timezone, @DateFormat)
+                             
+                 """;
 
             command.Parameters.Add(UserIdField.GenerateParameter("@UserId", userId));
             command.Parameters.Add(SettingTimezoneField.GenerateParameter("@Timezone", createRequest.Timezone));

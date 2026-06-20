@@ -42,15 +42,17 @@ public class StorageService : IStorageService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                INSERT INTO {StoragesTable.SelectName}
-                ({StorageUserIdField.SelectName},
-                 {StorageNameField.SelectName},
-                 {StorageDescriptionField.SelectName})
-                OUTPUT INSERTED.{StoragesTable.GetFields()}
-                VALUES
-                (@UserId, @Name, @Description)
-            ";
+                $"""
+
+                                 INSERT INTO {StoragesTable.SelectName}
+                                 ({StorageUserIdField.SelectName},
+                                  {StorageNameField.SelectName},
+                                  {StorageDescriptionField.SelectName})
+                                 OUTPUT INSERTED.{StoragesTable.GetFields()}
+                                 VALUES
+                                 (@UserId, @Name, @Description)
+                             
+                 """;
             command.Parameters.Add(StorageUserIdField.GenerateParameter("@UserId", userId));
             command.Parameters.Add(StorageNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(StorageDescriptionField.GenerateParameter("@Description", request.Description));
@@ -106,15 +108,17 @@ public class StorageService : IStorageService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                INSERT INTO {StorageItemsTable.SelectName}
-                ({StorageItemStorageIdField.SelectName},
-                 {StorageItemNameField.SelectName},
-                 {StorageItemDescriptionField.SelectName})
-                OUTPUT INSERTED.{StorageItemsTable.GetFields()}
-                VALUES
-                (@StorageId, @Name, @Description)
-            ";
+                $"""
+
+                                 INSERT INTO {StorageItemsTable.SelectName}
+                                 ({StorageItemStorageIdField.SelectName},
+                                  {StorageItemNameField.SelectName},
+                                  {StorageItemDescriptionField.SelectName})
+                                 OUTPUT INSERTED.{StorageItemsTable.GetFields()}
+                                 VALUES
+                                 (@StorageId, @Name, @Description)
+                             
+                 """;
             command.Parameters.Add(StorageItemStorageIdField.GenerateParameter("@StorageId", storageId));
             command.Parameters.Add(StorageItemNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(StorageItemDescriptionField.GenerateParameter("@Description", request.Description));
@@ -168,10 +172,12 @@ public class StorageService : IStorageService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                DELETE FROM {StoragesTable.SelectName}
-                WHERE {StorageIdField.SelectName} = @StorageId
-            ";
+                $"""
+
+                                 DELETE FROM {StoragesTable.SelectName}
+                                 WHERE {StorageIdField.SelectName} = @StorageId
+                             
+                 """;
             command.Parameters.Add(StorageIdField.GenerateParameter("@StorageId", storageId));
 
             int rowsAffected = await command.ExecuteNonQueryAsync();
@@ -218,10 +224,12 @@ public class StorageService : IStorageService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                DELETE FROM {StorageItemsTable.SelectName}
-                WHERE {StorageItemIdField.SelectName} = @StorageItemId
-            ";
+                $"""
+
+                                 DELETE FROM {StorageItemsTable.SelectName}
+                                 WHERE {StorageItemIdField.SelectName} = @StorageItemId
+                             
+                 """;
             command.Parameters.Add(StorageItemIdField.GenerateParameter("@StorageItemId", storageItemId));
 
             int rowsAffected = await command.ExecuteNonQueryAsync();
@@ -265,10 +273,12 @@ public class StorageService : IStorageService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {StoragesTable.GenerateSelect()}
-                WHERE {StorageIdField.SelectName} = @StorageId
-            ";
+                $"""
+
+                                 SELECT {StoragesTable.GenerateSelect()}
+                                 WHERE {StorageIdField.SelectName} = @StorageId
+                             
+                 """;
             command.Parameters.Add(StorageIdField.GenerateParameter("@StorageId", storageId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -312,10 +322,12 @@ public class StorageService : IStorageService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {StorageItemsTable.GenerateSelect()}
-                WHERE {StorageItemIdField.SelectName} = @ItemId
-            ";
+                $"""
+
+                                 SELECT {StorageItemsTable.GenerateSelect()}
+                                 WHERE {StorageItemIdField.SelectName} = @ItemId
+                             
+                 """;
             command.Parameters.Add(StorageItemIdField.GenerateParameter("@ItemId", itemId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -359,10 +371,12 @@ public class StorageService : IStorageService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {StoragesTable.GenerateSelect()}
-                WHERE {StorageUserIdField.SelectName} = @UserId
-            ";
+                $"""
+
+                                 SELECT {StoragesTable.GenerateSelect()}
+                                 WHERE {StorageUserIdField.SelectName} = @UserId
+                             
+                 """;
             command.Parameters.Add(StorageUserIdField.GenerateParameter("@UserId", userId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync(cancelToken);
@@ -421,13 +435,15 @@ public class StorageService : IStorageService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                UPDATE {StoragesTable.SelectName}
-                SET {StorageNameField.SelectName} = @Name,
-                    {StorageDescriptionField.SelectName} = @Description
-                OUTPUT INSERTED.{StoragesTable.GetFields()}
-                WHERE {StorageIdField.SelectName} = @StorageId
-            ";
+                $"""
+
+                                 UPDATE {StoragesTable.SelectName}
+                                 SET {StorageNameField.SelectName} = @Name,
+                                     {StorageDescriptionField.SelectName} = @Description
+                                 OUTPUT INSERTED.{StoragesTable.GetFields()}
+                                 WHERE {StorageIdField.SelectName} = @StorageId
+                             
+                 """;
             command.Parameters.Add(StorageNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(StorageDescriptionField.GenerateParameter("@Description", request.Description));
             command.Parameters.Add(StorageIdField.GenerateParameter("@StorageId", storageId));
@@ -488,13 +504,15 @@ public class StorageService : IStorageService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                UPDATE {StorageItemsTable.SelectName}
-                SET {StorageItemNameField.SelectName} = @Name,
-                    {StorageItemDescriptionField.SelectName} = @Description
-                OUTPUT INSERTED.{StorageItemsTable.GetFields()}
-                WHERE {StorageItemIdField.SelectName} = @ItemId
-            ";
+                $"""
+
+                                 UPDATE {StorageItemsTable.SelectName}
+                                 SET {StorageItemNameField.SelectName} = @Name,
+                                     {StorageItemDescriptionField.SelectName} = @Description
+                                 OUTPUT INSERTED.{StorageItemsTable.GetFields()}
+                                 WHERE {StorageItemIdField.SelectName} = @ItemId
+                             
+                 """;
             command.Parameters.Add(StorageItemNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(StorageItemDescriptionField.GenerateParameter("@Description", request.Description));
             command.Parameters.Add(StorageItemIdField.GenerateParameter("@ItemId", itemId));

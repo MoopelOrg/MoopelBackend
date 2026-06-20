@@ -38,12 +38,14 @@ public class WorkItemService : IWorkItemService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                INSERT INTO {WorkItemLinksTable.SelectName}
-                ({WorkItemParentIdField.SelectName}, {WorkItemChildIdField.SelectName})
-                VALUES 
-                (@ParentId, @ChildId)
-            ";
+                $"""
+
+                                 INSERT INTO {WorkItemLinksTable.SelectName}
+                                 ({WorkItemParentIdField.SelectName}, {WorkItemChildIdField.SelectName})
+                                 VALUES 
+                                 (@ParentId, @ChildId)
+                             
+                 """;
             command.Parameters.Add(WorkItemParentIdField.GenerateParameter("@ParentId", parentWorkItemId));
             command.Parameters.Add(WorkItemChildIdField.GenerateParameter("@ChildId", childWorkItemId));
 
@@ -83,11 +85,13 @@ public class WorkItemService : IWorkItemService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                DELETE FROM {WorkItemLinksTable.SelectName}
-                WHERE {WorkItemParentIdField.SelectName} = @ParentId
-                AND   {WorkItemChildIdField.SelectName} = @ChildId
-            ";
+                $"""
+
+                                 DELETE FROM {WorkItemLinksTable.SelectName}
+                                 WHERE {WorkItemParentIdField.SelectName} = @ParentId
+                                 AND   {WorkItemChildIdField.SelectName} = @ChildId
+                             
+                 """;
             command.Parameters.Add(WorkItemParentIdField.GenerateParameter("@ParentId", parentWorkItemId));
             command.Parameters.Add(WorkItemChildIdField.GenerateParameter("@ChildId", childWorkItemId));
 
@@ -133,17 +137,19 @@ public class WorkItemService : IWorkItemService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                INSERT INTO {WorkItemsTable.SelectName}
-                ({WorkItemGroupIdField.SelectName}, 
-                 {WorkItemNameField.SelectName}, 
-                 {WorkItemDescriptionField.SelectName}, 
-                 {WorkItemPointsField.SelectName},
-                 {WorkItemTypeField.SelectName})
-                OUTPUT INSERTED.{WorkItemIdField.SelectName} 
-                VALUES
-                (@GroupId, @Name, @Description, @Points, @Type)
-            ";
+                $"""
+
+                                 INSERT INTO {WorkItemsTable.SelectName}
+                                 ({WorkItemGroupIdField.SelectName}, 
+                                  {WorkItemNameField.SelectName}, 
+                                  {WorkItemDescriptionField.SelectName}, 
+                                  {WorkItemPointsField.SelectName},
+                                  {WorkItemTypeField.SelectName})
+                                 OUTPUT INSERTED.{WorkItemIdField.SelectName} 
+                                 VALUES
+                                 (@GroupId, @Name, @Description, @Points, @Type)
+                             
+                 """;
             command.Parameters.Add(WorkItemGroupIdField.GenerateParameter("@GroupId", groupId));
             command.Parameters.Add(WorkItemNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(WorkItemDescriptionField.GenerateParameter("@Description", request.Description));
@@ -204,10 +210,12 @@ public class WorkItemService : IWorkItemService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                DELETE FROM {WorkItemsTable.SelectName}
-                WHERE {WorkItemIdField.SelectName} = @ItemId
-            ";
+                $"""
+
+                                 DELETE FROM {WorkItemsTable.SelectName}
+                                 WHERE {WorkItemIdField.SelectName} = @ItemId
+                             
+                 """;
             command.Parameters.Add(WorkItemIdField.GenerateParameter("@ItemId", itemId));
 
             int rowsAffected = await command.ExecuteNonQueryAsync();
@@ -246,13 +254,15 @@ public class WorkItemService : IWorkItemService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {WorkItemLinksTable.GetFields(WorkItemLinksTable.Alias)}, {WorkItemsTable.GetFields(WorkItemsTable.Alias)}
-                FROM {WorkItemsTable.SelectName} {WorkItemsTable.Alias}
-                JOIN {WorkItemLinksTable.SelectName} {WorkItemLinksTable.Alias} 
-                    ON {WorkItemsTable.Alias}.{WorkItemIdField.SelectName} = {WorkItemLinksTable.Alias}.{WorkItemChildIdField.SelectName}
-                WHERE {WorkItemLinksTable.Alias}.{WorkItemParentIdField.SelectName} = @ParentId
-            ";
+                $"""
+
+                                 SELECT {WorkItemLinksTable.GetFields(WorkItemLinksTable.Alias)}, {WorkItemsTable.GetFields(WorkItemsTable.Alias)}
+                                 FROM {WorkItemsTable.SelectName} {WorkItemsTable.Alias}
+                                 JOIN {WorkItemLinksTable.SelectName} {WorkItemLinksTable.Alias} 
+                                     ON {WorkItemsTable.Alias}.{WorkItemIdField.SelectName} = {WorkItemLinksTable.Alias}.{WorkItemChildIdField.SelectName}
+                                 WHERE {WorkItemLinksTable.Alias}.{WorkItemParentIdField.SelectName} = @ParentId
+                             
+                 """;
             command.Parameters.Add(WorkItemParentIdField.GenerateParameter("@ParentId", parentItemId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync(cancelToken);
@@ -303,13 +313,15 @@ public class WorkItemService : IWorkItemService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {WorkItemLinksTable.GetFields(WorkItemLinksTable.Alias)}, {WorkItemsTable.GetFields(WorkItemsTable.Alias)}
-                FROM {WorkItemsTable.SelectName} {WorkItemsTable.Alias}
-                JOIN {WorkItemLinksTable.SelectName} {WorkItemLinksTable.Alias} 
-                    ON {WorkItemsTable.Alias}.{WorkItemIdField.SelectName} = {WorkItemLinksTable.Alias}.{WorkItemParentIdField.SelectName}
-                WHERE {WorkItemLinksTable.Alias}.{WorkItemChildIdField.SelectName} = @ChildId
-            ";
+                $"""
+
+                                 SELECT {WorkItemLinksTable.GetFields(WorkItemLinksTable.Alias)}, {WorkItemsTable.GetFields(WorkItemsTable.Alias)}
+                                 FROM {WorkItemsTable.SelectName} {WorkItemsTable.Alias}
+                                 JOIN {WorkItemLinksTable.SelectName} {WorkItemLinksTable.Alias} 
+                                     ON {WorkItemsTable.Alias}.{WorkItemIdField.SelectName} = {WorkItemLinksTable.Alias}.{WorkItemParentIdField.SelectName}
+                                 WHERE {WorkItemLinksTable.Alias}.{WorkItemChildIdField.SelectName} = @ChildId
+                             
+                 """;
             command.Parameters.Add(WorkItemChildIdField.GenerateParameter("@ChildId", childItemId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync(cancelToken);
@@ -360,10 +372,12 @@ public class WorkItemService : IWorkItemService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {WorkItemsTable.GenerateSelect()}
-                WHERE {WorkItemIdField.SelectName} = @ItemId
-            ";
+                $"""
+
+                                 SELECT {WorkItemsTable.GenerateSelect()}
+                                 WHERE {WorkItemIdField.SelectName} = @ItemId
+                             
+                 """;
             command.Parameters.Add(WorkItemIdField.GenerateParameter("@ItemId", itemId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -412,10 +426,12 @@ public class WorkItemService : IWorkItemService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {WorkItemsTable.GenerateSelect()}
-                WHERE {WorkItemGroupIdField.SelectName} = @GroupId
-            ";
+                $"""
+
+                                 SELECT {WorkItemsTable.GenerateSelect()}
+                                 WHERE {WorkItemGroupIdField.SelectName} = @GroupId
+                             
+                 """;
             if (type is not null)
             {
                 command.CommandText += $" AND {WorkItemTypeField.SelectName} = @Type";
@@ -472,17 +488,19 @@ public class WorkItemService : IWorkItemService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                INSERT INTO {WorkItemsTable.SelectName}
-                ({WorkItemGroupIdField.SelectName}, 
-                 {WorkItemNameField.SelectName}, 
-                 {WorkItemDescriptionField.SelectName}, 
-                 {WorkItemPointsField.SelectName},
-                 {WorkItemTypeField.SelectName})
-                OUTPUT INSERTED.{WorkItemIdField.SelectName} 
-                VALUES
-                (@GroupId, @Name, @Description, @Points, @Type)
-            ";
+                $"""
+
+                                 INSERT INTO {WorkItemsTable.SelectName}
+                                 ({WorkItemGroupIdField.SelectName}, 
+                                  {WorkItemNameField.SelectName}, 
+                                  {WorkItemDescriptionField.SelectName}, 
+                                  {WorkItemPointsField.SelectName},
+                                  {WorkItemTypeField.SelectName})
+                                 OUTPUT INSERTED.{WorkItemIdField.SelectName} 
+                                 VALUES
+                                 (@GroupId, @Name, @Description, @Points, @Type)
+                             
+                 """;
             command.Parameters.Add(WorkItemGroupIdField.GenerateParameter("@GroupId", groupId));
             command.Parameters.Add(WorkItemNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(WorkItemDescriptionField.GenerateParameter("@Description", request.Description));

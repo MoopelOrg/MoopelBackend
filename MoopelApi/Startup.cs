@@ -321,9 +321,11 @@ public class Startup
             }
 
             command.CommandText =
-                @$"SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE, COLUMN_DEFAULT, NUMERIC_PRECISION, NUMERIC_SCALE 
-                   FROM INFORMATION_SCHEMA.COLUMNS
-                   WHERE TABLE_NAME = '{table.Name}'";
+                $"""
+                 SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE, COLUMN_DEFAULT, NUMERIC_PRECISION, NUMERIC_SCALE 
+                                    FROM INFORMATION_SCHEMA.COLUMNS
+                                    WHERE TABLE_NAME = '{table.Name}'
+                 """;
             try
             {
                 using SqlDataReader reader = command.ExecuteReader();

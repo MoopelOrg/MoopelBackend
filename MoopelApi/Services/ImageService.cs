@@ -64,23 +64,25 @@ public class ImageService : IImageService
         await using SqlCommand command = connection.CreateCommand();
 
         command.CommandText =
-        $@"
-            INSERT INTO {ImagesTable.SelectName}
-            (
-                {ImageNameField.SelectName},
-                {ImageContentTypeField.SelectName},
-                {ImageDataField.SelectName},
-                {ImageThumbnailField.SelectName}
-            )
-            OUTPUT INSERTED.{ImageIdField.SelectName}
-            VALUES
-            (
-                @Name,
-                @ContentType,
-                @Data,
-                @Thumbnail
-            );
-        ";
+            $"""
+
+                         INSERT INTO {ImagesTable.SelectName}
+                         (
+                             {ImageNameField.SelectName},
+                             {ImageContentTypeField.SelectName},
+                             {ImageDataField.SelectName},
+                             {ImageThumbnailField.SelectName}
+                         )
+                         OUTPUT INSERTED.{ImageIdField.SelectName}
+                         VALUES
+                         (
+                             @Name,
+                             @ContentType,
+                             @Data,
+                             @Thumbnail
+                         );
+                     
+             """;
 
         command.Parameters.Add(ImageNameField.GenerateParameter("@Name", imageFile.FileName));
         command.Parameters.Add(ImageContentTypeField.GenerateParameter("@ContentType", imageFile.ContentType));
@@ -101,15 +103,17 @@ public class ImageService : IImageService
         await using SqlCommand command = connection.CreateCommand();
 
         command.CommandText =
-        $@"
-            SELECT 
-                {ImageIdField.SelectName},
-                {ImageContentTypeField.SelectName},
-                {ImageDataField.SelectName},
-                {ImageThumbnailField.SelectName}
-            FROM {ImagesTable.SelectName}
-            WHERE {ImageIdField.SelectName} = @ImageId;
-        ";
+            $"""
+
+                         SELECT 
+                             {ImageIdField.SelectName},
+                             {ImageContentTypeField.SelectName},
+                             {ImageDataField.SelectName},
+                             {ImageThumbnailField.SelectName}
+                         FROM {ImagesTable.SelectName}
+                         WHERE {ImageIdField.SelectName} = @ImageId;
+                     
+             """;
 
         command.Parameters.Add(ImageIdField.GenerateParameter("@ImageId", id));
 

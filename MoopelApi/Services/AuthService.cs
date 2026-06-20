@@ -74,12 +74,14 @@ public class AuthService : IAuthService
             SqlCommand command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                INSERT INTO {UsersTable.SelectName}
-                ({UserNameField.SelectName}, {UserPasswordHashField.SelectName}, {UserRoleField.SelectName}, {UserDeactivatedField.SelectName})
-                OUTPUT INSERTED.{UserIdField.SelectName}
-                VALUES (@Username, @PasswordHash, @Role, @Deactivated);
-            ";
+                $"""
+
+                                 INSERT INTO {UsersTable.SelectName}
+                                 ({UserNameField.SelectName}, {UserPasswordHashField.SelectName}, {UserRoleField.SelectName}, {UserDeactivatedField.SelectName})
+                                 OUTPUT INSERTED.{UserIdField.SelectName}
+                                 VALUES (@Username, @PasswordHash, @Role, @Deactivated);
+                             
+                 """;
 
             command.Parameters.Add(UserNameField.GenerateParameter("@Username", request.Username));
             command.Parameters.Add(UserPasswordHashField.GenerateParameter("@PasswordHash", hashedPassword));
@@ -116,11 +118,13 @@ public class AuthService : IAuthService
             await using SqlCommand command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {UsersTable.GetFields()}
-                FROM {UsersTable.SelectName}
-                WHERE {UserIdField.SelectName} = @UserId;
-            ";
+                $"""
+
+                                 SELECT {UsersTable.GetFields()}
+                                 FROM {UsersTable.SelectName}
+                                 WHERE {UserIdField.SelectName} = @UserId;
+                             
+                 """;
 
             command.Parameters.Add(UserIdField.GenerateParameter("@UserId", id));
 
@@ -157,11 +161,13 @@ public class AuthService : IAuthService
             await using SqlCommand command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {UsersTable.GetFields()}
-                FROM {UsersTable.SelectName}
-                WHERE {UserNameField.SelectName} = @Username;
-            ";
+                $"""
+
+                                 SELECT {UsersTable.GetFields()}
+                                 FROM {UsersTable.SelectName}
+                                 WHERE {UserNameField.SelectName} = @Username;
+                             
+                 """;
 
             command.Parameters.Add(UserNameField.GenerateParameter("@Username", name));
 
@@ -304,11 +310,13 @@ public class AuthService : IAuthService
             await using SqlCommand command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                UPDATE {UsersTable.SelectName}
-                SET {UserDeactivatedField.SelectName} = @Deactivated
-                WHERE {UserIdField.SelectName} = @UserId;
-            ";
+                $"""
+
+                                 UPDATE {UsersTable.SelectName}
+                                 SET {UserDeactivatedField.SelectName} = @Deactivated
+                                 WHERE {UserIdField.SelectName} = @UserId;
+                             
+                 """;
 
             command.Parameters.Add(UserDeactivatedField.GenerateParameter("@Deactivated", true));
             command.Parameters.Add(UserIdField.GenerateParameter("@UserId", id));
@@ -334,19 +342,7 @@ public class AuthService : IAuthService
         ArgumentNullException.ThrowIfNull(user, nameof(user));
         ArgumentNullException.ThrowIfNull(theme, nameof(theme));
 
-        if (user.Role == UserRole.Admin)
-        {
-            return true;
-        }
-
-        if (FormatHelper.IsDescriptorForUser(theme.CreatorDescriptor, user))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return user.Role == UserRole.Admin || FormatHelper.IsDescriptorForUser(theme.CreatorDescriptor, user);
     }
 
     public async Task<GroupAccess> GetUserGroupAccess(User user, Group group)
@@ -364,11 +360,13 @@ public class AuthService : IAuthService
             await using SqlCommand command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {GroupUsersTable.GenerateSelect()}
-                WHERE {GroupUsersUserIdField.SelectName} = @UserId
-                AND {GroupUsersGroupIdField.SelectName} = @GroupId;
-            ";
+            $"""
+
+                             SELECT {GroupUsersTable.GenerateSelect()}
+                             WHERE {GroupUsersUserIdField.SelectName} = @UserId
+                             AND {GroupUsersGroupIdField.SelectName} = @GroupId;
+                         
+             """;
             command.Parameters.Add(GroupUsersUserIdField.GenerateParameter("@UserId", user.UserId));
             command.Parameters.Add(GroupUsersUserIdField.GenerateParameter("@GroupId", group.GroupId));
 
@@ -388,8 +386,7 @@ public class AuthService : IAuthService
         }
         catch (Exception ex)
         {
-#error CHANGE LOG
-            _logger.LogError(ex, "Error getting group access by username [{Username}]", name);
+            _logger.LogError(ex, "Error getting group access by [{User}] [{Group}]", user.Username, group.GroupId);
             GroupAccess access = GroupAccess.GetNoAccess(user.UserId, group.GroupId);
             return access;
         }

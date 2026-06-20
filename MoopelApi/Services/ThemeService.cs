@@ -43,15 +43,17 @@ public class ThemeService : IThemeService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                INSERT INTO {ThemesTable.SelectName}
-                ({ThemeCreatorDescriptorField.SelectName},
-                 {ThemeNameField.SelectName},
-                 {ThemeDescriptionField.SelectName})
-                OUTPUT INSERTED.{ThemesTable.GetFields()}
-                VALUES
-                (@CreatorUser, @Name, @Description, @Settings)
-            ";
+                $"""
+
+                                 INSERT INTO {ThemesTable.SelectName}
+                                 ({ThemeCreatorDescriptorField.SelectName},
+                                  {ThemeNameField.SelectName},
+                                  {ThemeDescriptionField.SelectName})
+                                 OUTPUT INSERTED.{ThemesTable.GetFields()}
+                                 VALUES
+                                 (@CreatorUser, @Name, @Description, @Settings)
+                             
+                 """;
             command.Parameters.Add(ThemeCreatorDescriptorField.GenerateParameter("@CreatorUser", FormatHelper.GenerateUserDescriptor(creatingUser)));
             command.Parameters.Add(ThemeNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(ThemeDescriptionField.GenerateParameter("@Description", request.Description));
@@ -105,10 +107,12 @@ public class ThemeService : IThemeService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                DELETE FROM {ThemesTable.SelectName}
-                WHERE {ThemeIdField.SelectName} = @ThemeId
-            ";
+                $"""
+
+                                 DELETE FROM {ThemesTable.SelectName}
+                                 WHERE {ThemeIdField.SelectName} = @ThemeId
+                             
+                 """;
             command.Parameters.Add(ThemeIdField.GenerateParameter("@ThemeId", themeId));
 
             int rowsAffected = await command.ExecuteNonQueryAsync();
@@ -152,9 +156,11 @@ public class ThemeService : IThemeService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {ThemesTable.GenerateSelect()}
-            ";
+                $"""
+
+                                 SELECT {ThemesTable.GenerateSelect()}
+                             
+                 """;
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync(cancelToken);
 
@@ -204,10 +210,12 @@ public class ThemeService : IThemeService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {ThemesTable.GenerateSelect()}
-                WHERE {ThemeIdField.SelectName} = @ThemeId
-            ";
+                $"""
+
+                                 SELECT {ThemesTable.GenerateSelect()}
+                                 WHERE {ThemeIdField.SelectName} = @ThemeId
+                             
+                 """;
             command.Parameters.Add(ThemeIdField.GenerateParameter("@ThemeId", themeId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -256,13 +264,15 @@ public class ThemeService : IThemeService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                UPDATE {ThemesTable.SelectName}
-                SET {ThemeNameField.SelectName} = @Name,
-                    {ThemeDescriptionField.SelectName} = @Description
-                OUTPUT INSERTED.{ThemesTable.GetFields()}
-                WHERE {ThemeIdField.SelectName} = @ThemeId
-            ";
+                $"""
+
+                                 UPDATE {ThemesTable.SelectName}
+                                 SET {ThemeNameField.SelectName} = @Name,
+                                     {ThemeDescriptionField.SelectName} = @Description
+                                 OUTPUT INSERTED.{ThemesTable.GetFields()}
+                                 WHERE {ThemeIdField.SelectName} = @ThemeId
+                             
+                 """;
             command.Parameters.Add(ThemeNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(ThemeDescriptionField.GenerateParameter("@Description", request.Description));
             command.Parameters.Add(ThemeIdField.GenerateParameter("@ThemeId", themeId));

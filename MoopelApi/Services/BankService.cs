@@ -42,15 +42,17 @@ public class BankService : IBankService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                INSERT INTO {BankAccountsTable.SelectName}
-                ({BankAccountNameField.SelectName},
-                 {BankAccountDescriptionField.SelectName},
-                 {BankAccountUserIdField.SelectName}
-                OUTPUT INSERTED.{BankAccountIdField.SelectName} 
-                VALUES
-                (@AccountName, @Description, @UserId)
-            ";
+                $"""
+
+                                 INSERT INTO {BankAccountsTable.SelectName}
+                                 ({BankAccountNameField.SelectName},
+                                  {BankAccountDescriptionField.SelectName},
+                                  {BankAccountUserIdField.SelectName}
+                                 OUTPUT INSERTED.{BankAccountIdField.SelectName} 
+                                 VALUES
+                                 (@AccountName, @Description, @UserId)
+                             
+                 """;
             command.Parameters.Add(BankAccountNameField.GenerateParameter("@AccountName", request.Name));
             command.Parameters.Add(BankAccountDescriptionField.GenerateParameter("@Description", request.Description));
             command.Parameters.Add(BankAccountUserIdField.GenerateParameter("@UserId", userId));
@@ -110,14 +112,16 @@ public class BankService : IBankService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                INSERT INTO {TransactionsTable.SelectName}
-                ({TransactionNameField.SelectName}, 
-                 {TransactionDescriptionField.SelectName}
-                OUTPUT INSERTED.{TransactionIdField.SelectName} 
-                VALUES
-                (@Name, @Description)
-            ";
+                $"""
+
+                                 INSERT INTO {TransactionsTable.SelectName}
+                                 ({TransactionNameField.SelectName}, 
+                                  {TransactionDescriptionField.SelectName}
+                                 OUTPUT INSERTED.{TransactionIdField.SelectName} 
+                                 VALUES
+                                 (@Name, @Description)
+                             
+                 """;
             command.Parameters.Add(TransactionNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(TransactionDescriptionField.GenerateParameter("@Description", request.Description));
 
@@ -177,15 +181,17 @@ public class BankService : IBankService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                INSERT INTO {TransactionItemsTable.SelectName}
-                ({TransactionItemTransactionIdField.SelectName}, 
-                 {TransactionItemNameField.SelectName},
-                 {TransactionItemAmountField.SelectName}
-                OUTPUT INSERTED.{TransactionIdField.SelectName} 
-                VALUES
-                (@TransactionId, @Name, @Amount)
-            ";
+                $"""
+
+                                 INSERT INTO {TransactionItemsTable.SelectName}
+                                 ({TransactionItemTransactionIdField.SelectName}, 
+                                  {TransactionItemNameField.SelectName},
+                                  {TransactionItemAmountField.SelectName}
+                                 OUTPUT INSERTED.{TransactionIdField.SelectName} 
+                                 VALUES
+                                 (@TransactionId, @Name, @Amount)
+                             
+                 """;
             command.Parameters.Add(TransactionItemTransactionIdField.GenerateParameter("@TransactionId", transactionId));
             command.Parameters.Add(TransactionItemNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(TransactionItemAmountField.GenerateParameter("@Amount", request.Amount));
@@ -243,10 +249,12 @@ public class BankService : IBankService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                DELETE FROM {BankAccountsTable.SelectName}
-                WHERE {BankAccountIdField.SelectName} = @AccountId
-            ";
+                $"""
+
+                                 DELETE FROM {BankAccountsTable.SelectName}
+                                 WHERE {BankAccountIdField.SelectName} = @AccountId
+                             
+                 """;
             command.Parameters.Add(BankAccountIdField.GenerateParameter("@AccountId", accountId));
 
             int rowsAffected = await command.ExecuteNonQueryAsync();
@@ -288,10 +296,12 @@ public class BankService : IBankService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                DELETE FROM {TransactionsTable.SelectName}
-                WHERE {TransactionIdField.SelectName} = @TransactionId
-            ";
+                $"""
+
+                                 DELETE FROM {TransactionsTable.SelectName}
+                                 WHERE {TransactionIdField.SelectName} = @TransactionId
+                             
+                 """;
             command.Parameters.Add(TransactionIdField.GenerateParameter("@TransactionId", transactionId));
 
             int rowsAffected = await command.ExecuteNonQueryAsync();
@@ -333,10 +343,12 @@ public class BankService : IBankService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                DELETE FROM {TransactionItemsTable.SelectName}
-                WHERE {TransactionItemIdField.SelectName} = @ItemId
-            ";
+                $"""
+
+                                 DELETE FROM {TransactionItemsTable.SelectName}
+                                 WHERE {TransactionItemIdField.SelectName} = @ItemId
+                             
+                 """;
             command.Parameters.Add(TransactionItemIdField.GenerateParameter("@ItemId", itemId));
 
             int rowsAffected = await command.ExecuteNonQueryAsync();
@@ -375,10 +387,12 @@ public class BankService : IBankService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {BankAccountsTable.GenerateSelect()}
-                WHERE {BankAccountIdField.SelectName} = @AccountId
-            ";
+                $"""
+
+                                 SELECT {BankAccountsTable.GenerateSelect()}
+                                 WHERE {BankAccountIdField.SelectName} = @AccountId
+                             
+                 """;
             command.Parameters.Add(BankAccountIdField.GenerateParameter("@AccountId", accountId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -425,10 +439,12 @@ public class BankService : IBankService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {TransactionsTable.GenerateSelect()}
-                WHERE {TransactionIdField.SelectName} = @TransactionId
-            ";
+                $"""
+
+                                 SELECT {TransactionsTable.GenerateSelect()}
+                                 WHERE {TransactionIdField.SelectName} = @TransactionId
+                             
+                 """;
             command.Parameters.Add(TransactionIdField.GenerateParameter("@TransactionId", transactionId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -475,10 +491,12 @@ public class BankService : IBankService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {TransactionItemsTable.GenerateSelect()}
-                WHERE {TransactionItemIdField.SelectName} = @ItemId
-            ";
+                $"""
+
+                                 SELECT {TransactionItemsTable.GenerateSelect()}
+                                 WHERE {TransactionItemIdField.SelectName} = @ItemId
+                             
+                 """;
             command.Parameters.Add(TransactionItemIdField.GenerateParameter("@ItemId", itemId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -525,14 +543,16 @@ public class BankService : IBankService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {BankAccountsTable.GetFields(BankAccountsTable.Alias)},
-                       {TransactionsTable.GetFields(TransactionsTable.Alias)}
-                FROM {BankAccountsTable.SelectName} AS {BankAccountsTable.Alias}
-                JOIN {TransactionsTable.SelectName} AS {TransactionsTable.Alias}
-                    ON {BankAccountIdField.SelectName} = {TransactionBankAccountIdField.SelectName}
-                WHERE {BankAccountIdField.SelectName} = @AccountId
-            ";
+                $"""
+
+                                 SELECT {BankAccountsTable.GetFields(BankAccountsTable.Alias)},
+                                        {TransactionsTable.GetFields(TransactionsTable.Alias)}
+                                 FROM {BankAccountsTable.SelectName} AS {BankAccountsTable.Alias}
+                                 JOIN {TransactionsTable.SelectName} AS {TransactionsTable.Alias}
+                                     ON {BankAccountIdField.SelectName} = {TransactionBankAccountIdField.SelectName}
+                                 WHERE {BankAccountIdField.SelectName} = @AccountId
+                             
+                 """;
             command.Parameters.Add(BankAccountIdField.GenerateParameter("@AccountId", accountId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync(cancelToken);
@@ -587,10 +607,12 @@ public class BankService : IBankService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {BankAccountsTable.GenerateSelect()}
-                WHERE {BankAccountUserIdField.SelectName} = @UserId
-            ";
+                $"""
+
+                                 SELECT {BankAccountsTable.GenerateSelect()}
+                                 WHERE {BankAccountUserIdField.SelectName} = @UserId
+                             
+                 """;
             command.Parameters.Add(BankAccountUserIdField.GenerateParameter("@UserId", userId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync(cancelToken);
@@ -650,12 +672,14 @@ public class BankService : IBankService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                UPDATE {BankAccountsTable.SelectName}
-                SET {BankAccountNameField.SelectName} = @Name
-                OUTPUT INSERTED.{BankAccountsTable.GetFields()}
-                WHERE {BankAccountIdField.SelectName} = @AccountId
-            ";
+                $"""
+
+                                 UPDATE {BankAccountsTable.SelectName}
+                                 SET {BankAccountNameField.SelectName} = @Name
+                                 OUTPUT INSERTED.{BankAccountsTable.GetFields()}
+                                 WHERE {BankAccountIdField.SelectName} = @AccountId
+                             
+                 """;
             command.Parameters.Add(BankAccountNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(BankAccountIdField.GenerateParameter("@AccountId", accountId));
 
@@ -705,13 +729,15 @@ public class BankService : IBankService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                UPDATE {TransactionItemsTable.SelectName}
-                SET {TransactionItemNameField.SelectName} = @Name,
-                    {TransactionItemAmountField.SelectName} = @Amount
-                OUTPUT INSERTED.{TransactionItemsTable.GetFields()}
-                WHERE {TransactionItemIdField.SelectName} = @ItemId
-            ";
+                $"""
+
+                                 UPDATE {TransactionItemsTable.SelectName}
+                                 SET {TransactionItemNameField.SelectName} = @Name,
+                                     {TransactionItemAmountField.SelectName} = @Amount
+                                 OUTPUT INSERTED.{TransactionItemsTable.GetFields()}
+                                 WHERE {TransactionItemIdField.SelectName} = @ItemId
+                             
+                 """;
             command.Parameters.Add(TransactionItemNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(TransactionItemAmountField.GenerateParameter("@Amount", request.Amount));
             command.Parameters.Add(TransactionItemIdField.GenerateParameter("@ItemId", itemId));

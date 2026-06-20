@@ -42,14 +42,16 @@ public class GroupService : IGroupService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                INSERT INTO {GroupsTable.SelectName}
-                ({GroupNameField.SelectName}, 
-                 {GroupDescriptionField.SelectName}
-                OUTPUT INSERTED.{GroupIdField.SelectName} 
-                VALUES
-                (@Name, @Description)
-            ";
+                $"""
+
+                                 INSERT INTO {GroupsTable.SelectName}
+                                 ({GroupNameField.SelectName}, 
+                                  {GroupDescriptionField.SelectName}
+                                 OUTPUT INSERTED.{GroupIdField.SelectName} 
+                                 VALUES
+                                 (@Name, @Description)
+                             
+                 """;
             command.Parameters.Add(GroupNameField.GenerateParameter("@Name", createRequest.Name));
             command.Parameters.Add(GroupDescriptionField.GenerateParameter("@Description", createRequest.Description));
 
@@ -102,10 +104,12 @@ public class GroupService : IGroupService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                DELETE FROM {GroupsTable.SelectName}
-                WHERE {GroupIdField.SelectName} = @GroupId
-            ";
+                $"""
+
+                                 DELETE FROM {GroupsTable.SelectName}
+                                 WHERE {GroupIdField.SelectName} = @GroupId
+                             
+                 """;
             command.Parameters.Add(GroupIdField.GenerateParameter("@GroupId", groupId));
 
             int rowsAffected = await command.ExecuteNonQueryAsync();
@@ -147,10 +151,12 @@ public class GroupService : IGroupService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                {GroupsTable.GenerateSelect()}
-                WHERE {GroupIdField.SelectName} = @GroupId
-            ";
+                $"""
+
+                                 {GroupsTable.GenerateSelect()}
+                                 WHERE {GroupIdField.SelectName} = @GroupId
+                             
+                 """;
             command.Parameters.Add(GroupIdField.GenerateParameter("@GroupId", groupId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -196,13 +202,15 @@ public class GroupService : IGroupService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                {GroupsTable.GetFields(GroupsTable.Alias)}
-                FROM {GroupsTable.SelectName} AS {GroupsTable.Alias}
-                JOIN {GroupUsersTable.SelectName} AS {GroupUsersTable.Alias}
-                    ON {GroupUsersTable.Alias}.{GroupUsersUserIdField.SelectName} = {GroupsTable.Alias}.{GroupIdField.SelectName}
-                WHERE {GroupUsersTable.Alias}.{GroupUsersUserIdField.SelectName} = @UserId
-            ";
+                $"""
+
+                                 {GroupsTable.GetFields(GroupsTable.Alias)}
+                                 FROM {GroupsTable.SelectName} AS {GroupsTable.Alias}
+                                 JOIN {GroupUsersTable.SelectName} AS {GroupUsersTable.Alias}
+                                     ON {GroupUsersTable.Alias}.{GroupUsersUserIdField.SelectName} = {GroupsTable.Alias}.{GroupIdField.SelectName}
+                                 WHERE {GroupUsersTable.Alias}.{GroupUsersUserIdField.SelectName} = @UserId
+                             
+                 """;
             command.Parameters.Add(GroupUsersUserIdField.GenerateParameter("@UserId", userId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -251,13 +259,15 @@ public class GroupService : IGroupService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                {UsersTable.GetFields(UsersTable.Alias)}
-                FROM {UsersTable.SelectName} AS {UsersTable.Alias}
-                JOIN {GroupUsersTable.SelectName} AS {GroupUsersTable.Alias}
-                    ON {GroupUsersTable.Alias}.{GroupUsersUserIdField.SelectName} = {UsersTable.Alias}.{UserIdField.SelectName}
-                WHERE {GroupUsersTable.Alias}.{GroupUsersGroupIdField.SelectName} = @GroupId
-            ";
+                $"""
+
+                                 {UsersTable.GetFields(UsersTable.Alias)}
+                                 FROM {UsersTable.SelectName} AS {UsersTable.Alias}
+                                 JOIN {GroupUsersTable.SelectName} AS {GroupUsersTable.Alias}
+                                     ON {GroupUsersTable.Alias}.{GroupUsersUserIdField.SelectName} = {UsersTable.Alias}.{UserIdField.SelectName}
+                                 WHERE {GroupUsersTable.Alias}.{GroupUsersGroupIdField.SelectName} = @GroupId
+                             
+                 """;
             command.Parameters.Add(GroupUsersGroupIdField.GenerateParameter("@GroupId", groupId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -311,13 +321,15 @@ public class GroupService : IGroupService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                UPDATE {GroupsTable.SelectName}
-                SET {GroupNameField.SelectName} = @Name,
-                    {GroupDescriptionField.SelectName} = @Description
-                OUTPUT INSERTED.*
-                WHERE {GroupIdField.SelectName} = @GroupId
-            ";
+                $"""
+
+                                 UPDATE {GroupsTable.SelectName}
+                                 SET {GroupNameField.SelectName} = @Name,
+                                     {GroupDescriptionField.SelectName} = @Description
+                                 OUTPUT INSERTED.*
+                                 WHERE {GroupIdField.SelectName} = @GroupId
+                             
+                 """;
             command.Parameters.Add(GroupIdField.GenerateParameter("@GroupId", groupId));
             command.Parameters.Add(GroupNameField.GenerateParameter("@Name", updateRequest.Name));
             command.Parameters.Add(GroupDescriptionField.GenerateParameter("@Description", updateRequest.Description));
@@ -374,12 +386,14 @@ public class GroupService : IGroupService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                INSERT INTO {GroupUsersTable.SelectName}
-                ({GroupUsersGroupIdField.SelectName}, {GroupUsersUserIdField.SelectName})
-                OUTPUT INSERTED.*
-                VALUES (@GroupId, @UserId)
-            ";
+                $"""
+
+                                 INSERT INTO {GroupUsersTable.SelectName}
+                                 ({GroupUsersGroupIdField.SelectName}, {GroupUsersUserIdField.SelectName})
+                                 OUTPUT INSERTED.*
+                                 VALUES (@GroupId, @UserId)
+                             
+                 """;
             command.Parameters.Add(GroupIdField.GenerateParameter("@GroupId", groupId));
             command.Parameters.Add(UserIdField.GenerateParameter("@UserId", userId));
 
@@ -426,16 +440,18 @@ public class GroupService : IGroupService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                UPDATE {GroupUsersTable.SelectName}
-                SET {GroupUsersCanReadWorkItemsField.SelectName} = @CanViewWorkItems,
-                    {GroupUsersCanCreateWorkItemsField.SelectName} = @CanCreateWorkItems,
-                    --GroupUsersCanUpdateWorkItemsField.SelectName = @CanUpdateWorkItems,
-                    --GroupUsersCanDeleteWorkItemsField.SelectName = @CanDeleteWorkItems
-                OUTPUT INSERTED.*
-                WHERE {GroupUsersGroupIdField.SelectName} = @GroupId 
-                AND {GroupUsersUserIdField.SelectName} = @UserId
-            ";
+                $"""
+
+                                 UPDATE {GroupUsersTable.SelectName}
+                                 SET {GroupUsersCanReadWorkItemsField.SelectName} = @CanViewWorkItems,
+                                     {GroupUsersCanCreateWorkItemsField.SelectName} = @CanCreateWorkItems,
+                                     --GroupUsersCanUpdateWorkItemsField.SelectName = @CanUpdateWorkItems,
+                                     --GroupUsersCanDeleteWorkItemsField.SelectName = @CanDeleteWorkItems
+                                 OUTPUT INSERTED.*
+                                 WHERE {GroupUsersGroupIdField.SelectName} = @GroupId 
+                                 AND {GroupUsersUserIdField.SelectName} = @UserId
+                             
+                 """;
             command.Parameters.Add(GroupIdField.GenerateParameter("@GroupId", groupId));
             command.Parameters.Add(GroupUsersUserIdField.GenerateParameter("@UserId", userId));
 

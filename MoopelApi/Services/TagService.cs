@@ -37,10 +37,12 @@ public class TagService : ITagService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {UserTagsTable.GenerateSelect()}
-                WHERE {UserTagUserIdField.SelectName} = @UserId
-            ";
+                $"""
+
+                                 SELECT {UserTagsTable.GenerateSelect()}
+                                 WHERE {UserTagUserIdField.SelectName} = @UserId
+                             
+                 """;
             command.Parameters.Add(UserTagUserIdField.GenerateParameter("@UserId", userId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -88,10 +90,12 @@ public class TagService : ITagService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {UserTagsTable.GenerateSelect()}
-                WHERE {UserTagIdField.SelectName} = @TagId
-            ";
+                $"""
+
+                                 SELECT {UserTagsTable.GenerateSelect()}
+                                 WHERE {UserTagIdField.SelectName} = @TagId
+                             
+                 """;
             command.Parameters.Add(UserTagIdField.GenerateParameter("@TagId", tagId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -140,15 +144,17 @@ public class TagService : ITagService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                INSERT INTO {UserTagsTable.SelectName}
-                ({UserTagUserIdField.SelectName},
-                 {UserTagNameField.SelectName},
-                 {UserTagColorField.SelectName})
-                OUTPUT INSERTED.{UserTagsTable.GetFields()}
-                VALUES
-                (@UserId, @TagName, @TagColor)
-            ";
+                $"""
+
+                                 INSERT INTO {UserTagsTable.SelectName}
+                                 ({UserTagUserIdField.SelectName},
+                                  {UserTagNameField.SelectName},
+                                  {UserTagColorField.SelectName})
+                                 OUTPUT INSERTED.{UserTagsTable.GetFields()}
+                                 VALUES
+                                 (@UserId, @TagName, @TagColor)
+                             
+                 """;
             command.Parameters.Add(UserTagUserIdField.GenerateParameter("@UserId", userId));
             command.Parameters.Add(UserTagNameField.GenerateParameter("@TagName", request.Name));
             command.Parameters.Add(UserTagColorField.GenerateParameter("@TagColor", request.Color));
@@ -204,13 +210,15 @@ public class TagService : ITagService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                UPDATE {UserTagsTable.SelectName}
-                SET {UserTagNameField.SelectName} = @TagName,
-                    {UserTagColorField.SelectName} = @TagColor
-                OUTPUT INSERTED.{UserTagsTable.GetFields()}
-                WHERE {UserTagIdField.SelectName} = @TagId
-            ";
+                $"""
+
+                                 UPDATE {UserTagsTable.SelectName}
+                                 SET {UserTagNameField.SelectName} = @TagName,
+                                     {UserTagColorField.SelectName} = @TagColor
+                                 OUTPUT INSERTED.{UserTagsTable.GetFields()}
+                                 WHERE {UserTagIdField.SelectName} = @TagId
+                             
+                 """;
             command.Parameters.Add(UserTagNameField.GenerateParameter("@TagName", request.Name));
             command.Parameters.Add(UserTagColorField.GenerateParameter("@TagColor", request.Color));
             command.Parameters.Add(UserTagIdField.GenerateParameter("@TagId", tagId));
@@ -270,11 +278,13 @@ public class TagService : ITagService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                DELETE FROM {UserTagsTable.SelectName}
-                WHERE {UserTagIdField.SelectName} = @TagId
-                  AND {UserTagUserIdField.SelectName} = @UserId
-            ";
+                $"""
+
+                                 DELETE FROM {UserTagsTable.SelectName}
+                                 WHERE {UserTagIdField.SelectName} = @TagId
+                                   AND {UserTagUserIdField.SelectName} = @UserId
+                             
+                 """;
             command.Parameters.Add(UserTagIdField.GenerateParameter("@TagId", tagId));
             command.Parameters.Add(UserTagUserIdField.GenerateParameter("@UserId", userId));
 
@@ -320,10 +330,12 @@ public class TagService : ITagService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {GroupTagsTable.GenerateSelect()}
-                WHERE {GroupTagGroupIdField.SelectName} = @GroupId
-            ";
+                $"""
+
+                                 SELECT {GroupTagsTable.GenerateSelect()}
+                                 WHERE {GroupTagGroupIdField.SelectName} = @GroupId
+                             
+                 """;
             command.Parameters.Add(GroupTagGroupIdField.GenerateParameter("@GroupId", groupId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -371,10 +383,12 @@ public class TagService : ITagService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                SELECT {GroupTagsTable.GenerateSelect()}
-                WHERE {GroupTagIdField.SelectName} = @GroupTagId
-            ";
+                $"""
+
+                                 SELECT {GroupTagsTable.GenerateSelect()}
+                                 WHERE {GroupTagIdField.SelectName} = @GroupTagId
+                             
+                 """;
             command.Parameters.Add(GroupTagIdField.GenerateParameter("@GroupTagId", groupTagId));
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -423,15 +437,17 @@ public class TagService : ITagService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                INSERT INTO {GroupTagsTable.SelectName}
-                ({GroupTagGroupIdField.SelectName},
-                 {GroupTagNameField.SelectName},
-                 {GroupTagColorField.SelectName})
-                OUTPUT INSERTED.{GroupTagsTable.GetFields()}
-                VALUES
-                (@GroupId, @TagName, @TagColor)
-            ";
+                $"""
+
+                                 INSERT INTO {GroupTagsTable.SelectName}
+                                 ({GroupTagGroupIdField.SelectName},
+                                  {GroupTagNameField.SelectName},
+                                  {GroupTagColorField.SelectName})
+                                 OUTPUT INSERTED.{GroupTagsTable.GetFields()}
+                                 VALUES
+                                 (@GroupId, @TagName, @TagColor)
+                             
+                 """;
             command.Parameters.Add(GroupTagGroupIdField.GenerateParameter("@GroupId", groupId));
             command.Parameters.Add(GroupTagNameField.GenerateParameter("@TagName", request.Name));
             command.Parameters.Add(GroupTagColorField.GenerateParameter("@TagColor", request.Color));
@@ -487,13 +503,15 @@ public class TagService : ITagService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                UPDATE {GroupTagsTable.SelectName}
-                SET {GroupTagNameField.SelectName} = @TagName,
-                    {GroupTagColorField.SelectName} = @TagColor
-                OUTPUT INSERTED.{GroupTagsTable.GetFields()}
-                WHERE {GroupTagIdField.SelectName} = @TagId
-            ";
+                $"""
+
+                                 UPDATE {GroupTagsTable.SelectName}
+                                 SET {GroupTagNameField.SelectName} = @TagName,
+                                     {GroupTagColorField.SelectName} = @TagColor
+                                 OUTPUT INSERTED.{GroupTagsTable.GetFields()}
+                                 WHERE {GroupTagIdField.SelectName} = @TagId
+                             
+                 """;
             command.Parameters.Add(GroupTagNameField.GenerateParameter("@TagName", request.Name));
             command.Parameters.Add(GroupTagColorField.GenerateParameter("@TagColor", request.Color));
             command.Parameters.Add(GroupTagIdField.GenerateParameter("@TagId", tagId));
@@ -553,10 +571,12 @@ public class TagService : ITagService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                DELETE FROM {GroupTagsTable.SelectName}
-                WHERE {GroupTagIdField.SelectName} = @TagId
-            ";
+                $"""
+
+                                 DELETE FROM {GroupTagsTable.SelectName}
+                                 WHERE {GroupTagIdField.SelectName} = @TagId
+                             
+                 """;
             command.Parameters.Add(GroupTagIdField.GenerateParameter("@TagId", tagId));
 
             int rowsAffected = await command.ExecuteNonQueryAsync();

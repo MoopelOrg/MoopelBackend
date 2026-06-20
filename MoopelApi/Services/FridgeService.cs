@@ -42,15 +42,17 @@ public class FridgeService : IFridgeService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                INSERT INTO {FridgesTable.SelectName}
-                ({FridgeUserIdField.SelectName}, 
-                 {FridgeNameField.SelectName}, 
-                 {FridgeDescriptionField.SelectName}
-                OUTPUT INSERTED.{FridgeIdField.SelectName} 
-                VALUES
-                (@UserId, @Name, @Description)
-            ";
+                $"""
+
+                                 INSERT INTO {FridgesTable.SelectName}
+                                 ({FridgeUserIdField.SelectName}, 
+                                  {FridgeNameField.SelectName}, 
+                                  {FridgeDescriptionField.SelectName}
+                                 OUTPUT INSERTED.{FridgeIdField.SelectName} 
+                                 VALUES
+                                 (@UserId, @Name, @Description)
+                             
+                 """;
             command.Parameters.Add(FridgeUserIdField.GenerateParameter("@UserId", userId));
             command.Parameters.Add(FridgeNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(FridgeDescriptionField.GenerateParameter("@Description", request.Description));
@@ -107,15 +109,17 @@ public class FridgeService : IFridgeService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                INSERT INTO {FridgeItemsTable.SelectName}
-                ({FridgeItemFridgeIdField.SelectName}, 
-                 {FridgeItemNameField.SelectName}, 
-                 {FridgeItemQuantityField.SelectName}
-                OUTPUT INSERTED.{FridgeItemIdField.SelectName} 
-                VALUES
-                (@UserId, @Name, @Quantity)
-            ";
+                $"""
+
+                                 INSERT INTO {FridgeItemsTable.SelectName}
+                                 ({FridgeItemFridgeIdField.SelectName}, 
+                                  {FridgeItemNameField.SelectName}, 
+                                  {FridgeItemQuantityField.SelectName}
+                                 OUTPUT INSERTED.{FridgeItemIdField.SelectName} 
+                                 VALUES
+                                 (@UserId, @Name, @Quantity)
+                             
+                 """;
             command.Parameters.Add(FridgeItemNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(FridgeItemQuantityField.GenerateParameter("@Quantity", request.Quantity));
 
@@ -169,10 +173,12 @@ public class FridgeService : IFridgeService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                DELETE FROM {FridgesTable.SelectName}
-                WHERE {FridgeIdField.SelectName} = @FridgeId
-            ";
+                $"""
+
+                                 DELETE FROM {FridgesTable.SelectName}
+                                 WHERE {FridgeIdField.SelectName} = @FridgeId
+                             
+                 """;
             command.Parameters.Add(FridgeIdField.GenerateParameter("@FridgeId", fridgeId));
 
             int rowsAffected = await command.ExecuteNonQueryAsync();
@@ -217,10 +223,12 @@ public class FridgeService : IFridgeService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                DELETE FROM {FridgeItemsTable.SelectName}
-                WHERE {FridgeItemIdField.SelectName} = @ItemId
-            ";
+                $"""
+
+                                 DELETE FROM {FridgeItemsTable.SelectName}
+                                 WHERE {FridgeItemIdField.SelectName} = @ItemId
+                             
+                 """;
             command.Parameters.Add(FridgeItemIdField.GenerateParameter("@ItemId", itemId));
 
             int rowsAffected = await command.ExecuteNonQueryAsync();
@@ -262,10 +270,12 @@ public class FridgeService : IFridgeService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                {FridgesTable.GenerateSelect}
-                WHERE {FridgeIdField.SelectName} = @FridgeId
-            ";
+                $"""
+
+                                 {FridgesTable.GenerateSelect}
+                                 WHERE {FridgeIdField.SelectName} = @FridgeId
+                             
+                 """;
             command.Parameters.Add(FridgeIdField.GenerateParameter("@FridgeId", fridgeId));
 
             using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -310,10 +320,12 @@ public class FridgeService : IFridgeService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                {FridgeItemsTable.GenerateSelect}
-                WHERE {FridgeItemIdField.SelectName} = @ItemId
-            ";
+                $"""
+
+                                 {FridgeItemsTable.GenerateSelect}
+                                 WHERE {FridgeItemIdField.SelectName} = @ItemId
+                             
+                 """;
             command.Parameters.Add(FridgeItemIdField.GenerateParameter("@ItemId", itemId));
 
             using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -358,10 +370,12 @@ public class FridgeService : IFridgeService
             command = connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                {FridgeItemsTable.GenerateSelect}
-                WHERE {FridgeUserIdField.SelectName} = @UserId
-            ";
+                $"""
+
+                                 {FridgeItemsTable.GenerateSelect}
+                                 WHERE {FridgeUserIdField.SelectName} = @UserId
+                             
+                 """;
             command.Parameters.Add(FridgeUserIdField.GenerateParameter("@UserId", userId));
 
             using SqlDataReader reader = await command.ExecuteReaderAsync(cancelToken);
@@ -415,13 +429,15 @@ public class FridgeService : IFridgeService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                UPDATE {FridgesTable.SelectName}
-                SET {FridgeNameField.SelectName} = @Name, 
-                    {FridgeDescriptionField.SelectName} = @Description
-                OUTPUT INSERTED.{FridgeUserIdField.SelectName}
-                WHERE {FridgeIdField.SelectName} = @FridgeId;
-            ";
+                $"""
+
+                                 UPDATE {FridgesTable.SelectName}
+                                 SET {FridgeNameField.SelectName} = @Name, 
+                                     {FridgeDescriptionField.SelectName} = @Description
+                                 OUTPUT INSERTED.{FridgeUserIdField.SelectName}
+                                 WHERE {FridgeIdField.SelectName} = @FridgeId;
+                             
+                 """;
 
             command.Parameters.Add(FridgeIdField.GenerateParameter("@FridgeId", fridgeId));
             command.Parameters.Add(FridgeNameField.GenerateParameter("@Name", request.Name));
@@ -479,13 +495,15 @@ public class FridgeService : IFridgeService
             command.Transaction = transaction;
 
             command.CommandText =
-            @$"
-                UPDATE {FridgeItemsTable.SelectName}
-                SET {FridgeItemNameField.SelectName} = @Name, 
-                    {FridgeItemQuantityField.SelectName} = @Quantity
-                OUTPUT INSERTED.{FridgeItemFridgeIdField.SelectName}
-                WHERE {FridgeItemIdField.SelectName} = @ItemId;
-            ";
+                $"""
+
+                                 UPDATE {FridgeItemsTable.SelectName}
+                                 SET {FridgeItemNameField.SelectName} = @Name, 
+                                     {FridgeItemQuantityField.SelectName} = @Quantity
+                                 OUTPUT INSERTED.{FridgeItemFridgeIdField.SelectName}
+                                 WHERE {FridgeItemIdField.SelectName} = @ItemId;
+                             
+                 """;
 
             command.Parameters.Add(FridgeItemIdField.GenerateParameter("@ItemId", itemId));
             command.Parameters.Add(FridgeItemNameField.GenerateParameter("@Name", request.Name));
