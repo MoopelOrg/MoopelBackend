@@ -46,7 +46,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Fridge.MyFridges, _cancelToken);
@@ -68,7 +68,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Fridge.Generate.FridgeById(1), _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(Routes.Fridge.Generate.FridgeById(FridgeTestData.ArbitraryFridgeId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -82,20 +82,18 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         FridgeCreateRequest createRequest = FridgeTestData.ValidCreateRequest;
 
         // Act
-        HttpResponseMessage createResponse =
-            await client.PostAsJsonAsync(Routes.Fridge.CreateFridge, createRequest, _cancelToken);
+        HttpResponseMessage createResponse = await client.PostAsJsonAsync(Routes.Fridge.CreateFridge, createRequest, _cancelToken);
 
         Fridge? created = await createResponse.Content.ReadFromJsonAsync<Fridge>(_cancelToken);
 
         Assert.NotNull(created);
 
-        HttpResponseMessage response =
-            await client.GetAsync(Routes.Fridge.Generate.FridgeById(created.FridgeId), _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(Routes.Fridge.Generate.FridgeById(created.FridgeId), _cancelToken);
 
         Fridge? result = await response.Content.ReadFromJsonAsync<Fridge>(_cancelToken);
 
@@ -114,10 +112,10 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Fridge.Generate.FridgeById(9999), _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(Routes.Fridge.Generate.FridgeById(FridgeTestData.NonExistentFridgeId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -154,7 +152,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =
@@ -168,6 +166,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
             response.StatusCode == HttpStatusCode.Created);
 
         Assert.NotNull(fridge);
+        Assert.NotNull(request);
         Assert.True(fridge.FridgeId > 0);
         Assert.Equal(request.Name, fridge.Name);
     }
@@ -184,7 +183,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         HttpResponseMessage createResponse =
             await client.PostAsJsonAsync(Routes.Fridge.CreateFridge, createRequest, _cancelToken);
@@ -202,6 +201,8 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         // Assert
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
         Assert.NotNull(updated);
+        Assert.NotNull(updateRequest);
+        Assert.NotNull(createRequest);
         Assert.Equal(created.FridgeId, updated.FridgeId);
         Assert.Equal(updateRequest.Name, updated.Name);
     }
@@ -214,13 +215,13 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         FridgeUpdateRequest updateRequest = FridgeTestData.ValidUpdateRequest;
 
         // Act
         HttpResponseMessage response =
-            await client.PutAsJsonAsync(Routes.Fridge.Generate.UpdateFridge(9999), updateRequest, _cancelToken);
+            await client.PutAsJsonAsync(Routes.Fridge.Generate.UpdateFridge(FridgeTestData.NonExistentFridgeId), updateRequest, _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -238,7 +239,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         FridgeCreateRequest createRequest = FridgeTestData.ValidCreateRequest;
 
@@ -272,11 +273,11 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         // Act
         HttpResponseMessage response =
-            await client.DeleteAsync(Routes.Fridge.Generate.DeleteFridge(9999), _cancelToken);
+            await client.DeleteAsync(Routes.Fridge.Generate.DeleteFridge(FridgeTestData.NonExistentFridgeId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -295,8 +296,8 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient user1 = _apiFactory.CreateClient();
         HttpClient user2 = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
-        await GenericAuthActions.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
 
         FridgeCreateRequest request = FridgeTestData.ValidCreateRequest;
 

@@ -46,7 +46,7 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Session.MySessions, _cancelToken);
@@ -84,7 +84,7 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         HttpResponseMessage mySessionsResponse =
             await client.GetAsync(Routes.Session.MySessions, _cancelToken);
@@ -118,7 +118,7 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Session.Generate.SessionById(9999), _cancelToken);
@@ -136,8 +136,8 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient user1 = _apiFactory.CreateClient();
         HttpClient user2 = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
-        await GenericAuthActions.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
 
         HttpResponseMessage user1SessionsResponse =
             await user1.GetAsync(Routes.Session.MySessions, _cancelToken);
@@ -189,8 +189,8 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient primaryClient = _apiFactory.CreateClient();
         HttpClient secondClient = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(primaryClient, username, password, _cancelToken);
-        await GenericAuthActions.CreateAuthenticatedClient(secondClient, username + "x", password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(primaryClient, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(secondClient, username + "x", password, _cancelToken);
 
         // Create another session for the same user on another client
         LoginRequest loginRequest = new()
@@ -200,11 +200,11 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         LoginResult? secondLogin =
-            await GenericAuthActions.Login(secondClient, loginRequest, _cancelToken);
+            await GenericActions.Auth.Login(secondClient, loginRequest, _cancelToken);
 
         Assert.NotNull(secondLogin);
         Assert.NotNull(secondLogin.Token);
-        GenericAuthActions.AttachBearer(secondClient, secondLogin.Token);
+        GenericActions.Auth.AttachBearer(secondClient, secondLogin.Token);
 
         HttpResponseMessage sessionsResponse =
             await primaryClient.GetAsync(Routes.Session.MySessions, _cancelToken);
@@ -240,7 +240,7 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         // Act
         HttpResponseMessage response =
@@ -259,8 +259,8 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient user1 = _apiFactory.CreateClient();
         HttpClient user2 = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
-        await GenericAuthActions.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
 
         HttpResponseMessage user1SessionsResponse =
             await user1.GetAsync(Routes.Session.MySessions, _cancelToken);
@@ -312,7 +312,7 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client1 = _apiFactory.CreateClient();
         HttpClient client2 = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client1, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client1, username, password, _cancelToken);
 
         LoginRequest loginRequest = new()
         {
@@ -321,11 +321,11 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         LoginResult? loginResult =
-            await GenericAuthActions.Login(client2, loginRequest, _cancelToken);
+            await GenericActions.Auth.Login(client2, loginRequest, _cancelToken);
 
         Assert.NotNull(loginResult);
         Assert.NotNull(loginResult.Token);
-        GenericAuthActions.AttachBearer(client2, loginResult.Token);
+        GenericActions.Auth.AttachBearer(client2, loginResult.Token);
 
         HttpResponseMessage beforeResponse =
             await client1.GetAsync(Routes.Session.MySessions, _cancelToken);

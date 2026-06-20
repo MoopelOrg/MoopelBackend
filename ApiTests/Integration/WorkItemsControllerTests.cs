@@ -1,8 +1,14 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
+
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
+
 using MoopelApi;
+using MoopelApi.Models.Dto;
+using MoopelApi.Models.Enums;
+using MoopelApi.Models.Requests.Creation;
+using MoopelApi.Models.Requests.Update;
 
 namespace ApiTests.Integration;
 
@@ -23,7 +29,8 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        HttpResponseMessage response = await client.GetAsync("workitem/group/1", _cancelToken);
+        HttpResponseMessage response =
+            await client.GetAsync(Routes.WorkItem.Generate.WorkItemsByGroupId(WorkItemTestData.MissingGroupId), _cancelToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -34,7 +41,8 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        HttpResponseMessage response = await client.GetAsync("workitem/1", _cancelToken);
+        HttpResponseMessage response =
+            await client.GetAsync(Routes.WorkItem.Generate.WorkItemById(WorkItemTestData.MissingWorkItemId), _cancelToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -45,14 +53,11 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        CreateWorkItemRequest request = new()
-        {
-            GroupId = 1,
-            Title = "Test Work Item"
-        };
-
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.WorkItem.CreateWorkItem, request, _cancelToken);
+            await client.PostAsJsonAsync(
+                Routes.WorkItem.Generate.CreateWorkItem(WorkItemTestData.MissingGroupId),
+                WorkItemTestData.ValidCreateRequest,
+                _cancelToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -63,13 +68,11 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        UpdateWorkItemRequest request = new()
-        {
-            Title = "Updated Work Item"
-        };
-
         HttpResponseMessage response =
-            await client.PutAsJsonAsync("workitem/update/1", request, _cancelToken);
+            await client.PutAsJsonAsync(
+                Routes.WorkItem.Generate.UpdateWorkItem(WorkItemTestData.MissingWorkItemId),
+                WorkItemTestData.ValidUpdateRequest,
+                _cancelToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -81,7 +84,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         HttpResponseMessage response =
-            await client.DeleteAsync("workitem/delete/1", _cancelToken);
+            await client.DeleteAsync(Routes.WorkItem.Generate.DeleteWorkItem(WorkItemTestData.MissingWorkItemId), _cancelToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -92,14 +95,8 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        AddWorkItemParentRequest request = new()
-        {
-            ParentId = 1,
-            ChildId = 2
-        };
-
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.WorkItem.AddLink, request, _cancelToken);
+            await client.PostAsJsonAsync(Routes.WorkItem.AddLink, WorkItemTestData.ValidLinkRequest, _cancelToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -110,14 +107,8 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        RemoveWorkItemParentRequest request = new()
-        {
-            ParentId = 1,
-            ChildId = 2
-        };
-
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.WorkItem.RemoveLink, request, _cancelToken);
+            await client.PostAsJsonAsync(Routes.WorkItem.RemoveLink, WorkItemTestData.ValidLinkRequest, _cancelToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -128,15 +119,15 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
     {
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        GroupRead group = await CreateGroupAsync(client, "Work Group");
+        Group group = await CreateGroupAsync(client, WorkItemTestData.GroupName);
 
         HttpResponseMessage response =
-            await client.GetAsync($"workitem/group/{group.GroupId}", _cancelToken);
+            await client.GetAsync(Routes.WorkItem.Generate.WorkItemsByGroupId(group.GroupId), _cancelToken);
 
-        List<WorkItemRead>? result =
-            await response.Content.ReadFromJsonAsync<List<WorkItemRead>>(_cancelToken);
+        List<WorkItem>? result =
+            await response.Content.ReadFromJsonAsync<List<WorkItem>>(_cancelToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(result);
@@ -148,10 +139,10 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
     {
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         HttpResponseMessage response =
-            await client.GetAsync("workitem/group/999999", _cancelToken);
+            await client.GetAsync(Routes.WorkItem.Generate.WorkItemsByGroupId(WorkItemTestData.MissingGroupId), _cancelToken);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -162,29 +153,26 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
     {
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        GroupRead group = await CreateGroupAsync(client, "Create Work Item Group");
-
-        CreateWorkItemRequest request = new()
-        {
-            GroupId = group.GroupId,
-            Title = "Buy Supplies"
-        };
+        Group group = await CreateGroupAsync(client, WorkItemTestData.CreateGroupName);
 
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.WorkItem.CreateWorkItem, request, _cancelToken);
+            await client.PostAsJsonAsync(
+                Routes.WorkItem.Generate.CreateWorkItem(group.GroupId),
+                WorkItemTestData.ValidCreateRequest,
+                _cancelToken);
 
-        WorkItemRead? created =
-            await response.Content.ReadFromJsonAsync<WorkItemRead>(_cancelToken);
+        WorkItem? created =
+            await response.Content.ReadFromJsonAsync<WorkItem>(_cancelToken);
 
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Created);
 
         Assert.NotNull(created);
-        Assert.True(created.WorkItemId > 0);
-        Assert.Equal("Buy Supplies", created.Title);
+        Assert.True(created.ItemId > 0);
+        Assert.Equal(WorkItemTestData.WorkItemName, created.Name);
     }
 
     [Theory]
@@ -193,16 +181,13 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
     {
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
-
-        CreateWorkItemRequest request = new()
-        {
-            GroupId = 999999,
-            Title = "Missing Group Work Item"
-        };
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.WorkItem.CreateWorkItem, request, _cancelToken);
+            await client.PostAsJsonAsync(
+                Routes.WorkItem.Generate.CreateWorkItem(WorkItemTestData.MissingGroupId),
+                WorkItemTestData.MissingGroupCreateRequest,
+                _cancelToken);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -213,21 +198,21 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
     {
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        GroupRead group = await CreateGroupAsync(client, "Get Work Item Group");
-        WorkItemRead created = await CreateWorkItemAsync(client, group.GroupId, "Finish Project");
+        Group group = await CreateGroupAsync(client, WorkItemTestData.ReadGroupName);
+        WorkItem created = await CreateWorkItemAsync(client, group.GroupId, WorkItemTestData.ExistingWorkItemName);
 
         HttpResponseMessage response =
-            await client.GetAsync($"workitem/{created.WorkItemId}", _cancelToken);
+            await client.GetAsync(Routes.WorkItem.Generate.WorkItemById(created.ItemId), _cancelToken);
 
-        WorkItemRead? result =
-            await response.Content.ReadFromJsonAsync<WorkItemRead>(_cancelToken);
+        WorkItem? result =
+            await response.Content.ReadFromJsonAsync<WorkItem>(_cancelToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(result);
-        Assert.Equal(created.WorkItemId, result.WorkItemId);
-        Assert.Equal(created.Title, result.Title);
+        Assert.Equal(created.ItemId, result.ItemId);
+        Assert.Equal(created.Name, result.Name);
     }
 
     [Theory]
@@ -236,10 +221,10 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
     {
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         HttpResponseMessage response =
-            await client.GetAsync("workitem/999999", _cancelToken);
+            await client.GetAsync(Routes.WorkItem.Generate.WorkItemById(WorkItemTestData.MissingWorkItemId), _cancelToken);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -250,26 +235,24 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
     {
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        GroupRead group = await CreateGroupAsync(client, "Update Work Item Group");
-        WorkItemRead created = await CreateWorkItemAsync(client, group.GroupId, "Old Title");
-
-        UpdateWorkItemRequest request = new()
-        {
-            Title = "New Title"
-        };
+        Group group = await CreateGroupAsync(client, WorkItemTestData.UpdateGroupName);
+        WorkItem created = await CreateWorkItemAsync(client, group.GroupId, WorkItemTestData.OldWorkItemName);
 
         HttpResponseMessage response =
-            await client.PutAsJsonAsync($"workitem/update/{created.WorkItemId}", request, _cancelToken);
+            await client.PutAsJsonAsync(
+                Routes.WorkItem.Generate.UpdateWorkItem(created.ItemId),
+                WorkItemTestData.ValidUpdateRequest,
+                _cancelToken);
 
-        WorkItemRead? updated =
-            await response.Content.ReadFromJsonAsync<WorkItemRead>(_cancelToken);
+        WorkItem? updated =
+            await response.Content.ReadFromJsonAsync<WorkItem>(_cancelToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(updated);
-        Assert.Equal(created.WorkItemId, updated.WorkItemId);
-        Assert.Equal("New Title", updated.Title);
+        Assert.Equal(created.ItemId, updated.ItemId);
+        Assert.Equal(WorkItemTestData.UpdatedWorkItemName, updated.Name);
     }
 
     [Theory]
@@ -278,15 +261,13 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
     {
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
-
-        UpdateWorkItemRequest request = new()
-        {
-            Title = "Missing Item"
-        };
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         HttpResponseMessage response =
-            await client.PutAsJsonAsync("workitem/update/999999", request, _cancelToken);
+            await client.PutAsJsonAsync(
+                Routes.WorkItem.Generate.UpdateWorkItem(WorkItemTestData.MissingWorkItemId),
+                WorkItemTestData.MissingWorkItemUpdateRequest,
+                _cancelToken);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -297,16 +278,16 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
     {
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        GroupRead group = await CreateGroupAsync(client, "Delete Work Item Group");
-        WorkItemRead created = await CreateWorkItemAsync(client, group.GroupId, "Delete Me");
+        Group group = await CreateGroupAsync(client, WorkItemTestData.DeleteGroupName);
+        WorkItem created = await CreateWorkItemAsync(client, group.GroupId, WorkItemTestData.DeleteWorkItemName);
 
         HttpResponseMessage deleteResponse =
-            await client.DeleteAsync($"workitem/delete/{created.WorkItemId}", _cancelToken);
+            await client.DeleteAsync(Routes.WorkItem.Generate.DeleteWorkItem(created.ItemId), _cancelToken);
 
         HttpResponseMessage getResponse =
-            await client.GetAsync($"workitem/{created.WorkItemId}", _cancelToken);
+            await client.GetAsync(Routes.WorkItem.Generate.WorkItemById(created.ItemId), _cancelToken);
 
         Assert.True(
             deleteResponse.StatusCode == HttpStatusCode.OK ||
@@ -321,10 +302,10 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
     {
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         HttpResponseMessage response =
-            await client.DeleteAsync("workitem/delete/999999", _cancelToken);
+            await client.DeleteAsync(Routes.WorkItem.Generate.DeleteWorkItem(WorkItemTestData.MissingWorkItemId), _cancelToken);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -337,14 +318,14 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient user1 = _apiFactory.CreateClient();
         HttpClient user2 = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(user1, "workitemuser1", "Password123!", _cancelToken);
-        await GenericAuthActions.CreateAuthenticatedClient(user2, "workitemuser2", "Password123!", _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
 
-        GroupRead group = await CreateGroupAsync(user1, "Private Work Group");
-        WorkItemRead created = await CreateWorkItemAsync(user1, group.GroupId, "Private Work Item");
+        Group group = await CreateGroupAsync(user1, WorkItemTestData.PrivateGroupName);
+        WorkItem created = await CreateWorkItemAsync(user1, group.GroupId, WorkItemTestData.PrivateWorkItemName);
 
         HttpResponseMessage response =
-            await user2.GetAsync($"workitem/{created.WorkItemId}", _cancelToken);
+            await user2.GetAsync(Routes.WorkItem.Generate.WorkItemById(created.ItemId), _cancelToken);
 
         Assert.True(
             response.StatusCode == HttpStatusCode.Forbidden ||
@@ -359,13 +340,13 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient user1 = _apiFactory.CreateClient();
         HttpClient user2 = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(user1, "groupwork1", "Password123!", _cancelToken);
-        await GenericAuthActions.CreateAuthenticatedClient(user2, "groupwork2", "Password123!", _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
 
-        GroupRead group = await CreateGroupAsync(user1, "Private Group Items");
+        Group group = await CreateGroupAsync(user1, WorkItemTestData.PrivateListGroupName);
 
         HttpResponseMessage response =
-            await user2.GetAsync($"workitem/group/{group.GroupId}", _cancelToken);
+            await user2.GetAsync(Routes.WorkItem.Generate.WorkItemsByGroupId(group.GroupId), _cancelToken);
 
         Assert.True(
             response.StatusCode == HttpStatusCode.Forbidden ||
@@ -378,16 +359,16 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
     {
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        GroupRead group = await CreateGroupAsync(client, "Parent Group");
-        WorkItemRead parent = await CreateWorkItemAsync(client, group.GroupId, "Parent Item");
-        WorkItemRead child = await CreateWorkItemAsync(client, group.GroupId, "Child Item");
+        Group group = await CreateGroupAsync(client, WorkItemTestData.ParentGroupName);
+        WorkItem parent = await CreateWorkItemAsync(client, group.GroupId, WorkItemTestData.ParentWorkItemName);
+        WorkItem child = await CreateWorkItemAsync(client, group.GroupId, WorkItemTestData.ChildWorkItemName);
 
-        AddWorkItemParentRequest request = new()
+        WorkItemLinkRequest request = new()
         {
-            ParentId = parent.WorkItemId,
-            ChildId = child.WorkItemId
+            ParentWorkItemId = parent.ItemId,
+            ChildWorkItemId = child.ItemId
         };
 
         HttpResponseMessage response =
@@ -405,16 +386,10 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
     {
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
-
-        AddWorkItemParentRequest request = new()
-        {
-            ParentId = 999998,
-            ChildId = 999999
-        };
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.WorkItem.AddLink, request, _cancelToken);
+            await client.PostAsJsonAsync(Routes.WorkItem.AddLink, WorkItemTestData.MissingLinkRequest, _cancelToken);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -425,16 +400,16 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
     {
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        GroupRead group = await CreateGroupAsync(client, "Remove Parent Group");
-        WorkItemRead parent = await CreateWorkItemAsync(client, group.GroupId, "Parent");
-        WorkItemRead child = await CreateWorkItemAsync(client, group.GroupId, "Child");
+        Group group = await CreateGroupAsync(client, WorkItemTestData.RemoveParentGroupName);
+        WorkItem parent = await CreateWorkItemAsync(client, group.GroupId, WorkItemTestData.RemoveParentWorkItemName);
+        WorkItem child = await CreateWorkItemAsync(client, group.GroupId, WorkItemTestData.RemoveChildWorkItemName);
 
-        AddWorkItemParentRequest addRequest = new()
+        WorkItemLinkRequest addRequest = new()
         {
-            ParentId = parent.WorkItemId,
-            ChildId = child.WorkItemId
+            ParentWorkItemId = parent.ItemId,
+            ChildWorkItemId = child.ItemId
         };
 
         HttpResponseMessage addResponse =
@@ -445,10 +420,10 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             addResponse.StatusCode == HttpStatusCode.Created ||
             addResponse.StatusCode == HttpStatusCode.NoContent);
 
-        RemoveWorkItemParentRequest removeRequest = new()
+        WorkItemLinkRequest removeRequest = new()
         {
-            ParentId = parent.WorkItemId,
-            ChildId = child.WorkItemId
+            ParentWorkItemId = parent.ItemId,
+            ChildWorkItemId = child.ItemId
         };
 
         HttpResponseMessage removeResponse =
@@ -459,44 +434,44 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             removeResponse.StatusCode == HttpStatusCode.NoContent);
     }
 
-    private async Task<GroupRead> CreateGroupAsync(HttpClient client, string name)
+    private async Task<Group> CreateGroupAsync(HttpClient client, string name)
     {
-        GroupCreateRequest request = new()
-        {
-            Name = name
-        };
-
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Group.CreateGroup, request, _cancelToken);
+            await client.PostAsJsonAsync(
+                Routes.Group.CreateGroup,
+                new GroupCreateRequest { Name = name },
+                _cancelToken);
 
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Created);
 
-        GroupRead? created =
-            await response.Content.ReadFromJsonAsync<GroupRead>(_cancelToken);
+        Group? created =
+            await response.Content.ReadFromJsonAsync<Group>(_cancelToken);
 
         Assert.NotNull(created);
         return created;
     }
 
-    private async Task<WorkItemRead> CreateWorkItemAsync(HttpClient client, int groupId, string title)
+    private async Task<WorkItem> CreateWorkItemAsync(HttpClient client, int groupId, string title)
     {
-        CreateWorkItemRequest request = new()
+        WorkItemCreateRequest request = new()
         {
-            GroupId = groupId,
-            Title = title
+            Name = title,
+            Description = WorkItemTestData.Description,
+            Points = WorkItemTestData.Points,
+            Type = WorkItemType.Task
         };
 
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.WorkItem.CreateWorkItem, request, _cancelToken);
+            await client.PostAsJsonAsync(Routes.WorkItem.Generate.CreateWorkItem(groupId), request, _cancelToken);
 
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Created);
 
-        WorkItemRead? created =
-            await response.Content.ReadFromJsonAsync<WorkItemRead>(_cancelToken);
+        WorkItem? created =
+            await response.Content.ReadFromJsonAsync<WorkItem>(_cancelToken);
 
         Assert.NotNull(created);
         return created;

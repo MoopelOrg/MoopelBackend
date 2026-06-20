@@ -1,10 +1,11 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 
 using MoopelApi;
+using MoopelApi.Models.Attributes;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Requests.Creation;
 using MoopelApi.Models.Requests.Update;
@@ -25,11 +26,28 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
     #region Get All Themes
 
     [Fact]
-    public async Task AllThemes_ReturnsList_WhenNotAuthenticated()
+    [TestDocumentation("Get all themes should be unauthorized with no token", HttpStatusCode.Unauthorized)]
+    public async Task AllThemes_ReturnsUnauthorized_WhenNotAuthenticated()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
+
+        // Act
+        HttpResponseMessage response = await client.GetAsync(Routes.Theme.AllThemes, _cancelToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    [TestDocumentation("Get all themes should return a list when user is authenticated", HttpStatusCode.OK)]
+    public async Task AllThemes_ReturnsList_WhenAuthenticated()
+    {
+        // Arrange
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Theme.AllThemes, _cancelToken);
@@ -40,23 +58,30 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         Assert.NotNull(themes);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task AllThemes_ReturnsList_WhenAuthenticated(string username, string password)
+    [Fact]
+    [TestDocumentation("Get all themes should include a created theme", HttpStatusCode.OK)]
+    public async Task AllThemes_ReturnsListWithCreatedItem_AfterCreating_WhenAuthenticated()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        ThemeCreateRequest request = ThemeTestData.ValidCreateRequest;
 
         // Act
+        Theme created = await CreateThemeAsync(client, request);
         HttpResponseMessage response = await client.GetAsync(Routes.Theme.AllThemes, _cancelToken);
         List<Theme>? themes = await response.Content.ReadFromJsonAsync<List<Theme>>(_cancelToken);
+        Theme? theme = themes?.FirstOrDefault(t => t.ThemeId == created.ThemeId);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(themes);
+        Assert.NotNull(theme);
+        Assert.Equal(created.ThemeId, theme.ThemeId);
+        Assert.Equal(request.Name, theme.Name);
+        Assert.Equal(request.Description, theme.Description);
     }
 
     #endregion
@@ -64,55 +89,34 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
     #region Get Theme By Id
 
     [Fact]
-    public async Task ThemeById_ReturnsTheme_WhenNotAuthenticated_IfPublic()
+    [TestDocumentation("Get theme by id should be unauthorized with no token", HttpStatusCode.Unauthorized)]
+    public async Task ThemeById_ReturnsUnauthorized_WhenNotAuthenticated()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-
-        HttpResponseMessage allResponse = await client.GetAsync(Routes.Theme.AllThemes, _cancelToken);
-        List<Theme>? themes = await allResponse.Content.ReadFromJsonAsync<List<Theme>>(_cancelToken);
-
-        Assert.Equal(HttpStatusCode.OK, allResponse.StatusCode);
-        Assert.NotNull(themes);
-
-        if (themes.Count == 0)
-        {
-            return;
-        }
-
-        Theme firstTheme = themes.First();
+        string endpoint = Routes.Theme.Generate.ThemeById(ThemeTestData.MissingThemeId);
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Theme.Generate.ThemeById(firstTheme.ThemeId), _cancelToken);
-        Theme? theme = await response.Content.ReadFromJsonAsync<Theme>(_cancelToken);
+        HttpResponseMessage response = await client.GetAsync(endpoint, _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(theme);
-        Assert.Equal(firstTheme.ThemeId, theme.ThemeId);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task ThemeById_ReturnsTheme_WhenItExists(string username, string password)
+    [Fact]
+    [TestDocumentation("Get theme by id should return the theme when it exists", HttpStatusCode.OK)]
+    public async Task ThemeById_ReturnsTheme_WhenItExists()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         ThemeCreateRequest createRequest = ThemeTestData.ValidCreateRequest;
 
-        HttpResponseMessage createResponse =
-            await client.PostAsJsonAsync(Routes.Theme.CreateTheme, createRequest, _cancelToken);
-
-        Theme? created = await createResponse.Content.ReadFromJsonAsync<Theme>(_cancelToken);
-
-        Assert.NotNull(created);
-
         // Act
+        Theme created = await CreateThemeAsync(client, createRequest);
         HttpResponseMessage response =
             await client.GetAsync(Routes.Theme.Generate.ThemeById(created.ThemeId), _cancelToken);
 
@@ -123,26 +127,28 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         Assert.NotNull(result);
         Assert.Equal(created.ThemeId, result.ThemeId);
         Assert.Equal(created.Name, result.Name);
+        Assert.Equal(created.Description, result.Description);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task ThemeById_ReturnsNotFound_WhenMissing(string username, string password)
+    [Fact]
+    [TestDocumentation("Get theme by id should return not found when the theme does not exist", HttpStatusCode.NotFound)]
+    public async Task ThemeById_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Theme.Generate.ThemeById(9999), _cancelToken);
+        HttpResponseMessage response =
+            await client.GetAsync(Routes.Theme.Generate.ThemeById(ThemeTestData.MissingThemeId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
+    [TestDocumentation("One user should still be able to read another user's theme when themes are shared", HttpStatusCode.OK)]
     public async Task OneUser_CanStillRead_AnotherUsersTheme_IfThemesAreShared()
     {
         // Arrange
@@ -151,19 +157,13 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient user1 = _apiFactory.CreateClient();
         HttpClient user2 = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
-        await GenericAuthActions.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
 
         ThemeCreateRequest request = ThemeTestData.ValidCreateRequest;
 
-        HttpResponseMessage createResponse =
-            await user1.PostAsJsonAsync(Routes.Theme.CreateTheme, request, _cancelToken);
-
-        Theme? created = await createResponse.Content.ReadFromJsonAsync<Theme>(_cancelToken);
-
-        Assert.NotNull(created);
-
         // Act
+        Theme created = await CreateThemeAsync(user1, request);
         HttpResponseMessage response =
             await user2.GetAsync(Routes.Theme.Generate.ThemeById(created.ThemeId), _cancelToken);
 
@@ -173,54 +173,33 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
 
     #endregion
 
-    #region Get My Theme
-
-    [Fact]
-    public async Task MyTheme_ReturnsUnauthorized_WhenNotAuthenticated()
-    {
-        // Arrange
-        await _apiFactory.ResetDatabaseAsync();
-        HttpClient client = _apiFactory.CreateClient();
-
-        // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Theme.MyTheme, _cancelToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    #endregion
-
     #region Create Theme
 
     [Fact]
+    [TestDocumentation("Create theme should be unauthorized with no token", HttpStatusCode.Unauthorized)]
     public async Task CreateTheme_ReturnsUnauthorized_WhenNotAuthenticated()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        ThemeCreateRequest request = ThemeTestData.ValidCreateRequest;
-
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Theme.CreateTheme, request, _cancelToken);
+            await client.PostAsJsonAsync(Routes.Theme.CreateTheme, ThemeTestData.ValidCreateRequest, _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task CreateTheme_ReturnsTheme_WhenValid(string username, string password)
+    [TestDocumentation("Create theme should return created theme when request is valid", HttpStatusCode.Created)]
+    [MemberData(nameof(ThemeTestData.ValidThemeCreateRequests), MemberType = typeof(ThemeTestData))]
+    public async Task CreateTheme_ReturnsTheme_WhenValid(ThemeCreateRequest request)
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
-
-        ThemeCreateRequest request = ThemeTestData.ValidCreateRequest;
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =
@@ -229,135 +208,21 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         Theme? created = await response.Content.ReadFromJsonAsync<Theme>(_cancelToken);
 
         // Assert
-        Assert.True(
-            response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.Created);
-
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.NotNull(created);
+        Assert.NotNull(request);
         Assert.True(created.ThemeId > 0);
-        Assert.Equal(ThemeTestData.ValidCreateRequest.Name, created.Name);
+        Assert.Equal(request.Name, created.Name);
+        Assert.Equal(request.Description, created.Description);
     }
 
     #endregion
 
     #region Update Theme
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task UpdateTheme_UpdatesTheme_WhenValid(string username, string password)
-    {
-        // Arrange
-        await _apiFactory.ResetDatabaseAsync();
-        HttpClient client = _apiFactory.CreateClient();
-
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
-
-        ThemeCreateRequest createRequest = ThemeTestData.ValidCreateRequest;
-
-        HttpResponseMessage createResponse =
-            await client.PostAsJsonAsync(Routes.Theme.CreateTheme, createRequest, _cancelToken);
-
-        Theme? created = await createResponse.Content.ReadFromJsonAsync<Theme>(_cancelToken);
-
-        Assert.NotNull(created);
-
-        ThemeUpdateRequest updateRequest = ThemeTestData.ValidUpdateRequest;
-
-        // Act
-        HttpResponseMessage updateResponse =
-            await client.PutAsJsonAsync(Routes.Theme.Generate.UpdateTheme(created.ThemeId), updateRequest, _cancelToken);
-
-        Theme? updated = await updateResponse.Content.ReadFromJsonAsync<Theme>(_cancelToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
-        Assert.NotNull(updated);
-        Assert.Equal(created.ThemeId, updated.ThemeId);
-        Assert.Equal(ThemeTestData.ValidUpdateRequest.Name, updated.Name);
-    }
-
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task UpdateTheme_ReturnsNotFound_WhenMissing(string username, string password)
-    {
-        // Arrange
-        await _apiFactory.ResetDatabaseAsync();
-        HttpClient client = _apiFactory.CreateClient();
-
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
-
-        ThemeUpdateRequest updateRequest = ThemeTestData.ValidUpdateRequest;
-
-        // Act
-        HttpResponseMessage response =
-            await client.PutAsJsonAsync(Routes.Theme.Generate.UpdateTheme(9999), updateRequest, _cancelToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    #endregion
-
-    #region Delete Theme
-
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task DeleteTheme_RemovesTheme_WhenValid(string username, string password)
-    {
-        // Arrange
-        await _apiFactory.ResetDatabaseAsync();
-        HttpClient client = _apiFactory.CreateClient();
-
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
-
-        ThemeCreateRequest createRequest = ThemeTestData.ValidCreateRequest;
-
-        HttpResponseMessage createResponse =
-            await client.PostAsJsonAsync(Routes.Theme.CreateTheme, createRequest, _cancelToken);
-
-        Theme? created = await createResponse.Content.ReadFromJsonAsync<Theme>(_cancelToken);
-
-        Assert.NotNull(created);
-
-        // Act
-        HttpResponseMessage deleteResponse =
-            await client.DeleteAsync(Routes.Theme.Generate.DeleteTheme(created.ThemeId), _cancelToken);
-
-        HttpResponseMessage getResponse =
-            await client.GetAsync(Routes.Theme.Generate.ThemeById(created.ThemeId), _cancelToken);
-
-        // Assert
-        Assert.True(
-            deleteResponse.StatusCode == HttpStatusCode.OK ||
-            deleteResponse.StatusCode == HttpStatusCode.NoContent);
-
-        Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
-    }
-
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task DeleteTheme_ReturnsNotFound_WhenMissing(string username, string password)
-    {
-        // Arrange
-        await _apiFactory.ResetDatabaseAsync();
-        HttpClient client = _apiFactory.CreateClient();
-
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
-
-        // Act
-        HttpResponseMessage response =
-            await client.DeleteAsync(Routes.Theme.Generate.DeleteTheme(9999), _cancelToken);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    #endregion
-
-    #region Set My Theme
-
     [Fact]
-    public async Task SetMyTheme_ReturnsUnauthorized_WhenNotAuthenticated()
+    [TestDocumentation("Update theme should be unauthorized with no token", HttpStatusCode.Unauthorized)]
+    public async Task UpdateTheme_ReturnsUnauthorized_WhenNotAuthenticated()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
@@ -365,68 +230,73 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsync(Routes.Theme.Generate.SetMyTheme(1), null, _cancelToken);
+            await client.PatchAsJsonAsync(Routes.Theme.Generate.UpdateTheme(ThemeTestData.MissingThemeId), ThemeTestData.ValidUpdateRequest, _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task SetMyTheme_SetsAndReturnsTheme_WhenValid(string username, string password)
+    [TestDocumentation("Update theme should return updated theme when request is valid", HttpStatusCode.OK)]
+    [MemberData(nameof(ThemeTestData.ValidThemeUpdateCreateRequests), MemberType = typeof(ThemeTestData))]
+    public async Task UpdateTheme_UpdatesTheme_WhenValid(ThemeCreateRequest createRequest, ThemeUpdateRequest updateRequest)
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
-
-        ThemeCreateRequest createRequest = ThemeTestData.ValidCreateRequest;
-
-        HttpResponseMessage createResponse =
-            await client.PostAsJsonAsync(Routes.Theme.CreateTheme, createRequest, _cancelToken);
-
-        Theme? created = await createResponse.Content.ReadFromJsonAsync<Theme>(_cancelToken);
-
-        Assert.NotNull(created);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
-        HttpResponseMessage setResponse =
-            await client.PostAsync(Routes.Theme.Generate.SetMyTheme(created.ThemeId), null, _cancelToken);
+        Theme created = await CreateThemeAsync(client, createRequest);
 
-        Assert.True(
-            setResponse.StatusCode == HttpStatusCode.OK ||
-            setResponse.StatusCode == HttpStatusCode.NoContent);
+        HttpResponseMessage updateResponse =
+            await client.PatchAsJsonAsync(Routes.Theme.Generate.UpdateTheme(created.ThemeId), updateRequest, _cancelToken);
 
-        HttpResponseMessage myThemeResponse =
-            await client.GetAsync(Routes.Theme.MyTheme, _cancelToken);
-
-        Theme? myTheme = await myThemeResponse.Content.ReadFromJsonAsync<Theme>(_cancelToken);
+        Theme? updated = await updateResponse.Content.ReadFromJsonAsync<Theme>(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, myThemeResponse.StatusCode);
-        Assert.NotNull(myTheme);
-        Assert.Equal(created.ThemeId, myTheme.ThemeId);
-        Assert.Equal(created.Name, myTheme.Name);
+        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+        Assert.NotNull(updated);
+        Assert.NotNull(created);
+        Assert.NotNull(createRequest);
+        Assert.NotNull(updateRequest);
+        Assert.Equal(created.ThemeId, updated.ThemeId);
+        Assert.Equal(updateRequest.Name, updated.Name);
+        Assert.Equal(updateRequest.Description, updated.Description);
+        Assert.Equal(created.Data, updated.Data);
+        Assert.Equal(created.IsDark, updated.IsDark);
     }
 
     [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task SetMyTheme_ReturnsNotFound_WhenThemeMissing(string username, string password)
+    [TestDocumentation("Update theme should return not found when the theme does not exist", HttpStatusCode.NotFound)]
+    [MemberData(nameof(ThemeTestData.ValidThemeUpdateRequests), MemberType = typeof(ThemeTestData))]
+    public async Task UpdateTheme_ReturnsNotFound_WhenMissing(ThemeUpdateRequest updateRequest)
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsync(Routes.Theme.Generate.SetMyTheme(9999), null, _cancelToken);
+            await client.PatchAsJsonAsync(Routes.Theme.Generate.UpdateTheme(ThemeTestData.MissingThemeId), updateRequest, _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     #endregion
+
+    private async Task<Theme> CreateThemeAsync(HttpClient client, ThemeCreateRequest request)
+    {
+        HttpResponseMessage response =
+            await client.PostAsJsonAsync(Routes.Theme.CreateTheme, request, _cancelToken);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        Theme? created = await response.Content.ReadFromJsonAsync<Theme>(_cancelToken);
+        Assert.NotNull(created);
+
+        return created;
+    }
 }

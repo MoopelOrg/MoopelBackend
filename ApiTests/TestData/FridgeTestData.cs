@@ -5,6 +5,8 @@ namespace ApiTests.TestData;
 
 internal static class FridgeTestData
 {
+    public const int NonExistentFridgeId = 9999;
+    public const int ArbitraryFridgeId = 1;
 
     public static readonly FridgeCreateRequest ValidCreateRequest = new()
     {

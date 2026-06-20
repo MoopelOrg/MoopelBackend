@@ -52,6 +52,8 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        ArgumentNullException.ThrowIfNull(builder);
+
         builder.ConfigureLogging(logging =>
         {
             logging.ClearProviders();

@@ -48,7 +48,7 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Bank.MyAccounts, _cancelToken);
@@ -68,7 +68,7 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         BankAccountCreateRequest request = BankAccountTestData.ValidCreateRequest;
 
@@ -103,7 +103,7 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
         HttpStatusCode expectedResult = HttpStatusCode.Created;
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.PostAsJsonAsync(Routes.Bank.CreateAccount, createRequest, _cancelToken);
@@ -132,7 +132,7 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         BankAccountCreateRequest createRequest = BankAccountTestData.ValidCreateRequest;
 
@@ -161,7 +161,7 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         string endpoint = Routes.Bank.Generate.AccountById(99999999);
@@ -183,7 +183,7 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage createResponse = await client.PostAsJsonAsync(Routes.Bank.CreateAccount, createRequest, _cancelToken);
@@ -217,7 +217,7 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage createResponse = await client.PostAsJsonAsync(Routes.Bank.CreateAccount, createRequest, _cancelToken);
@@ -246,8 +246,8 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient userClient1 = _apiFactory.CreateClient();
         HttpClient userClient2 = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(userClient1, _cancelToken);
-        await GenericAuthActions.CreateAuthenticatedClient(userClient2, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(userClient1, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(userClient2, _cancelToken);
 
 
         // Act

@@ -6,7 +6,9 @@ namespace ApiTests.TestData;
 
 internal static class NoteTestData
 {
-    public static readonly NoteCreationRequest ValidCreateRequest = new()
+    public const int MissingNoteId = 999999;
+
+    public static readonly NoteCreateRequest ValidCreateRequest = new()
     {
         Type = NoteType.Note,
         Title = "NoteTitle",
@@ -20,15 +22,15 @@ internal static class NoteTestData
         Content = "Updated note content"
     };
 
-    public static IEnumerable<NoteCreationRequest> ValidNoteCreateRequestValues()
+    public static IEnumerable<NoteCreateRequest> ValidNoteCreateRequestValues()
     {
-        yield return new NoteCreationRequest { Type = NoteType.Note, Title = "Shopping List", Content = "Milk, Eggs, Bread" };
-        yield return new NoteCreationRequest { Type = NoteType.Fridge, Title = "Fridge Inventory", Content = "Tomatoes, Cucumbers" };
-        yield return new NoteCreationRequest { Type = NoteType.Storage, Title = "Storage Note", Content = "Boxes in attic" };
-        yield return new NoteCreationRequest { Type = NoteType.WorkItem, Title = "Work Task", Content = "Complete ticket #123" };
-        yield return new NoteCreationRequest { Type = NoteType.Recipe, Title = "Pancake Recipe", Content = "Flour, Milk, Egg" };
-        yield return new NoteCreationRequest { Type = NoteType.Note, Title = "Empty Content", Content = "" };
-        yield return new NoteCreationRequest { Type = NoteType.Note, Title = "A", Content = "Min title" };
+        yield return new NoteCreateRequest { Type = NoteType.Note, Title = "Shopping List", Content = "Milk, Eggs, Bread" };
+        yield return new NoteCreateRequest { Type = NoteType.Fridge, Title = "Fridge Inventory", Content = "Tomatoes, Cucumbers" };
+        yield return new NoteCreateRequest { Type = NoteType.Storage, Title = "Storage Note", Content = "Boxes in attic" };
+        yield return new NoteCreateRequest { Type = NoteType.WorkItem, Title = "Work Task", Content = "Complete ticket #123" };
+        yield return new NoteCreateRequest { Type = NoteType.Recipe, Title = "Pancake Recipe", Content = "Flour, Milk, Egg" };
+        yield return new NoteCreateRequest { Type = NoteType.Note, Title = "Empty Content", Content = "" };
+        yield return new NoteCreateRequest { Type = NoteType.Note, Title = "A", Content = "Min title" };
     }
 
     public static IEnumerable<NoteUpdateRequest> ValidNoteUpdateRequestValues()
@@ -42,12 +44,12 @@ internal static class NoteTestData
         yield return new NoteUpdateRequest { Type = NoteType.Note, Title = "A", Content = "Min title update" };
     }
 
-    public static TheoryData<NoteCreationRequest> ValidNoteCreateRequests
+    public static TheoryData<NoteCreateRequest> ValidNoteCreateRequests
     {
         get
         {
-            TheoryData<NoteCreationRequest> data = [];
-            foreach (NoteCreationRequest r in ValidNoteCreateRequestValues())
+            TheoryData<NoteCreateRequest> data = [];
+            foreach (NoteCreateRequest r in ValidNoteCreateRequestValues())
             {
                 data.Add(r);
             }
@@ -70,13 +72,13 @@ internal static class NoteTestData
         }
     }
 
-    public static TheoryData<NoteCreationRequest, NoteUpdateRequest> ValidNoteUpdateCreateRequests
+    public static TheoryData<NoteCreateRequest, NoteUpdateRequest> ValidNoteUpdateCreateRequests
     {
         get
         {
-            TheoryData<NoteCreationRequest, NoteUpdateRequest> data = [];
+            TheoryData<NoteCreateRequest, NoteUpdateRequest> data = [];
 
-            foreach (NoteCreationRequest createRequest in ValidNoteCreateRequestValues())
+            foreach (NoteCreateRequest createRequest in ValidNoteCreateRequestValues())
             {
                 foreach (NoteUpdateRequest updateRequest in ValidNoteUpdateRequestValues())
                 {

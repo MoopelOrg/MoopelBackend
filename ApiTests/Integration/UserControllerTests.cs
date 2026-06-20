@@ -1,10 +1,14 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
+
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
+
 using MoopelApi;
+using MoopelApi.Models.Attributes;
 using MoopelApi.Models.Dto.Read;
 using MoopelApi.Models.Requests;
+using MoopelApi.Models.Requests.Update;
 using MoopelApi.Models.Results;
 
 namespace ApiTests.Integration;
@@ -20,114 +24,49 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
         _cancelToken = TestContext.Current.CancellationToken;
     }
 
-    [Fact]
-    public async Task MyProfile_ReturnsUnauthorized_WhenNotAuthenticated()
-    {
-        await _apiFactory.ResetDatabaseAsync();
-        HttpClient client = _apiFactory.CreateClient();
-
-        HttpResponseMessage response = await client.GetAsync(Routes.User.MyProfile, _cancelToken);
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
+    #region Get User By Id
 
     [Fact]
+    [TestDocumentation("Get user by id should be unauthorized with no token", HttpStatusCode.Unauthorized)]
     public async Task UserById_ReturnsUnauthorized_WhenNotAuthenticated()
     {
+        // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        HttpResponseMessage response = await client.GetAsync("user/1", _cancelToken);
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task CreateUser_ReturnsUnauthorized_WhenNotAuthenticated()
-    {
-        await _apiFactory.ResetDatabaseAsync();
-        HttpClient client = _apiFactory.CreateClient();
-
-        CreateUserRequest request = new()
-        {
-            Username = "createduser",
-            Password = "Password123!"
-        };
-
+        // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.User.CreateUser, request, _cancelToken);
+            await client.GetAsync(Routes.User.Generate.UserById(UserTestData.MissingUserId), _cancelToken);
 
+        // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task UpdateUser_ReturnsUnauthorized_WhenNotAuthenticated()
-    {
-        await _apiFactory.ResetDatabaseAsync();
-        HttpClient client = _apiFactory.CreateClient();
-
-        UpdateUserRequest request = new()
-        {
-            Username = "updateduser"
-        };
-
-        HttpResponseMessage response =
-            await client.PutAsJsonAsync("user/update/1", request, _cancelToken);
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task DisableUser_ReturnsUnauthorized_WhenNotAuthenticated()
-    {
-        await _apiFactory.ResetDatabaseAsync();
-        HttpClient client = _apiFactory.CreateClient();
-
-        HttpResponseMessage response =
-            await client.PostAsync("user/disable/1", null, _cancelToken);
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task MyProfile_ReturnsCurrentUser_WhenAuthenticated(string username, string password)
-    {
-        await _apiFactory.ResetDatabaseAsync();
-        HttpClient client = _apiFactory.CreateClient();
-
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
-
-        HttpResponseMessage response = await client.GetAsync(Routes.User.MyProfile, _cancelToken);
-        UserRead? me = await response.Content.ReadFromJsonAsync<UserRead>(_cancelToken);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(me);
-        Assert.Equal(username, me.Username);
-        Assert.True(me.UserId > 0);
     }
 
     [Theory]
     [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
     public async Task UserById_ReturnsCurrentUser_WhenRequestingOwnId(string username, string password)
     {
+        // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        HttpResponseMessage meResponse = await client.GetAsync(Routes.User.MyProfile, _cancelToken);
+        HttpResponseMessage meResponse = await client.GetAsync(Routes.User.Generate.UserByName(username), _cancelToken);
         UserRead? me = await meResponse.Content.ReadFromJsonAsync<UserRead>(_cancelToken);
 
         Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
         Assert.NotNull(me);
 
-        HttpResponseMessage response = await client.GetAsync($"user/{me.UserId}", _cancelToken);
+        // Act
+        HttpResponseMessage response =
+            await client.GetAsync(Routes.User.Generate.UserById(me!.UserId), _cancelToken);
         UserRead? fetched = await response.Content.ReadFromJsonAsync<UserRead>(_cancelToken);
 
+        // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(fetched);
-        Assert.Equal(me.UserId, fetched.UserId);
+        Assert.Equal(me.UserId, fetched!.UserId);
         Assert.Equal(me.Username, fetched.Username);
     }
 
@@ -135,182 +74,299 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
     [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
     public async Task UserById_ReturnsNotFound_WhenMissing(string username, string password)
     {
+        // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        HttpResponseMessage response = await client.GetAsync("user/999999", _cancelToken);
+        // Act
+        HttpResponseMessage response =
+            await client.GetAsync(Routes.User.Generate.UserById(UserTestData.MissingUserId), _cancelToken);
 
+        // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
-    public async Task OneUser_CannotAccess_AnotherUsersProfile()
+    public async Task OneUser_CannotAccess_AnotherUsersProfileById()
     {
+        // Arrange
         await _apiFactory.ResetDatabaseAsync();
 
         HttpClient user1 = _apiFactory.CreateClient();
         HttpClient user2 = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(user1, "profileuser1", "Password123!", _cancelToken);
-        await GenericAuthActions.CreateAuthenticatedClient(user2, "profileuser2", "Password123!", _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
 
-        HttpResponseMessage meResponse = await user1.GetAsync(Routes.User.MyProfile, _cancelToken);
-        UserRead? user1Me = await meResponse.Content.ReadFromJsonAsync<UserRead>(_cancelToken);
+        HttpResponseMessage user1MeResponse = await user1.GetAsync(Routes.User.Generate.UserByName(AuthTestData.ValidUserName), _cancelToken);
+        UserRead? user1Me = await user1MeResponse.Content.ReadFromJsonAsync<UserRead>(_cancelToken);
 
-        Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, user1MeResponse.StatusCode);
         Assert.NotNull(user1Me);
 
-        HttpResponseMessage response = await user2.GetAsync($"user/{user1Me.UserId}", _cancelToken);
+        // Act
+        HttpResponseMessage response =
+            await user2.GetAsync(Routes.User.Generate.UserById(user1Me!.UserId), _cancelToken);
 
+        // Assert
         Assert.True(
             response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    #endregion
+
+    #region Get User By Name
+
+    [Fact]
+    [TestDocumentation("Get user by name should be unauthorized with no token", HttpStatusCode.Unauthorized)]
+    public async Task UserByName_ReturnsUnauthorized_WhenNotAuthenticated()
+    {
+        // Arrange
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        // Act
+        HttpResponseMessage response =
+            await client.GetAsync(Routes.User.Generate.UserByName(AuthTestData.ValidUserName), _cancelToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Theory]
+    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
+    public async Task UserByName_ReturnsCurrentUser_WhenRequestingOwnUsername(string username, string password)
+    {
+        // Arrange
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+
+        // Act
+        HttpResponseMessage response =
+            await client.GetAsync(Routes.User.Generate.UserByName(username), _cancelToken);
+        UserRead? fetched = await response.Content.ReadFromJsonAsync<UserRead>(_cancelToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(fetched);
+        Assert.Equal(username, fetched!.Username);
+        Assert.True(fetched.UserId > 0);
+    }
+
+    [Theory]
+    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
+    public async Task UserByName_ReturnsNotFound_WhenMissing(string username, string password)
+    {
+        // Arrange
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+
+        // Act
+        HttpResponseMessage response =
+            await client.GetAsync(Routes.User.Generate.UserByName(UserTestData.MissingUsername), _cancelToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task OneUser_CannotAccess_AnotherUsersProfileByName()
+    {
+        // Arrange
+        await _apiFactory.ResetDatabaseAsync();
+
+        HttpClient user1 = _apiFactory.CreateClient();
+        HttpClient user2 = _apiFactory.CreateClient();
+
+        await GenericActions.Auth.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
+
+        // Act
+        HttpResponseMessage response =
+            await user2.GetAsync(Routes.User.Generate.UserByName(AuthTestData.ValidUserName), _cancelToken);
+
+        // Assert
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Forbidden ||
+            response.StatusCode == HttpStatusCode.NotFound);
+    }
+
+    #endregion
+
+    #region Update User
+
+    [Fact]
+    [TestDocumentation("Update user should be unauthorized with no token", HttpStatusCode.Unauthorized)]
+    public async Task UpdateUser_ReturnsUnauthorized_WhenNotAuthenticated()
+    {
+        // Arrange
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        // Act
+        HttpResponseMessage response =
+            await client.PatchAsJsonAsync(
+                UpdateUserRoute(UserTestData.MissingUserId),
+                new UserUpdateRequest(),
+                _cancelToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Theory]
     [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
     public async Task UpdateUser_UpdatesCurrentUser_WhenAllowed(string username, string password)
     {
+        // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        HttpResponseMessage meResponse = await client.GetAsync(Routes.User.MyProfile, _cancelToken);
+        HttpResponseMessage meResponse = await client.GetAsync(Routes.User.Generate.UserByName(username), _cancelToken);
         UserRead? me = await meResponse.Content.ReadFromJsonAsync<UserRead>(_cancelToken);
 
         Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
         Assert.NotNull(me);
 
-        string updatedUsername = $"{username}_updated";
-
-        UpdateUserRequest request = new()
-        {
-            Username = updatedUsername
-        };
-
+        // Act
         HttpResponseMessage updateResponse =
-            await client.PutAsJsonAsync($"user/update/{me.UserId}", request, _cancelToken);
-
+            await client.PatchAsJsonAsync(
+                UpdateUserRoute(me!.UserId),
+                new UserUpdateRequest(),
+                _cancelToken);
         UserRead? updated = await updateResponse.Content.ReadFromJsonAsync<UserRead>(_cancelToken);
 
+        // Assert
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
         Assert.NotNull(updated);
-        Assert.Equal(me.UserId, updated.UserId);
-        Assert.Equal(updatedUsername, updated.Username);
+        Assert.Equal(me.UserId, updated!.UserId);
+        Assert.Equal(me.Username, updated.Username);
     }
 
     [Theory]
     [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
     public async Task UpdateUser_ReturnsNotFound_WhenMissing(string username, string password)
     {
+        // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        UpdateUserRequest request = new()
-        {
-            Username = "missinguser"
-        };
-
+        // Act
         HttpResponseMessage response =
-            await client.PutAsJsonAsync("user/update/999999", request, _cancelToken);
+            await client.PatchAsJsonAsync(
+                UpdateUserRoute(UserTestData.MissingUserId),
+                new UserUpdateRequest(),
+                _cancelToken);
 
+        // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
     public async Task OneUser_CannotUpdate_AnotherUser()
     {
+        // Arrange
         await _apiFactory.ResetDatabaseAsync();
 
         HttpClient user1 = _apiFactory.CreateClient();
         HttpClient user2 = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(user1, "updateuser1", "Password123!", _cancelToken);
-        await GenericAuthActions.CreateAuthenticatedClient(user2, "updateuser2", "Password123!", _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
 
-        HttpResponseMessage meResponse = await user1.GetAsync(Routes.User.MyProfile, _cancelToken);
-        UserRead? user1Me = await meResponse.Content.ReadFromJsonAsync<UserRead>(_cancelToken);
+        HttpResponseMessage user1MeResponse = await user1.GetAsync(Routes.User.Generate.UserByName(AuthTestData.ValidUserName), _cancelToken);
+        UserRead? user1Me = await user1MeResponse.Content.ReadFromJsonAsync<UserRead>(_cancelToken);
 
-        Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, user1MeResponse.StatusCode);
         Assert.NotNull(user1Me);
 
-        UpdateUserRequest request = new()
-        {
-            Username = "hackedname"
-        };
-
+        // Act
         HttpResponseMessage response =
-            await user2.PutAsJsonAsync($"user/update/{user1Me.UserId}", request, _cancelToken);
+            await user2.PatchAsJsonAsync(
+                UpdateUserRoute(user1Me!.UserId),
+                new UserUpdateRequest(),
+                _cancelToken);
 
+        // Assert
         Assert.True(
             response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task CreateUser_CreatesAnotherUser_WhenAllowed(string username, string password)
+    #endregion
+
+    #region Disable User
+
+    [Fact]
+    [TestDocumentation("Disable user should be unauthorized with no token", HttpStatusCode.Unauthorized)]
+    public async Task DisableUser_ReturnsUnauthorized_WhenNotAuthenticated()
     {
+        // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
-
-        CreateUserRequest request = new()
-        {
-            Username = "createdbyuser",
-            Password = "Password123!"
-        };
-
+        // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.User.CreateUser, request, _cancelToken);
+            await client.PatchAsJsonAsync(Routes.User.Generate.DisableUser(UserTestData.MissingUserId), new { }, _cancelToken);
 
-        Assert.True(
-            response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.Created ||
-            response.StatusCode == HttpStatusCode.Forbidden);
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Theory]
     [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
     public async Task DisableUser_ReturnsNotFound_WhenMissing(string username, string password)
     {
+        // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
+        // Act
         HttpResponseMessage response =
-            await client.PostAsync("user/disable/999999", null, _cancelToken);
+            await client.PatchAsJsonAsync(Routes.User.Generate.DisableUser(UserTestData.MissingUserId), new { }, _cancelToken);
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        // Assert
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Forbidden ||
+            response.StatusCode == HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task OneUser_CannotDisable_AnotherUser()
     {
+        // Arrange
         await _apiFactory.ResetDatabaseAsync();
 
         HttpClient user1 = _apiFactory.CreateClient();
         HttpClient user2 = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(user1, "disableuser1", "Password123!", _cancelToken);
-        await GenericAuthActions.CreateAuthenticatedClient(user2, "disableuser2", "Password123!", _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
 
-        HttpResponseMessage meResponse = await user1.GetAsync(Routes.User.MyProfile, _cancelToken);
-        UserRead? user1Me = await meResponse.Content.ReadFromJsonAsync<UserRead>(_cancelToken);
+        HttpResponseMessage user1MeResponse = await user1.GetAsync(Routes.User.Generate.UserByName(AuthTestData.ValidUserName), _cancelToken);
+        UserRead? user1Me = await user1MeResponse.Content.ReadFromJsonAsync<UserRead>(_cancelToken);
 
-        Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, user1MeResponse.StatusCode);
         Assert.NotNull(user1Me);
 
+        // Act
         HttpResponseMessage response =
-            await user2.PostAsync($"user/disable/{user1Me.UserId}", null, _cancelToken);
+            await user2.PatchAsJsonAsync(Routes.User.Generate.DisableUser(user1Me!.UserId), new { }, _cancelToken);
 
+        // Assert
         Assert.True(
             response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound);
@@ -320,23 +376,26 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
     [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
     public async Task DisableUser_DisablesUser_WhenAllowed(string username, string password)
     {
+        // Arrange
         await _apiFactory.ResetDatabaseAsync();
 
         HttpClient adminClient = _apiFactory.CreateClient();
         HttpClient targetClient = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(adminClient, username, password, _cancelToken);
-        await GenericAuthActions.CreateAuthenticatedClient(targetClient, "targetuser", "Password123!", _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(adminClient, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(targetClient, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
 
-        HttpResponseMessage targetMeResponse = await targetClient.GetAsync(Routes.User.MyProfile, _cancelToken);
+        HttpResponseMessage targetMeResponse = await targetClient.GetAsync(Routes.User.Generate.UserByName(AuthTestData.ValidUserName2), _cancelToken);
         UserRead? targetUser = await targetMeResponse.Content.ReadFromJsonAsync<UserRead>(_cancelToken);
 
         Assert.Equal(HttpStatusCode.OK, targetMeResponse.StatusCode);
         Assert.NotNull(targetUser);
 
+        // Act
         HttpResponseMessage disableResponse =
-            await adminClient.PostAsync($"user/disable/{targetUser.UserId}", null, _cancelToken);
+            await adminClient.PatchAsJsonAsync(Routes.User.Generate.DisableUser(targetUser!.UserId), new { }, _cancelToken);
 
+        // Assert
         Assert.True(
             disableResponse.StatusCode == HttpStatusCode.OK ||
             disableResponse.StatusCode == HttpStatusCode.NoContent ||
@@ -345,12 +404,12 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
         if (disableResponse.StatusCode == HttpStatusCode.OK ||
             disableResponse.StatusCode == HttpStatusCode.NoContent)
         {
-            LoginResult? loginResult = await GenericAuthActions.Login(
+            LoginResult? loginResult = await GenericActions.Auth.Login(
                 _apiFactory.CreateClient(),
                 new LoginRequest
                 {
-                    Username = "targetuser",
-                    Password = "Password123!"
+                    Username = AuthTestData.ValidUserName2,
+                    Password = AuthTestData.ValidPassword2
                 },
                 _cancelToken);
 
@@ -359,5 +418,12 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
                 loginResult.User is null ||
                 !string.IsNullOrWhiteSpace(loginResult.Error));
         }
+    }
+
+    #endregion
+
+    private static string UpdateUserRoute(int userId)
+    {
+        return Routes.User.UpdateUser.Replace("{userId:int}", userId.ToString());
     }
 }

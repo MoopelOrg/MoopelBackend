@@ -46,7 +46,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Group.MyGroups, _cancelToken);
@@ -83,7 +83,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         GroupCreateRequest createRequest = GroupTestData.ValidCreateRequest;
 
@@ -115,7 +115,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Group.Generate.GroupById(9999), _cancelToken);
@@ -133,8 +133,8 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient user1 = _apiFactory.CreateClient();
         HttpClient user2 = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
-        await GenericAuthActions.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
 
         GroupCreateRequest request = GroupTestData.ValidCreateRequest;
 
@@ -184,7 +184,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =
@@ -211,7 +211,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage firstResponse =
@@ -242,7 +242,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         HttpResponseMessage createResponse =
             await client.PostAsJsonAsync(Routes.Group.CreateGroup, createRequest, _cancelToken);
@@ -274,7 +274,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         GroupUpdateRequest updateRequest = GroupTestData.ValidUpdateRequest;
 
@@ -298,7 +298,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         GroupCreateRequest createRequest = GroupTestData.ValidCreateRequest;
 
@@ -332,7 +332,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         // Act
         HttpResponseMessage response =

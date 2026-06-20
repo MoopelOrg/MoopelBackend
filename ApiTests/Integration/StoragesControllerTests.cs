@@ -46,7 +46,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Storage.MyStorages, _cancelToken);
@@ -83,7 +83,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         StorageCreateRequest createRequest = StorageTestData.ValidCreateRequest;
 
@@ -115,7 +115,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Storage.Generate.StorageById(9999), _cancelToken);
@@ -133,8 +133,8 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient user1 = _apiFactory.CreateClient();
         HttpClient user2 = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
-        await GenericAuthActions.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
 
         StorageCreateRequest request = StorageTestData.ValidCreateRequest;
 
@@ -184,7 +184,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         StorageCreateRequest request = StorageTestData.ValidCreateRequest;
 
@@ -216,7 +216,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         StorageCreateRequest createRequest = StorageTestData.ValidCreateRequest;
 
@@ -250,7 +250,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         StorageUpdateRequest updateRequest = StorageTestData.ValidUpdateRequest;
 
@@ -266,15 +266,14 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
 
     #region Delete Storage
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task DeleteStorage_RemovesStorage_WhenValid(string username, string password)
+    [Fact]
+    public async Task DeleteStorage_RemovesStorage_WhenValid()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         StorageCreateRequest createRequest = StorageTestData.ValidCreateRequest;
 
@@ -300,15 +299,14 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task DeleteStorage_ReturnsNotFound_WhenMissing(string username, string password)
+    [Fact]
+    public async Task DeleteStorage_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =

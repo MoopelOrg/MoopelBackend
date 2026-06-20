@@ -40,7 +40,7 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         // Act
-        UserRead? user = await GenericAuthActions.Register(client, registerRequest, _cancelToken);
+        UserRead? user = await GenericActions.Auth.Register(client, registerRequest, _cancelToken);
 
         // Assert
         Assert.NotNull(user);
@@ -63,7 +63,7 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         // Act
-        UserRead? user = await GenericAuthActions.Register(client, registerRequest, _cancelToken);
+        UserRead? user = await GenericActions.Auth.Register(client, registerRequest, _cancelToken);
 
         // Assert
         Assert.True(user is null, reason);
@@ -84,8 +84,8 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         // Act
-        UserRead? firstRegistrationUser = await GenericAuthActions.Register(client, registerRequest, _cancelToken);
-        UserRead? secondRegistrationUser = await GenericAuthActions.Register(client, registerRequest, _cancelToken);
+        UserRead? firstRegistrationUser = await GenericActions.Auth.Register(client, registerRequest, _cancelToken);
+        UserRead? secondRegistrationUser = await GenericActions.Auth.Register(client, registerRequest, _cancelToken);
 
         // Assert
         Assert.NotNull(firstRegistrationUser);
@@ -114,9 +114,9 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         // Act
-        UserRead? firstUser = await GenericAuthActions.Register(client, registerRequest, _cancelToken);
-        UserRead? secondUser = await GenericAuthActions.Register(client, registerRequest, _cancelToken);
-        LoginResult? loginResult = await GenericAuthActions.Login(client, loginRequest, _cancelToken);
+        UserRead? firstUser = await GenericActions.Auth.Register(client, registerRequest, _cancelToken);
+        UserRead? secondUser = await GenericActions.Auth.Register(client, registerRequest, _cancelToken);
+        LoginResult? loginResult = await GenericActions.Auth.Login(client, loginRequest, _cancelToken);
 
         // Assert
         Assert.NotNull(firstUser);
@@ -153,8 +153,8 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         // Act
-        UserRead? user = await GenericAuthActions.Register(client, registerRequest, _cancelToken);
-        LoginResult? loginResult = await GenericAuthActions.Login(client, loginRequest, _cancelToken);
+        UserRead? user = await GenericActions.Auth.Register(client, registerRequest, _cancelToken);
+        LoginResult? loginResult = await GenericActions.Auth.Login(client, loginRequest, _cancelToken);
 
         // Assert
         Assert.NotNull(user);
@@ -179,7 +179,7 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        LoginResult? loginResult = await GenericAuthActions.GuestLogin(client, _cancelToken);
+        LoginResult? loginResult = await GenericActions.Auth.GuestLogin(client, _cancelToken);
 
         // Assert
         Assert.NotNull(loginResult);
@@ -214,7 +214,7 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
             Password = password + "_wrong"
         };
 
-        await GenericAuthActions.Register(client, registerRequest, _cancelToken);
+        await GenericActions.Auth.Register(client, registerRequest, _cancelToken);
 
         // Act
         HttpResponseMessage loginResponse =
@@ -268,13 +268,13 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericAuthActions.Register(
+        await GenericActions.Auth.Register(
             client,
             new RegistrationRequest { Username = username, Password = password },
             _cancelToken);
 
         // Act
-        LoginResult? loginResult = await GenericAuthActions.Login(
+        LoginResult? loginResult = await GenericActions.Auth.Login(
             client,
             new LoginRequest { Username = username, Password = password },
             _cancelToken);
@@ -311,11 +311,11 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         // Act
-        UserRead? user = await GenericAuthActions.Register(client, registerRequest, _cancelToken);
-        LoginResult? loginResult = await GenericAuthActions.Login(client, loginRequest, _cancelToken);
+        UserRead? user = await GenericActions.Auth.Register(client, registerRequest, _cancelToken);
+        LoginResult? loginResult = await GenericActions.Auth.Login(client, loginRequest, _cancelToken);
 
         Assert.NotNull(loginResult);
-        GenericAuthActions.AttachBearer(client, loginResult.Token);
+        GenericActions.Auth.AttachBearer(client, loginResult.Token);
 
         HttpResponseMessage meResponse = await client.GetAsync(Routes.Auth.Me, _cancelToken);
         UserRead? meResult = await meResponse.Content.ReadFromJsonAsync<UserRead>(_cancelToken);
@@ -375,18 +375,18 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        UserRead? registeredUser = await GenericAuthActions.Register(
+        UserRead? registeredUser = await GenericActions.Auth.Register(
             client,
             new RegistrationRequest { Username = username, Password = password },
             _cancelToken);
 
-        LoginResult? loginResult = await GenericAuthActions.Login(
+        LoginResult? loginResult = await GenericActions.Auth.Login(
             client,
             new LoginRequest { Username = username, Password = password },
             _cancelToken);
 
         Assert.NotNull(loginResult);
-        GenericAuthActions.AttachBearer(client, loginResult.Token);
+        GenericActions.Auth.AttachBearer(client, loginResult.Token);
 
         UserRead? me = await client.GetFromJsonAsync<UserRead>(Routes.Auth.Me, _cancelToken);
 
