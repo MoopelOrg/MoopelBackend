@@ -430,10 +430,19 @@ public class ConstantValues
                 Nullable = false
             };
 
-        public static readonly DatabaseField GroupUsersOwnerField =
+        public static readonly DatabaseField GroupUsersIsOwnerField =
             new()
             {
                 Name = "IsOwner",
+                Type = SqlDbType.Bit,
+                Nullable = false,
+                DefaultValue = "0"
+            };
+
+        public static readonly DatabaseField GroupUsersIsAdminField =
+            new()
+            {
+                Name = "IsAdmin",
                 Type = SqlDbType.Bit,
                 Nullable = false,
                 DefaultValue = "0"
@@ -475,6 +484,51 @@ public class ConstantValues
                 DefaultValue = "0"
             };
 
+        public static readonly DatabaseField GroupUsersCanUpdateWorkItemsField =
+            new()
+            {
+                Name = "CanUpdateWorkItems",
+                Type = SqlDbType.Bit,
+                Nullable = false,
+                DefaultValue = "0"
+            };
+        
+        public static readonly DatabaseField GroupUsersCanDeleteWorkItemsField =
+            new()
+            {
+                Name = "CanDeleteWorkItems",
+                Type = SqlDbType.Bit,
+                Nullable = false,
+                DefaultValue = "0"
+            };
+        
+        public static readonly DatabaseField GroupUsersCanCreateTagsField =
+            new()
+            {
+                Name = "CanCreateTags",
+                Type = SqlDbType.Bit,
+                Nullable = false,
+                DefaultValue = "0"
+            };
+        
+        public static readonly DatabaseField GroupUsersCanUpdateTagsField =
+            new()
+            {
+                Name = "CanUpdateTags",
+                Type = SqlDbType.Bit,
+                Nullable = false,
+                DefaultValue = "0"
+            };
+        
+        public static readonly DatabaseField GroupUsersCanDeleteTagsField =
+            new()
+            {
+                Name = "CanDeleteTags",
+                Type = SqlDbType.Bit,
+                Nullable = false,
+                DefaultValue = "0"
+            };
+
         public static readonly DatabaseTable GroupUsersTable = new()
         {
             Name = "GroupUsers",
@@ -483,18 +537,28 @@ public class ConstantValues
             [
                 GroupUsersGroupIdField,
                 GroupUsersUserIdField,
+                
                 GroupUsersCanReadWorkItemsField,
-                GroupUsersCanCreateWorkItemsField
+                GroupUsersCanCreateWorkItemsField,
+                GroupUsersCanUpdateWorkItemsField,
+                GroupUsersCanDeleteWorkItemsField,
+                
+                GroupUsersCanCreateTagsField,
+                GroupUsersCanUpdateTagsField,
+                GroupUsersCanDeleteTagsField,
+                
+                GroupUsersIsAdminField,
+                GroupUsersIsOwnerField,
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "PK_GroupUsers",
                     Type = DatabaseConstraintType.CompositePrimaryKey,
                     Fields = [GroupUsersGroupIdField, GroupUsersUserIdField]
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_GroupUsers_Groups",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -503,7 +567,7 @@ public class ConstantValues
                     ReferenceFields = [GroupIdField],
                     OnDelete = "CASCADE"
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_GroupUsers_Users",
                     Type = DatabaseConstraintType.ForeignKey,

@@ -78,8 +78,18 @@ public static class DtoReaders
         {
             GroupId = reader.GetInt(Col(alias, GroupUsersGroupIdField.Name)),
             UserId = reader.GetInt(Col(alias, GroupUsersUserIdField.Name)),
+            
+            IsOwner = reader.GetBool(Col(alias, GroupUsersIsOwnerField.Name)),
+            IsAdmin = reader.GetBool(Col(alias, GroupUsersIsAdminField.Name)),
+            
             CanReadWorkItems = reader.GetBool(Col(alias, GroupUsersCanReadWorkItemsField.Name)),
-            CanCreateWorkItems = reader.GetBool(Col(alias, GroupUsersCanCreateWorkItemsField.Name))
+            CanCreateWorkItems = reader.GetBool(Col(alias, GroupUsersCanCreateWorkItemsField.Name)),
+            CanUpdateWorkItems = reader.GetBool(Col(alias,GroupUsersCanUpdateWorkItemsField.Name)),
+            CanDeleteWorkItems = reader.GetBool(Col(alias, GroupUsersCanDeleteWorkItemsField.Name)),
+            
+            CanCreateTags = reader.GetBool(Col(alias, GroupUsersCanCreateTagsField.Name)),
+            CanUpdateTags = reader.GetBool(Col(alias, GroupUsersCanUpdateTagsField.Name)),
+            CanDeleteTags = reader.GetBool(Col(alias, GroupUsersCanDeleteTagsField.Name)),
         };
     }
 

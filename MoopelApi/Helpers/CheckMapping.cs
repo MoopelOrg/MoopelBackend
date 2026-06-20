@@ -208,6 +208,10 @@ public static class CheckMapping
             CanViewWorkItems = true,
             CanDeleteWorkItems = true,
             CanUpdateWorkItems = true,
+            
+            CanUpdateTags = true,
+            CanDeleteTags = true,
+            CanCreateTags = true
         };
 
         Group g1 = new()
@@ -222,8 +226,19 @@ public static class CheckMapping
         {
             GroupId = i,
             UserId = i,
+            
             CanCreateWorkItems = guUpdate.CanCreateWorkItems,
             CanReadWorkItems = guUpdate.CanViewWorkItems,
+            CanUpdateWorkItems = guUpdate.CanUpdateWorkItems,
+            CanDeleteWorkItems = guUpdate.CanDeleteWorkItems,
+            
+            CanCreateTags = guUpdate.CanCreateTags,
+            CanUpdateTags = guUpdate.CanUpdateTags,
+            CanDeleteTags = guUpdate.CanDeleteTags,
+            
+            IsOwner = false,
+            IsAdmin = false,
+                
         };
 
         GroupTag gt1 = new()
@@ -237,7 +252,7 @@ public static class CheckMapping
 
     private static void CheckNote()
     {
-        NoteCreationRequest nCreate = new()
+        NoteCreateRequest nCreate = new()
         {
             Title = e,
             Content = e,
