@@ -1,12 +1,13 @@
-﻿namespace MoopelApi;
+﻿// ReSharper disable MemberHidesStaticFromOuterClass
+namespace MoopelApi;
 
 public static class Routes
 {
     public static class Auth
     {
-        public const string Base = "auth";
+        private const string Base = "auth";
 
-        public static class Actions
+        private static class Actions
         {
             public const string Login = "/login";
             public const string GuestLogin = "/guest-login";
@@ -24,9 +25,9 @@ public static class Routes
 
     public static class User
     {
-        public const string Base = "user";
+        private const string Base = "user";
 
-        public static class Actions
+        private static class Actions
         {
             public const string UserById = "/{userId:int}";
             public const string UserByName = "/{username}";
@@ -49,9 +50,9 @@ public static class Routes
 
     public static class UserSettings
     {
-        public const string Base = "usersettings";
+        private const string Base = "usersettings";
 
-        public static class Actions
+        private static class Actions
         {
             public const string MySettings = "/me";
             public const string SettingsById = "/{settingId:int}";
@@ -75,9 +76,9 @@ public static class Routes
 
     public static class Group
     {
-        public const string Base = "group";
+        private const string Base = "group";
 
-        public static class Actions
+        private static class Actions
         {
             public const string MyGroups = "/mygroups";
             public const string GroupById = "/{groupId:int}";
@@ -101,9 +102,9 @@ public static class Routes
 
     public static class Note
     {
-        public const string Base = "note";
+        private const string Base = "note";
 
-        public static class Actions
+        private static class Actions
         {
             public const string MyNotes = "/my";
             public const string NoteById = "/{noteId:int}";
@@ -127,9 +128,9 @@ public static class Routes
 
     public static class Tag
     {
-        public const string Base = "tag";
+        private const string Base = "tag";
 
-        public static class Actions
+        private static class Actions
         {
             public const string UserTags = "/user";
             public const string UserTagById = "/user/{tagId:int}";
@@ -172,9 +173,9 @@ public static class Routes
 
     public static class Theme
     {
-        public const string Base = "theme";
+        private const string Base = "theme";
 
-        public static class Actions
+        private static class Actions
         {
             public const string AllThemes = "";
             public const string ThemeById = "/{themeId:int}";
@@ -203,9 +204,9 @@ public static class Routes
 
     public static class Session
     {
-        public const string Base = "session";
+        private const string Base = "session";
 
-        public static class Actions
+        private static class Actions
         {
             public const string MySessions = "/my";
             public const string SessionById = "/{sessionId:int}";
@@ -226,9 +227,9 @@ public static class Routes
 
     public static class WorkItem
     {
-        public const string Base = "workitem";
+        private const string Base = "workitem";
 
-        public static class Actions
+        private static class Actions
         {
             public const string WorkItemsByGroupId = "/group/{groupId:int}";
             public const string WorkItemsByGroupIdAndType = "/group/{groupId:int}/type/{type}";
@@ -261,9 +262,9 @@ public static class Routes
 
     public static class Storage
     {
-        public const string Base = "storage";
+        private const string Base = "storage";
 
-        public static class Actions
+        private static class Actions
         {
             public const string MyStorages = "/my";
             public const string StorageById = "/{storageId:int}";
@@ -299,9 +300,9 @@ public static class Routes
 
     public static class Fridge
     {
-        public const string Base = "fridge";
+        private const string Base = "fridge";
 
-        public static class Actions
+        private static class Actions
         {
             public const string MyFridges = "/my";
             public const string FridgeById = "/{fridgeId:int}";
@@ -338,9 +339,9 @@ public static class Routes
 
     public static class Bank
     {
-        public const string Base = "bank";
+        private const string Base = "bank";
 
-        public static class Actions
+        private static class Actions
         {
             public const string MyAccounts = "/accounts/my";
             public const string AccountById = "/accounts/{accountId:int}";
@@ -364,9 +365,9 @@ public static class Routes
 
     public static class Transaction
     {
-        public const string Base = "transaction";
+        private const string Base = "transaction";
 
-        public static class Actions
+        private static class Actions
         {
             public const string TransactionsByAccountId = "/account/{accountId:int}";
             public const string TransactionById = "/{transactionId:int}";
@@ -402,9 +403,9 @@ public static class Routes
 
     public static class Report
     {
-        public const string Base = "report";
+        private const string Base = "report";
 
-        public static class Actions
+        private static class Actions
         {
             public const string Summary = "/summary";
             public const string UserSummary = "/user/{userId:int}";
@@ -427,9 +428,9 @@ public static class Routes
 
     public static class Image
     {
-        public const string Base = "image";
+        private const string Base = "image";
 
-        public static class Actions
+        private static class Actions
         {
             public const string Upload = "/upload";
             public const string ImageById = "/{imageId:int}";
