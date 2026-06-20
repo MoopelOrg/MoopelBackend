@@ -27,9 +27,4 @@
     </Content>
   </ItemGroup>
 
-  <Target Name="ResetDocker" BeforeTargets="Build;Run">
-    <Exec Command="docker compose -f sql-docker-compose.yml down --remove-orphans" ContinueOnError="WarnAndContinue" />
-    <Exec Command="docker compose -f sql-docker-compose.yml up -d --force-recreate" ContinueOnError="WarnAndContinue" />
-  </Target>
-
 </Project>

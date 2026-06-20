@@ -54,7 +54,7 @@ public class DatabaseTable
 
                                 IF OBJECT_ID('dbo.{Name}', 'U') IS NULL
                                 BEGIN
-                                CREATE TABLE {SelectName} (
+                                CREATE TABLE [dbo].{SelectName} (
                                 {string.Join(",\n", tableParts)}
                                 );{filteredIndexesSql}
                                 END

@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using System.Text;
-using System.Threading.RateLimiting;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -8,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 
+using MoopelApi.Controllers;
 using MoopelApi.Helpers;
 using MoopelApi.Models;
 using MoopelApi.Models.Configuration;
@@ -29,7 +29,6 @@ public class Startup
 {
     private WebApplicationBuilder _builder;
     private readonly DeploymentInfo _deploymentInfo;
-    private readonly DatabaseConnection _databaseConnection;
 
     public Startup(string[] args)
     {
@@ -43,25 +42,22 @@ public class Startup
             CommitName = _builder.Configuration["COMMIT_NAME"] ?? "Unknown",
             Tag = _builder.Configuration["GIT_TAG"] ?? "Unknown"
         };
+    }
 
-        _databaseConnection = _builder.Configuration
-            .GetRequiredSection("DatabaseConnection")
-            .Get<DatabaseConnection>()
-            ?? throw new("Failed to retrieve DatabaseConnection configuration.");
+    private DatabaseConnection GetConnectionFromConfig()
+    {
+        DatabaseConnection connection;
+        connection = _builder.Configuration
+                    .GetRequiredSection("DatabaseConnection")
+                    .Get<DatabaseConnection>()
+                    ?? throw new InvalidOperationException("Failed to retrieve DatabaseConnection configuration.");
+        return connection;
     }
 
     public async Task<WebApplicationBuilder> CreateBuilder()
     {
         try
         {
-            if (_databaseConnection.ConnectionString.Contains("localhost"))
-            {
-                Console.WriteLine("Running in development environment. Waiting for database to be ready...");
-                await Task.Delay(TimeSpan.FromSeconds(20));
-            }
-
-            _builder.Services.AddSingleton(_databaseConnection);
-
             _builder = AddServices();
             _builder = AddLifetimeServices();
 
@@ -131,6 +127,7 @@ public class Startup
             });
 
 
+        /*
         _builder.Services.AddRateLimiter(options =>
         {
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
@@ -144,6 +141,7 @@ public class Startup
                         Window = TimeSpan.FromMinutes(1)
                     }));
         });
+        */
 
         /*
         _builder.Services.AddCors(options =>
@@ -163,6 +161,8 @@ public class Startup
 
     public WebApplicationBuilder AddLifetimeServices()
     {
+        _builder.Services.AddSingleton(GetConnectionFromConfig());
+
         _builder.Services.Configure<JwtSettings>(_builder.Configuration.GetRequiredSection("JwtSettings"));
 
         _builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
@@ -198,6 +198,8 @@ public class Startup
 
     public WebApplicationBuilder AddLogging()
     {
+        DatabaseConnection databaseConnection = GetConnectionFromConfig();
+
         ColumnOptions logColumns = new();
         logColumns.Id.ColumnName = "LogId";
         logColumns.TimeStamp.ColumnName = "CreatedAtUtc";
@@ -211,12 +213,12 @@ public class Startup
             .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Error)
             .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Error)
             .WriteTo.MSSqlServer(
-                connectionString: _databaseConnection.ConnectionString,
+                connectionString: databaseConnection.ConnectionString,
                 columnOptions: logColumns,
                 sinkOptions: new MSSqlServerSinkOptions
                 {
                     TableName = "LogEvents",
-                    AutoCreateSqlTable = true,
+                    AutoCreateSqlTable = false,  // Table is managed by BuildDatabase() via DatabaseTables
                 })
             .WriteTo.Console()
             //.WriteTo.Seq()
@@ -245,7 +247,7 @@ public class Startup
                    .AddPreferredSecuritySchemes(JwtBearerDefaults.AuthenticationScheme);
         });
 
-        app.UseRateLimiter();
+        //app.UseRateLimiter();
 
         app.UseHttpsRedirection();
         //app.UseCors(corsPolicyName);
@@ -265,13 +267,53 @@ public class Startup
         return app;
     }
 
+    public async Task CheckApp(IServiceScope scope)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+
+        scope.ServiceProvider.GetService<ILogger<Startup>>()?.LogInformation("Startup Log");
+
+        scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
+        scope.ServiceProvider.GetRequiredService<IAuthService>();
+        scope.ServiceProvider.GetRequiredService<IUserService>();
+        scope.ServiceProvider.GetRequiredService<IThemeService>();
+        scope.ServiceProvider.GetRequiredService<IContextService>();
+        scope.ServiceProvider.GetRequiredService<INotificationService>();
+        scope.ServiceProvider.GetRequiredService<ISessionService>();
+        scope.ServiceProvider.GetRequiredService<IImageService>();
+        scope.ServiceProvider.GetRequiredService<IBankService>();
+        scope.ServiceProvider.GetRequiredService<IFridgeService>();
+        scope.ServiceProvider.GetRequiredService<IStorageService>();
+        scope.ServiceProvider.GetRequiredService<INoteService>();
+        scope.ServiceProvider.GetRequiredService<ITagService>();
+        scope.ServiceProvider.GetRequiredService<IGroupService>();
+        scope.ServiceProvider.GetRequiredService<IWorkItemService>();
+
+        ActivatorUtilities.CreateInstance<AuthController>(scope.ServiceProvider);
+        ActivatorUtilities.CreateInstance<BanksController>(scope.ServiceProvider);
+        ActivatorUtilities.CreateInstance<FridgesController>(scope.ServiceProvider);
+        ActivatorUtilities.CreateInstance<GroupsController>(scope.ServiceProvider);
+        ActivatorUtilities.CreateInstance<ImageController>(scope.ServiceProvider);
+        ActivatorUtilities.CreateInstance<NotesController>(scope.ServiceProvider);
+        ActivatorUtilities.CreateInstance<ReportController>(scope.ServiceProvider);
+        ActivatorUtilities.CreateInstance<SessionsController>(scope.ServiceProvider);
+        ActivatorUtilities.CreateInstance<StoragesController>(scope.ServiceProvider);
+        ActivatorUtilities.CreateInstance<TagController>(scope.ServiceProvider);
+        ActivatorUtilities.CreateInstance<ThemesController>(scope.ServiceProvider);
+        ActivatorUtilities.CreateInstance<TransactionsController>(scope.ServiceProvider);
+        ActivatorUtilities.CreateInstance<UserController>(scope.ServiceProvider);
+        ActivatorUtilities.CreateInstance<UserSettingsController>(scope.ServiceProvider);
+        ActivatorUtilities.CreateInstance<WorkItemsController>(scope.ServiceProvider);
+    }
 
     #region Database
-    public bool BuildDatabase()
+    public bool BuildDatabase(IServiceProvider serviceProvider, int retryCount = 3)
     {
         try
         {
-            using SqlConnection conn = new(_databaseConnection.ConnectionString);
+            DatabaseConnection databaseConnection = serviceProvider.GetRequiredService<DatabaseConnection>();
+
+            using SqlConnection conn = new(databaseConnection.ConnectionString);
             conn.Open();
 
             CreateTables(conn);
@@ -282,7 +324,12 @@ public class Startup
         }
         catch (Exception ex)
         {
-            throw new($"Failed to Seed Database. Error: {ex.Message}", ex);
+            retryCount--;
+            if (retryCount <= 0)
+            {
+                throw new($"Failed to Seed Database. Error: {ex.Message}", ex);
+            }
+            return BuildDatabase(serviceProvider, retryCount);
         }
     }
 

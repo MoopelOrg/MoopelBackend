@@ -216,6 +216,7 @@ public class AuthService : IAuthService
 
         return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
     }
+
     private bool VerifyPassword(User user, string password)
     {
         PasswordVerificationResult result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);

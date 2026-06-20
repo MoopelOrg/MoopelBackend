@@ -1,12 +1,13 @@
 ﻿using System.Net.Http.Json;
+
 using ApiTests.TestData;
+
 using MoopelApi;
 using MoopelApi.Helpers;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Dto.Read;
-using MoopelApi.Models.Requests.Creation;
 using MoopelApi.Models.Requests;
-using MoopelApi.Models.Requests.Update;
+using MoopelApi.Models.Requests.Creation;
 using MoopelApi.Models.Results;
 
 namespace ApiTests.Integration.Generic;
@@ -58,10 +59,10 @@ public static class GenericActions
 
     public static class Auth
     {
-        public static async Task<LoginResult?> Login(HttpClient client, LoginRequest request,
-            CancellationToken cancelToken)
+        public static async Task<LoginResult?> Login(HttpClient client, LoginRequest request, CancellationToken cancelToken)
         {
             HttpResponseMessage response = await client.PostAsJsonAsync(Routes.Auth.Login, request, cancelToken);
+
             return await ApiHelper.GetClassFromResponse<LoginResult>(response, cancelToken);
         }
 
@@ -76,6 +77,7 @@ public static class GenericActions
             CancellationToken cancelToken)
         {
             HttpResponseMessage response = await client.PostAsJsonAsync(Routes.Auth.Register, request, cancelToken);
+
             return await ApiHelper.GetClassFromResponse<UserRead>(response, cancelToken);
         }
 
