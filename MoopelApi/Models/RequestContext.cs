@@ -4,8 +4,8 @@ namespace MoopelApi.Models;
 
 public record RequestContext
 {
-    public int UserId { get; init; }
-    public required string Username { get; init; }
+    public int? UserId { get; init; }
+    public string? Username { get; init; }
     public string? Email { get; init; }
 
     public UserRole? Role { get; init; }
