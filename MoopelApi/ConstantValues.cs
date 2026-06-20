@@ -35,6 +35,7 @@ public class ConstantValues
     public static class Database
     {
         #region Groups
+        
         public static readonly DatabaseField GroupIdField =
             new()
             {
@@ -85,7 +86,7 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "UQ_Groups_Name",
                     Type = DatabaseConstraintType.Unique,
@@ -128,7 +129,7 @@ public class ConstantValues
             new()
             {
                 Name = "ThemeData",
-                Type = SqlDbType.NVarChar, // SQL Server does not support Json type directly
+                Type = SqlDbType.NVarChar, // SQL Server does not support JSON type directly
                 Nullable = false,
                 FieldSize = null,
                 DefaultValue = "'{}'"
@@ -188,7 +189,7 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "UQ_Themes_Name_Creator",
                     Type = DatabaseConstraintType.Unique,
@@ -298,19 +299,20 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "UQ_Users_Username",
                     Type = DatabaseConstraintType.Unique,
                     Fields = [UserNameField]
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "UQ_Users_Email",
                     Type = DatabaseConstraintType.Unique,
-                    Fields = [UserEmailField]
+                    Fields = [UserEmailField],
+                    FilterExpression = $"{UserEmailField.SelectName} IS NOT NULL"
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_Users_Themes",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -319,7 +321,7 @@ public class ConstantValues
                     ReferenceFields = [ThemeIdField],
                     OnDelete = "SET NULL"
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "CHK_Users_Role",
                     Type = DatabaseConstraintType.Check,
@@ -394,13 +396,13 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "UQ_UserSettings_UserId",
                     Type = DatabaseConstraintType.Unique,
                     Fields = [SettingsUserIdField]
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_UserSettings_Users",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -438,7 +440,7 @@ public class ConstantValues
                 Nullable = false,
                 DefaultValue = "0"
             };
-
+        
         public static readonly DatabaseField GroupUsersIsAdminField =
             new()
             {
@@ -483,7 +485,7 @@ public class ConstantValues
                 Nullable = false,
                 DefaultValue = "0"
             };
-
+        
         public static readonly DatabaseField GroupUsersCanUpdateWorkItemsField =
             new()
             {
@@ -631,7 +633,7 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "CHK_Logins_Status",
                     Type = DatabaseConstraintType.Check,
@@ -731,7 +733,7 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_Sessions_Users",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -740,7 +742,7 @@ public class ConstantValues
                     ReferenceFields = [UserIdField],
                     OnDelete = "CASCADE"
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_Sessions_Logins",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -749,7 +751,7 @@ public class ConstantValues
                     ReferenceFields = [LoginIdField],
                     OnDelete = "CASCADE"
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "UQ_Sessions_Token",
                     Type = DatabaseConstraintType.Unique,
@@ -842,13 +844,13 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "UQ_WorkItems_Group_Item",
                     Type = DatabaseConstraintType.Unique,
                     Fields = [WorkItemGroupIdField, WorkItemIdField]
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_WorkItems_Groups",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -857,14 +859,14 @@ public class ConstantValues
                     ReferenceFields = [GroupIdField],
                     OnDelete = "CASCADE"
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "CHK_WorkItems_Points",
                     Type = DatabaseConstraintType.Check,
                     Fields = [WorkItemPointsField],
                     CheckSql = $"{WorkItemPointsField.SelectName} >= 0"
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "CHK_WorkItems_Type",
                     Type = DatabaseConstraintType.Check,
@@ -912,13 +914,13 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "PK_WorkItemLinks",
                     Type = DatabaseConstraintType.CompositePrimaryKey,
                     Fields = [WorkItemLinkGroupIdField, WorkItemParentIdField, WorkItemChildIdField]
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_WorkItemLinks_Parent",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -927,7 +929,7 @@ public class ConstantValues
                     ReferenceFields = [WorkItemGroupIdField, WorkItemIdField],
                     OnDelete = "NO ACTION"
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_WorkItemLinks_Child",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -936,7 +938,7 @@ public class ConstantValues
                     ReferenceFields = [WorkItemGroupIdField, WorkItemIdField],
                     OnDelete = "NO ACTION"
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "CHK_WorkItemLinks_NotSelf",
                     Type = DatabaseConstraintType.Check,
@@ -998,13 +1000,13 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "UQ_UserTags_User_TagName",
                     Type = DatabaseConstraintType.Unique,
                     Fields = [UserTagUserIdField, UserTagNameField]
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_UserTags_Users",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -1068,13 +1070,13 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "UQ_GroupTags_Group_TagName",
                     Type = DatabaseConstraintType.Unique,
                     Fields = [GroupTagGroupIdField, GroupTagNameField]
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_GroupTags_Groups",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -1115,13 +1117,13 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "PK_WorkItemTagAssignments",
                     Type = DatabaseConstraintType.CompositePrimaryKey,
                     Fields = [WorkItemTagItemIdField, WorkItemTagIdField]
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_WorkItemTagAssignments_WorkItems",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -1130,7 +1132,7 @@ public class ConstantValues
                     ReferenceFields = [WorkItemIdField],
                     OnDelete = "CASCADE"
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_WorkItemTagAssignments_GroupTags",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -1213,7 +1215,7 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_Notes_Users",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -1222,7 +1224,7 @@ public class ConstantValues
                     ReferenceFields = [UserIdField],
                     OnDelete = "CASCADE"
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "CHK_Notes_Type",
                     Type = DatabaseConstraintType.Check,
@@ -1294,7 +1296,7 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_Storages_Users",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -1303,7 +1305,7 @@ public class ConstantValues
                     ReferenceFields = [UserIdField],
                     OnDelete = "CASCADE"
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "UQ_Storages_User_Name",
                     Type = DatabaseConstraintType.Unique,
@@ -1383,7 +1385,7 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_StorageItems_Storages",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -1392,13 +1394,13 @@ public class ConstantValues
                     ReferenceFields = [StorageIdField],
                     OnDelete = "CASCADE"
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "UQ_StorageItems_Storage_Name",
                     Type = DatabaseConstraintType.Unique,
                     Fields = [StorageItemStorageIdField, StorageItemNameField]
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "CHK_StorageItems_Quantity",
                     Type = DatabaseConstraintType.Check,
@@ -1469,7 +1471,7 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_Fridges_Users",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -1478,7 +1480,7 @@ public class ConstantValues
                     ReferenceFields = [UserIdField],
                     OnDelete = "CASCADE"
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "UQ_Fridges_User_Name",
                     Type = DatabaseConstraintType.Unique,
@@ -1548,7 +1550,7 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_FridgeItems_Fridges",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -1557,13 +1559,13 @@ public class ConstantValues
                     ReferenceFields = [FridgeIdField],
                     OnDelete = "CASCADE"
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "UQ_FridgeItems_Fridge_Name",
                     Type = DatabaseConstraintType.Unique,
                     Fields = [FridgeItemFridgeIdField, FridgeItemNameField]
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "CHK_FridgeItems_Quantity",
                     Type = DatabaseConstraintType.Check,
@@ -1645,7 +1647,7 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_BankAccounts_Users",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -1654,7 +1656,7 @@ public class ConstantValues
                     ReferenceFields = [UserIdField],
                     OnDelete = "CASCADE"
                 },
-                new()
+                new DatabaseConstraint
                 {
                     Name = "UQ_BankAccounts_User_Name",
                     Type = DatabaseConstraintType.Unique,
@@ -1737,7 +1739,7 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_Transactions_BankAccounts",
                     Type = DatabaseConstraintType.ForeignKey,
@@ -1811,7 +1813,7 @@ public class ConstantValues
             ],
             Constraints =
             [
-                new()
+                new DatabaseConstraint
                 {
                     Name = "FK_TransactionItems_Transactions",
                     Type = DatabaseConstraintType.ForeignKey,
