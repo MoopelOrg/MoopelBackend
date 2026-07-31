@@ -198,6 +198,8 @@ public class Startup
 
     public WebApplicationBuilder AddLogging()
     {
+        _builder.Logging.ClearProviders();
+
         DatabaseConnection databaseConnection = GetConnectionFromConfig();
 
         ColumnOptions logColumns = new();
@@ -208,7 +210,6 @@ public class Startup
         logColumns.Exception.ColumnName = "Exception";
 
         Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Warning()
             .Enrich.FromLogContext()
             .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Error)
             .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Error)
@@ -223,6 +224,8 @@ public class Startup
             .WriteTo.Console()
             //.WriteTo.Seq()
             .CreateLogger();
+
+        _builder.Host.UseSerilog(Log.Logger);
 
         return _builder;
     }

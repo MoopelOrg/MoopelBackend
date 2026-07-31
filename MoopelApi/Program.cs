@@ -2,8 +2,6 @@ using MoopelApi;
 
 using Serilog;
 
-Console.WriteLine("Starting...");
-
 try
 {
     Startup startup = new(args);
@@ -12,11 +10,9 @@ try
 
     WebApplication app = await startup.ConfigureApp();
 
-    Console.WriteLine("Created app...");
-
     try
     {
-        Console.WriteLine("Building Database...");
+        Log.Information("Building Database...");
         startup.BuildDatabase(app.Services);
     }
     catch (Exception ex)
@@ -26,8 +22,6 @@ try
     }
 
     await startup.CheckApp(app.Services.CreateScope());
-
-    Console.WriteLine("Running App...");
 
     app.Run();
 }
