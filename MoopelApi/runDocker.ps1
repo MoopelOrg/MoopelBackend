@@ -1,0 +1,1 @@
+docker compose -f sql-docker-compose.yml up -d --force-recreate

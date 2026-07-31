@@ -39,3 +39,6 @@ dotnet_diagnostic.IDE0008.severity = warning
 
 # IDE0090: Use 'new(...)'
 dotnet_diagnostic.IDE0090.severity = error
+
+# Nullability of reference types in type of parameter
+dotnet_diagnostic.CS8767.severity = error
