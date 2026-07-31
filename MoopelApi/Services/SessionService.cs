@@ -1,8 +1,11 @@
 ﻿using Microsoft.Data.SqlClient;
 
 using MoopelApi.Helpers;
+using MoopelApi.Models;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
+using MoopelApi.Models.Dto.Read;
+using MoopelApi.Models.Enums;
 using MoopelApi.Services.Interfaces;
 
 using static MoopelApi.ConstantValues.Database;
@@ -20,6 +23,71 @@ public class SessionService : ISessionService
         _logger = logger;
         _notificationService = notificationService;
         _connection = connection;
+    }
+
+    public async Task<Session> GenerateSession(RequestContext context, UserRead user, Login? login, string token)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(user);
+
+        _logger.LogInformation("Generating session for {User} at {Context}", user.Username, context);
+        SqlCommand? command = null;
+        try
+        {
+            await using SqlConnection connection = new(_connection.ConnectionString);
+            await connection.OpenAsync();
+
+            command = connection.CreateCommand();
+
+            command.CommandText =
+            $"""
+                INSERT INTO {SessionsTable.SelectName}
+                ({SessionUserIdField.SelectName}, {SessionLoginIdField.SelectName}, {SessionTokenField.SelectName}, {SessionIpIssuedToField.SelectName}, {SessionIsGuestField.SelectName})
+                {SessionsTable.GenerateOutput()}
+                VALUES (@UserId, @LoginId, @Token, @IP, @IsGuest);
+            """;
+
+            int? userId = user.UserId;
+
+            if (user.Role == Roles.Guest)
+                userId = null;
+
+            command.Parameters.Add(SessionUserIdField.GenerateParameter("@UserId", userId));
+            command.Parameters.Add(SessionLoginIdField.GenerateParameter("@LoginId", login?.LoginId));
+            command.Parameters.Add(SessionTokenField.GenerateParameter("@Token", token));
+            command.Parameters.Add(SessionIpIssuedToField.GenerateParameter("@IP", context.IpAddress));
+            command.Parameters.Add(SessionIsGuestField.GenerateParameter("@IsGuest", user.Role == Roles.Guest));
+
+            await using SqlDataReader reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                Session session = DtoReaders.ReadSession(reader);
+                _logger.LogInformation("Generated Session {Id}", session.SessionId);
+
+                return session;
+            }
+            else
+            {
+                throw new("Failed to read generated session");
+            }
+        }
+        catch (Exception ex)
+        {
+            string logErrorMessage = FormatHelper.FormatErrorLogMessage(
+                "Generating Session",
+                ex.Message,
+                [
+                    ("Context", context),
+                    ("User", user),
+                    ("Login", login),
+                    ("Token", token)
+                ],
+                command: command);
+
+            _logger.LogCritical(ex, "{Error}", logErrorMessage);
+            throw;
+        }
     }
 
     public async Task<Session> GetSessionById(int sessionId)
@@ -101,10 +169,7 @@ public class SessionService : ISessionService
                 sessions.Add(DtoReaders.ReadSession(reader));
             }
 
-            if (sessions.Count is 0)
-            {
-                _logger.LogInformation("No sessions found for user [{UserId}]", userId);
-            }
+            _logger.LogInformation("Found {Count} guest sessions for user [{UserId}]", sessions.Count, userId);
 
             return sessions;
         }
@@ -116,6 +181,50 @@ public class SessionService : ISessionService
                 [
                     ("UserId", userId)
                 ],
+                command: command);
+
+            _logger.LogCritical(ex, "{Error}", logErrorMessage);
+
+            throw;
+        }
+    }
+
+    public async Task<List<Session>> GetGuestUserSessions(CancellationToken cancelToken)
+    {
+        _logger.LogInformation("Getting Guest Sessions.");
+        SqlCommand? command = null;
+
+        try
+        {
+            await using SqlConnection connection = new(_connection.ConnectionString);
+            await connection.OpenAsync(cancelToken);
+
+            command = connection.CreateCommand();
+
+            command.CommandText =
+            $"""
+                SELECT {SessionsTable.GenerateSelect()}
+                WHERE {SessionIsGuestField.SelectName} = 1
+            """;
+
+            await using SqlDataReader reader = await command.ExecuteReaderAsync(cancelToken);
+
+            List<Session> sessions = [];
+
+            while (await reader.ReadAsync(cancelToken))
+            {
+                sessions.Add(DtoReaders.ReadSession(reader));
+            }
+
+            _logger.LogInformation("Found {Count} guest sessions", sessions.Count);
+
+            return sessions;
+        }
+        catch (Exception ex)
+        {
+            string logErrorMessage = FormatHelper.FormatErrorLogMessage(
+                "Getting User Sessions",
+                ex.Message,
                 command: command);
 
             _logger.LogCritical(ex, "{Error}", logErrorMessage);

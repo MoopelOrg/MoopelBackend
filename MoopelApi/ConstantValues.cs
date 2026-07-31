@@ -22,7 +22,7 @@ public class ConstantValues
         options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
         options.WriteIndented = false;
-        options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        options.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
         options.Converters.Add(new JsonStringEnumConverter());
         options.ReadCommentHandling = JsonCommentHandling.Skip;
     }
@@ -35,7 +35,7 @@ public class ConstantValues
     public static class Database
     {
         #region Groups
-        
+
         public static readonly DatabaseField GroupIdField =
             new()
             {
@@ -440,7 +440,7 @@ public class ConstantValues
                 Nullable = false,
                 DefaultValue = "0"
             };
-        
+
         public static readonly DatabaseField GroupUsersIsAdminField =
             new()
             {
@@ -485,7 +485,7 @@ public class ConstantValues
                 Nullable = false,
                 DefaultValue = "0"
             };
-        
+
         public static readonly DatabaseField GroupUsersCanUpdateWorkItemsField =
             new()
             {
@@ -494,7 +494,7 @@ public class ConstantValues
                 Nullable = false,
                 DefaultValue = "0"
             };
-        
+
         public static readonly DatabaseField GroupUsersCanDeleteWorkItemsField =
             new()
             {
@@ -503,7 +503,7 @@ public class ConstantValues
                 Nullable = false,
                 DefaultValue = "0"
             };
-        
+
         public static readonly DatabaseField GroupUsersCanCreateTagsField =
             new()
             {
@@ -512,7 +512,7 @@ public class ConstantValues
                 Nullable = false,
                 DefaultValue = "0"
             };
-        
+
         public static readonly DatabaseField GroupUsersCanUpdateTagsField =
             new()
             {
@@ -521,7 +521,7 @@ public class ConstantValues
                 Nullable = false,
                 DefaultValue = "0"
             };
-        
+
         public static readonly DatabaseField GroupUsersCanDeleteTagsField =
             new()
             {
@@ -539,16 +539,16 @@ public class ConstantValues
             [
                 GroupUsersGroupIdField,
                 GroupUsersUserIdField,
-                
+
                 GroupUsersCanReadWorkItemsField,
                 GroupUsersCanCreateWorkItemsField,
                 GroupUsersCanUpdateWorkItemsField,
                 GroupUsersCanDeleteWorkItemsField,
-                
+
                 GroupUsersCanCreateTagsField,
                 GroupUsersCanUpdateTagsField,
                 GroupUsersCanDeleteTagsField,
-                
+
                 GroupUsersIsAdminField,
                 GroupUsersIsOwnerField,
             ],
@@ -660,7 +660,7 @@ public class ConstantValues
             {
                 Name = "UserId",
                 Type = SqlDbType.Int,
-                Nullable = false
+                Nullable = true
             };
 
         public static readonly DatabaseField SessionLoginIdField =
@@ -668,7 +668,7 @@ public class ConstantValues
             {
                 Name = "LoginId",
                 Type = SqlDbType.Int,
-                Nullable = false
+                Nullable = true
             };
 
         public static readonly DatabaseField SessionTokenField =
@@ -716,6 +716,15 @@ public class ConstantValues
                 DefaultValue = "0"
             };
 
+        public static readonly DatabaseField SessionIsGuestField =
+            new()
+            {
+                Name = "IsGuest",
+                Type = SqlDbType.Bit,
+                Nullable = false,
+                DefaultValue = "0"
+            };
+
         public static readonly DatabaseTable SessionsTable = new()
         {
             Name = "Sessions",
@@ -730,6 +739,7 @@ public class ConstantValues
                 SessionIssuedAtUtcField,
                 SessionExpiresAtUtcField,
                 SessionRevokedField,
+                SessionIsGuestField
             ],
             Constraints =
             [
@@ -2018,5 +2028,10 @@ public class ConstantValues
             "and cannot start or end with an underscore.";
 
         public static readonly Regex UsernameRegex = new(UsernameValidationPattern, RegexOptions.Compiled);
+    }
+
+    public static class ErrorMessages
+    {
+        public static string InvalidLogin(string userName) => $"Login failed for {userName} : Incorrect username or password.";
     }
 }

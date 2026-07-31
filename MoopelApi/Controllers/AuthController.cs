@@ -39,10 +39,14 @@ public class AuthController : ControllerBase
         _logger.LogInformation("Received Login request for {User} with {Context}",
             request.Username, context);
 
-        LoginResult? loginResult = await _authService.Login(request, cancelToken);
-        if (loginResult is not null)
+        LoginResult? loginResult = await _authService.Login(request, context, cancelToken);
+        if (loginResult is not null && string.IsNullOrEmpty(loginResult.Error))
         {
             return Ok(loginResult);
+        }
+        else if (string.IsNullOrEmpty(loginResult?.Error) is false)
+        {
+            return Unauthorized(loginResult);
         }
         else
         {
@@ -56,7 +60,7 @@ public class AuthController : ControllerBase
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
         _logger.LogInformation("Received Guest Login request with {Context}", context);
 
-        LoginResult loginResult = await _authService.GuestLogin(cancelToken)
+        LoginResult loginResult = await _authService.GuestLogin(context, cancelToken)
             ?? throw new("Failed to complete guest login");
 
         return Ok(loginResult);
@@ -101,7 +105,7 @@ public class AuthController : ControllerBase
 
         if (newUser is not null)
         {
-            return Ok(newUser);
+            return Ok(newUser.ToRead());
         }
         else
         {
@@ -132,6 +136,6 @@ public class AuthController : ControllerBase
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
         _logger.LogInformation("Received me request for {Context}", context);
 
-        return Ok(contextUser);
+        return Ok(contextUser.ToRead());
     }
 }

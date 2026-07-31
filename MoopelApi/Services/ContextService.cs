@@ -1,7 +1,7 @@
-﻿using System.Security.Claims;
+﻿using System.Net;
+using System.Security.Claims;
 
 using MoopelApi.Models;
-using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Enums;
 using MoopelApi.Services.Interfaces;
@@ -12,30 +12,28 @@ public class ContextService : IContextService
 {
     private readonly ILogger<ContextService> _logger;
     private readonly INotificationService _notificationService;
-    private readonly DatabaseConnection _connection;
     private readonly IUserService _userService;
 
-    public ContextService(ILogger<ContextService> logger, INotificationService notificationService, DatabaseConnection connection, IUserService userService)
+    public ContextService(ILogger<ContextService> logger, INotificationService notificationService, IUserService userService)
     {
         _logger = logger;
         _notificationService = notificationService;
-        _connection = connection;
         _userService = userService;
     }
     public async Task<User> GetContextUser(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context, nameof(context));
 
-        string? username = context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            ?? context.User?.Identity?.Name;
+        string? userIdStr = context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        string? userName = context.User?.FindFirstValue(ClaimTypes.Name);
 
-        if (string.IsNullOrWhiteSpace(username))
+        if (!int.TryParse(userIdStr, out int userId) || string.IsNullOrEmpty(userName))
         {
             throw new UnauthorizedAccessException("No authenticated user found in context");
         }
 
-        User user = await _userService.GetUserFromUserName(username)
-            ?? throw new InvalidOperationException($"User '{username}' not found in database");
+        User user = await _userService.GetUserFromUserId(userId)
+            ?? throw new InvalidOperationException($"User '{userName} - {userId}' not found in database");
 
         return user;
     }
@@ -56,16 +54,28 @@ public class ContextService : IContextService
         string? emailClaim = context.User?.FindFirstValue(ClaimTypes.Email);
         string? email = string.IsNullOrEmpty(emailClaim) ? null : emailClaim;
 
-        Enum.TryParse(context.User?.FindFirstValue(ClaimTypes.Role), out UserRole parsedRole);
-        UserRole? role = context.User?.FindFirstValue(ClaimTypes.Role) is not null ? parsedRole : null;
+        bool roleParseResult = Enum.TryParse(context.User?.FindFirstValue(ClaimTypes.Role), out UserRole r);
+        UserRole? parsedRole = r;
+
+        if (roleParseResult is false)
+        {
+            parsedRole = null;
+        }
+
+        string? ipAddress = context.Connection?.RemoteIpAddress?.ToString();
+
+        if (string.IsNullOrWhiteSpace(ipAddress) && context.Request.Host.Host == "localhost")
+        {
+            ipAddress = IPAddress.Loopback.ToString();
+        }
 
         RequestContext requestContext = new()
         {
             UserId = userId,
             Username = context.User?.FindFirstValue(ClaimTypes.Name) ?? "Anonymous",
             Email = email,
-            Role = role,
-            IpAddress = context.Connection?.RemoteIpAddress?.ToString(),
+            Role = parsedRole,
+            IpAddress = ipAddress,
             UserAgent = context.Request?.Headers.UserAgent.ToString(),
             TraceId = context.TraceIdentifier,
             RequestPath = context.Request?.Path.Value,

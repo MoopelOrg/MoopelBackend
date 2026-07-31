@@ -27,22 +27,26 @@ public class AuthService : IAuthService
     private readonly IPasswordHasher<User> _passwordHasher;
     private readonly INotificationService _notificationService;
     private readonly ISessionService _sessionService;
+    private readonly IUserService _userService;
     private readonly DatabaseConnection _connection;
 
     public AuthService(IOptions<JwtSettings> jwtSettings,
                        IPasswordHasher<User> passwordHasher,
                        ILogger<AuthService> logger,
+                       IUserService userService,
                        INotificationService notificationService,
                        ISessionService sessionService,
                        DatabaseConnection databaseConnection)
     {
         ArgumentNullException.ThrowIfNull(jwtSettings, nameof(jwtSettings));
+
         _jwtSettings = jwtSettings.Value;
         _passwordHasher = passwordHasher;
         _logger = logger;
         _notificationService = notificationService;
         _connection = databaseConnection;
         _sessionService = sessionService;
+        _userService = userService;
 
 
         if (_jwtSettings.ExpiryMinutes <= 0)
@@ -56,6 +60,12 @@ public class AuthService : IAuthService
         try
         {
             _logger.LogInformation("Attempting to register user with username: {Username}", request.Username);
+
+            if (request.Username.StartsWith("Guest_"))
+            {
+                throw new("Can't register an account starting with Guest_");
+            }
+
             User startingUser = new()
             {
                 UserId = 0,
@@ -74,14 +84,12 @@ public class AuthService : IAuthService
             SqlCommand command = connection.CreateCommand();
 
             command.CommandText =
-                $"""
-
-                                 INSERT INTO {UsersTable.SelectName}
-                                 ({UserNameField.SelectName}, {UserPasswordHashField.SelectName}, {UserRoleField.SelectName}, {UserDeactivatedField.SelectName})
-                                 OUTPUT INSERTED.{UserIdField.SelectName}
-                                 VALUES (@Username, @PasswordHash, @Role, @Deactivated);
-                             
-                 """;
+            $"""
+                INSERT INTO {UsersTable.SelectName}
+                ({UserNameField.SelectName}, {UserPasswordHashField.SelectName}, {UserRoleField.SelectName}, {UserDeactivatedField.SelectName})
+                OUTPUT INSERTED.{UserIdField.SelectName}
+                VALUES (@Username, @PasswordHash, @Role, @Deactivated);
+            """;
 
             command.Parameters.Add(UserNameField.GenerateParameter("@Username", request.Username));
             command.Parameters.Add(UserPasswordHashField.GenerateParameter("@PasswordHash", hashedPassword));
@@ -97,92 +105,11 @@ public class AuthService : IAuthService
 
             _logger.LogInformation("Successfully registered user with username: {Username} and assigned UserId: {UserId}",
                 request.Username, insertedUserId);
-            return await GetUserById(insertedUserId);
+            return await _userService.GetUserFromUserId(insertedUserId);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred during registration for username: {Username}", request.Username);
-            return null;
-        }
-    }
-
-    public async Task<User?> GetUserById(int id)
-    {
-        try
-        {
-            _logger.LogInformation("Getting user by id [{UserId}]", id);
-
-            await using SqlConnection connection = new(_connection.ConnectionString);
-            await connection.OpenAsync();
-
-            await using SqlCommand command = connection.CreateCommand();
-
-            command.CommandText =
-                $"""
-
-                                 SELECT {UsersTable.GetFields()}
-                                 FROM {UsersTable.SelectName}
-                                 WHERE {UserIdField.SelectName} = @UserId;
-                             
-                 """;
-
-            command.Parameters.Add(UserIdField.GenerateParameter("@UserId", id));
-
-            await using SqlDataReader reader = await command.ExecuteReaderAsync();
-
-            if (!await reader.ReadAsync())
-            {
-                return null;
-            }
-            else
-            {
-                User user = DtoReaders.ReadUser(reader);
-                return user;
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting user by id [{UserId}]", id);
-            return null;
-        }
-    }
-
-    public async Task<User?> GetUserByName(string name)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
-
-        try
-        {
-            _logger.LogInformation("Getting user by username [{Username}]", name);
-
-            await using SqlConnection connection = new(_connection.ConnectionString);
-            await connection.OpenAsync();
-
-            await using SqlCommand command = connection.CreateCommand();
-
-            command.CommandText =
-                $"""
-
-                                 SELECT {UsersTable.GetFields()}
-                                 FROM {UsersTable.SelectName}
-                                 WHERE {UserNameField.SelectName} = @Username;
-                             
-                 """;
-
-            command.Parameters.Add(UserNameField.GenerateParameter("@Username", name));
-
-            await using SqlDataReader reader = await command.ExecuteReaderAsync();
-
-            if (!await reader.ReadAsync())
-            {
-                return null;
-            }
-
-            return DtoReaders.ReadUser(reader);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting user by username [{Username}]", name);
             return null;
         }
     }
@@ -223,43 +150,107 @@ public class AuthService : IAuthService
         return result == PasswordVerificationResult.Success;
     }
 
-    public async Task<LoginResult?> Login(LoginRequest request, CancellationToken cancelToken)
+    public async Task<LoginResult?> Login(LoginRequest request, RequestContext context, CancellationToken cancelToken)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
+
+        string? token = null;
+        User? user;
+        string? error = null;
+        LoginStatus status = LoginStatus.Failed;
 
         try
         {
             _logger.LogInformation("Attempting login for username [{Username}]", request.Username);
 
-            User? user = await GetUserByName(request.Username);
+            user = await _userService.GetUserFromUserName(request.Username);
 
+            // Validate Login Request
             if (user is null)
             {
+                error = ConstantValues.ErrorMessages.InvalidLogin(request.Username);
                 _logger.LogWarning("Login failed for username [{Username}]: user not found", request.Username);
-                return null;
+            }
+            else
+            {
+                if (user.Deactivated)
+                {
+                    error = $"Login failed for username [{user.Username}]: user is deactivated";
+                    _logger.LogWarning("Login failed for username [{Username}]: user is deactivated", request.Username);
+                }
+                else if (!VerifyPassword(user, request.Password))
+                {
+                    error = ConstantValues.ErrorMessages.InvalidLogin(request.Username);
+                    _logger.LogWarning("Login failed for username [{Username}]: invalid password", request.Username);
+                }
+                else
+                {
+                    token = GenerateToken(user);
+                    status = LoginStatus.Successful;
+                }
             }
 
-            if (user.Deactivated)
+            // Store Login Result
+            SqlCommand? command = null;
+            LoginResult? loginResult = null;
+            Login? login = null;
+            Session? session = null;
+            try
             {
-                _logger.LogWarning("Login failed for username [{Username}]: user is deactivated", request.Username);
-                return null;
+                await using SqlConnection connection = new(_connection.ConnectionString);
+                await connection.OpenAsync(cancelToken);
+
+                command = connection.CreateCommand();
+
+                command.CommandText =
+                $"""
+                    INSERT INTO {LoginsTable.SelectName}
+                    ({LoginUserNameField.SelectName}, {LoginStatusField.SelectName})
+                    {LoginsTable.GenerateOutput()}
+                    VALUES (@Username, @Status);
+                """;
+                command.Parameters.Add(LoginUserNameField.GenerateParameter("@Username", request.Username));
+                command.Parameters.Add(LoginStatusField.GenerateParameter("@Status", status));
+
+                await using SqlDataReader reader = await command.ExecuteReaderAsync(cancelToken);
+
+                if (await reader.ReadAsync(cancelToken))
+                {
+                    login = DtoReaders.ReadLogin(reader);
+                }
+                else
+                {
+                    throw new("Failed to read created login");
+                }
+            }
+            catch (Exception ex)
+            {
+                string logErrorMessage = FormatHelper.FormatErrorLogMessage(
+                "Generating Login",
+                ex.Message,
+                [
+                    ("Token", token),
+                            ("Username", request.Username)
+                ],
+                command: command);
             }
 
-            if (!VerifyPassword(user, request.Password))
+            if (user is not null && login is not null && token is not null && status == LoginStatus.Successful)
             {
-                _logger.LogWarning("Login failed for username [{Username}]: invalid password", request.Username);
-                return null;
+                session = await _sessionService.GenerateSession(context, user.ToRead(), login, token);
+                _logger.LogInformation("Login succeeded for user [{UserId}]", user!.UserId);
+                loginResult = new(token, error, user?.ToRead())
+                {
+                    Login = login,
+                    Session = session,
+                };
+            }
+            else
+            {
+                loginResult = new(token, error, user?.ToRead());
             }
 
-            string token = GenerateToken(user);
-
-            _logger.LogInformation("Login succeeded for user [{UserId}]", user.UserId);
-
-            return new LoginResult
-            {
-                User = user.ToRead(),
-                Token = token
-            };
+            return loginResult;
         }
         catch (OperationCanceledException)
         {
@@ -272,14 +263,15 @@ public class AuthService : IAuthService
             return null;
         }
     }
-    public async Task<LoginResult?> GuestLogin(CancellationToken cancelToken)
+
+    public async Task<LoginResult?> GuestLogin(RequestContext context, CancellationToken cancelToken)
     {
         cancelToken.ThrowIfCancellationRequested();
 
         User guestUser = new()
         {
             UserId = 0,
-            Username = "Guest",
+            Username = $"Guest_{Guid.NewGuid()}",
             PasswordHash = string.Empty,
             Email = null,
             Role = UserRole.Guest,
@@ -290,10 +282,13 @@ public class AuthService : IAuthService
 
         string token = GenerateToken(guestUser);
 
+        Session session = await _sessionService.GenerateSession(context, guestUser.ToRead(), null, token);
+
         LoginResult result = new()
         {
             User = guestUser.ToRead(),
-            Token = token
+            Token = token,
+            Session = session
         };
 
         return result;

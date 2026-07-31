@@ -78,15 +78,15 @@ public static class DtoReaders
         {
             GroupId = reader.GetInt(Col(alias, GroupUsersGroupIdField.Name)),
             UserId = reader.GetInt(Col(alias, GroupUsersUserIdField.Name)),
-            
+
             IsOwner = reader.GetBool(Col(alias, GroupUsersIsOwnerField.Name)),
             IsAdmin = reader.GetBool(Col(alias, GroupUsersIsAdminField.Name)),
-            
+
             CanReadWorkItems = reader.GetBool(Col(alias, GroupUsersCanReadWorkItemsField.Name)),
             CanCreateWorkItems = reader.GetBool(Col(alias, GroupUsersCanCreateWorkItemsField.Name)),
-            CanUpdateWorkItems = reader.GetBool(Col(alias,GroupUsersCanUpdateWorkItemsField.Name)),
+            CanUpdateWorkItems = reader.GetBool(Col(alias, GroupUsersCanUpdateWorkItemsField.Name)),
             CanDeleteWorkItems = reader.GetBool(Col(alias, GroupUsersCanDeleteWorkItemsField.Name)),
-            
+
             CanCreateTags = reader.GetBool(Col(alias, GroupUsersCanCreateTagsField.Name)),
             CanUpdateTags = reader.GetBool(Col(alias, GroupUsersCanUpdateTagsField.Name)),
             CanDeleteTags = reader.GetBool(Col(alias, GroupUsersCanDeleteTagsField.Name)),
@@ -109,13 +109,14 @@ public static class DtoReaders
         return new Session
         {
             SessionId = reader.GetInt(Col(alias, SessionIdField.Name)),
-            UserId = reader.GetInt(Col(alias, SessionUserIdField.Name)),
-            LoginId = reader.GetInt(Col(alias, SessionLoginIdField.Name)),
+            UserId = reader.GetNullableInt(Col(alias, SessionUserIdField.Name)),
+            LoginId = reader.GetNullableInt(Col(alias, SessionLoginIdField.Name)),
             HashedToken = reader.GetStringValue(Col(alias, SessionTokenField.Name)),
             IpIssuedTo = reader.GetStringValue(Col(alias, SessionIpIssuedToField.Name)),
             IssuedAtUtc = reader.GetDateTime(Col(alias, SessionIssuedAtUtcField.Name)),
             ExpiresAtUtc = reader.GetDateTime(Col(alias, SessionExpiresAtUtcField.Name)),
-            Revoked = reader.GetBool(Col(alias, SessionRevokedField.Name))
+            Revoked = reader.GetBool(Col(alias, SessionRevokedField.Name)),
+            IsGuest = reader.GetBool(Col(alias, SessionIsGuestField.Name))
         };
     }
 
