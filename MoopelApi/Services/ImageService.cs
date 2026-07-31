@@ -3,10 +3,7 @@ using MoopelApi.Models;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
 using MoopelApi.Services.Interfaces;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.ImageSharp.Processing;
-using SharpImage = SixLabors.ImageSharp.Image;
+using SkiaSharp;
 
 using static MoopelApi.ConstantValues.Database;
 
@@ -14,6 +11,8 @@ namespace MoopelApi.Services;
 
 public class ImageService : IImageService
 {
+    private const int ThumbnailJpegQuality = 75;
+
     private readonly ILogger<ImageService> _logger;
     private readonly INotificationService _notificationService;
     private readonly DatabaseConnection _connection;
@@ -47,13 +46,12 @@ public class ImageService : IImageService
 
         byte[] imageBytes = memoryStream.ToArray();
 
-        try
+        using (SKBitmap? validationBitmap = SKBitmap.Decode(imageBytes))
         {
-            using SharpImage img = SharpImage.Load(imageBytes);
-        }
-        catch
-        {
-            throw new ArgumentException("Invalid image file");
+            if (validationBitmap is null)
+            {
+                throw new ArgumentException("Invalid image file");
+            }
         }
 
         byte[] thumbnailBytes = GenerateThumbnail(imageBytes);
@@ -148,19 +146,25 @@ public class ImageService : IImageService
         };
     }
 
-    private byte[] GenerateThumbnail(byte[] imageBytes)
+    private static byte[] GenerateThumbnail(byte[] imageBytes)
     {
-        using SharpImage image = SharpImage.Load(imageBytes);
+        using SKBitmap original = SKBitmap.Decode(imageBytes)
+            ?? throw new ArgumentException("Invalid image file");
 
-        image.Mutate(x => x.Resize(new ResizeOptions
-        {
-            Size = new Size(200, 200),
-            Mode = ResizeMode.Max // keeps aspect ratio
-        }));
+        const int MaxThumbnailDimension = 200;
 
-        using var ms = new MemoryStream();
-        image.Save(ms, new JpegEncoder { Quality = 75 });
+        double scale = Math.Min(
+            (double)MaxThumbnailDimension / original.Width,
+            (double)MaxThumbnailDimension / original.Height);
 
-        return ms.ToArray();
+        int width = Math.Max(1, (int)Math.Round(original.Width * scale));
+        int height = Math.Max(1, (int)Math.Round(original.Height * scale));
+
+        using SKBitmap resized = original.Resize(new SKImageInfo(width, height), SKSamplingOptions.Default)
+            ?? throw new InvalidOperationException("Failed to resize image.");
+        using SKImage image = SKImage.FromBitmap(resized);
+        using SKData data = image.Encode(SKEncodedImageFormat.Jpeg, ThumbnailJpegQuality);
+
+        return data.ToArray();
     }
 }
