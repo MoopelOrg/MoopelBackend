@@ -68,8 +68,10 @@ public static class GenericActions
 
         public static async Task<LoginResult?> GuestLogin(HttpClient client, CancellationToken cancelToken)
         {
+            ArgumentNullException.ThrowIfNull(client);
+
             HttpResponseMessage response =
-                await client.PostAsJsonAsync(Routes.Auth.GuestLogin, cancelToken, cancellationToken: cancelToken);
+                await client.PostAsync(Routes.Auth.GuestLogin, content: null, cancelToken);
             return await ApiHelper.GetClassFromResponse<LoginResult>(response, cancelToken);
         }
 
@@ -102,7 +104,7 @@ public static class GenericActions
             LoginRequest loginRequest = new()
             {
                 Username = username,
-                Password = password
+                Password = password,
             };
 
             UserRead? user = await Register(client, registerRequest, cancelToken);
