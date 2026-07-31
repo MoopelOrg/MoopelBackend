@@ -20,6 +20,12 @@ public class DatabaseTable
     {
         return $"SELECT {string.Join(", ", Fields.Select(f => f.SelectName))} FROM {SelectName}";
     }
+    public string GenerateOutput(string outputPrefix = "INSERTED")
+    {
+        string fieldList = $"{string.Join(", ", Fields.Select(f => $"{outputPrefix}.{f.SelectName}"))}";
+        return "OUTPUT " + fieldList;
+    }
+
     public string GetFields(string alias)
     {
         return $"{string.Join(", ", Fields.Select(f => $"{alias}.{f.SelectName} as {alias}_{f.Name}"))}";
@@ -28,6 +34,7 @@ public class DatabaseTable
     {
         return $"{string.Join(", ", Fields.Select(field => field.SelectName))}";
     }
+
     public string GenerateCreateTable()
     {
         try
