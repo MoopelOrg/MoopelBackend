@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using MoopelApi.Exceptions;
 using MoopelApi.Models;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
@@ -119,7 +120,7 @@ public class ImageService : IImageService
 
         if (!await reader.ReadAsync())
         {
-            throw new KeyNotFoundException($"Image [{id}] was not found.");
+            throw new NotFoundException($"Image [{id}] was not found.");
         }
 
         string contentType = reader.GetString(reader.GetOrdinal(ImageContentTypeField.Name));

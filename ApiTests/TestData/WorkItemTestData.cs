@@ -19,6 +19,7 @@ internal static class WorkItemTestData
     public const string PrivateListGroupName = "PrivateGroupItems";
     public const string ParentGroupName = "ParentGroup";
     public const string RemoveParentGroupName = "RemoveParentGroup";
+    public const string FilterGroupName = "FilterWorkItemsGroup";
 
     public const string WorkItemName = "BuySupplies";
     public const string MissingGroupWorkItemName = "MissingGroupWorkItem";
@@ -32,6 +33,9 @@ internal static class WorkItemTestData
     public const string ChildWorkItemName = "ChildItem";
     public const string RemoveParentWorkItemName = "Parent";
     public const string RemoveChildWorkItemName = "Child";
+    public const string FilterTaskWorkItemName = "FilterTaskWorkItem";
+    public const string FilterStoryWorkItemName = "FilterStoryWorkItem";
+    public const string InvalidWorkItemType = "NotAWorkItemType";
 
     public const string Description = "Work item description";
     public const string UpdatedDescription = "Updated work item description";

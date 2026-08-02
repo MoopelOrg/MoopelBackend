@@ -22,6 +22,8 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         _cancelToken = TestContext.Current.CancellationToken;
     }
 
+    #region Storages
+
     #region Get My Storages
 
     [Fact]
@@ -317,4 +319,71 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
     }
 
     #endregion
+
+    #endregion
+
+    #region Storage Items
+
+    #region Create Storage Item
+
+    [Fact]
+    public async Task CreateStorageItem_ReturnsUnauthorized_WhenNotAuthenticated()
+    {
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            Routes.Storage.Generate.CreateStorageItem(StorageTestData.NonExistentStorageId),
+            StorageTestData.ValidCreateRequest,
+            _cancelToken);
+
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode} when creating a storage item without authentication.");
+    }
+
+    #endregion
+
+
+    #region Update Storage Item
+
+    [Fact]
+    public async Task UpdateStorageItem_ReturnsUnauthorized_WhenNotAuthenticated()
+    {
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        HttpResponseMessage response = await client.PatchAsJsonAsync(
+            Routes.Storage.Generate.UpdateStorageItem(StorageTestData.NonExistentStorageItemId),
+            StorageTestData.ValidUpdateRequest,
+            _cancelToken);
+
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode} when updating a storage item without authentication.");
+    }
+
+    #endregion
+
+    #region Delete Storage Item
+
+    [Fact]
+    public async Task DeleteStorageItem_ReturnsUnauthorized_WhenNotAuthenticated()
+    {
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        HttpResponseMessage response = await client.DeleteAsync(
+            Routes.Storage.Generate.DeleteStorageItem(StorageTestData.NonExistentStorageItemId),
+            _cancelToken);
+
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode} when deleting a storage item without authentication.");
+    }
+
+    #endregion
+
+    #endregion
+
 }

@@ -32,7 +32,7 @@ public class ImageController : ControllerBase
         return Ok(new { ImageId = imageId });
     }
 
-    [HttpGet("{imageId:int}")]
+    [HttpGet(Routes.Image.ImageById)]
     public async Task<IActionResult> GetImage(int imageId)
     {
         MoopelImage image = await _imageService.GetImage(imageId);
@@ -45,7 +45,7 @@ public class ImageController : ControllerBase
         return File(image.FullImage.Data, image.FullImage.ContentType);
     }
 
-    [HttpGet("{imageId:int}/thumbnail")]
+    [HttpGet(Routes.Image.ThumbnailById)]
     public async Task<IActionResult> GetThumbnail(int imageId)
     {
         MoopelImage image = await _imageService.GetImage(imageId);
