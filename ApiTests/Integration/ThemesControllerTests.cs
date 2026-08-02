@@ -55,7 +55,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Theme.AllThemes, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        List<Theme>? themes = JsonSerializer.Deserialize<List<Theme>>(responseBody);
+        List<Theme>? themes = JsonSerializer.Deserialize<List<Theme>>(responseBody, _apiFactory.JsonSerializerOptions);
 
         // Assert
         Assert.True(response.StatusCode == HttpStatusCode.OK,
@@ -78,7 +78,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         Theme created = await CreateThemeAsync(client, request);
         HttpResponseMessage response = await client.GetAsync(Routes.Theme.AllThemes, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        List<Theme>? themes = JsonSerializer.Deserialize<List<Theme>>(responseBody);
+        List<Theme>? themes = JsonSerializer.Deserialize<List<Theme>>(responseBody, _apiFactory.JsonSerializerOptions);
         Theme? theme = themes?.FirstOrDefault(t => t.ThemeId == created.ThemeId);
 
         // Assert
@@ -130,7 +130,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
             await client.GetAsync(Routes.Theme.Generate.ThemeById(created.ThemeId), _cancelToken);
 
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Theme? result = JsonSerializer.Deserialize<Theme>(responseBody);
+        Theme? result = JsonSerializer.Deserialize<Theme>(responseBody, _apiFactory.JsonSerializerOptions);
 
         // Assert
         Assert.True(response.StatusCode == HttpStatusCode.OK,
@@ -223,7 +223,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
             await client.PostAsJsonAsync(Routes.Theme.CreateTheme, request, _cancelToken);
 
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Theme? created = JsonSerializer.Deserialize<Theme>(responseBody);
+        Theme? created = JsonSerializer.Deserialize<Theme>(responseBody, _apiFactory.JsonSerializerOptions);
 
         // Assert
         Assert.True(response.StatusCode == HttpStatusCode.Created,
@@ -274,7 +274,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
             await client.PatchAsJsonAsync(Routes.Theme.Generate.UpdateTheme(created.ThemeId), updateRequest, _cancelToken);
 
         string updateResponseBody = await updateResponse.Content.ReadAsStringAsync(_cancelToken);
-        Theme? updated = JsonSerializer.Deserialize<Theme>(updateResponseBody);
+        Theme? updated = JsonSerializer.Deserialize<Theme>(updateResponseBody, _apiFactory.JsonSerializerOptions);
 
         // Assert
         Assert.True(updateResponse.StatusCode == HttpStatusCode.OK,
@@ -320,7 +320,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         // Assert
         Assert.True(response.StatusCode == HttpStatusCode.Created,
             $"Expected status {HttpStatusCode.Created}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        Theme? created = JsonSerializer.Deserialize<Theme>(responseBody);
+        Theme? created = JsonSerializer.Deserialize<Theme>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(created is not null, $"Response body could not be deserialized into a Theme. Body: {responseBody}");
 
         return created!;

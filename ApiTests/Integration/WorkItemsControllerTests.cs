@@ -187,7 +187,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(response.StatusCode == HttpStatusCode.OK,
             $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        List<WorkItem>? result = JsonSerializer.Deserialize<List<WorkItem>>(responseBody);
+        List<WorkItem>? result = JsonSerializer.Deserialize<List<WorkItem>>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(result is not null, $"Response body could not be deserialized into a List<WorkItem>. Body: {responseBody}");
     }
 
@@ -298,7 +298,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Created,
             $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.Created}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        WorkItem? created = JsonSerializer.Deserialize<WorkItem>(responseBody);
+        WorkItem? created = JsonSerializer.Deserialize<WorkItem>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(created is not null, $"Response body could not be deserialized into a WorkItem. Body: {responseBody}");
         Assert.True(created!.ItemId > 0);
         Assert.Equal(WorkItemTestData.WorkItemName, created.Name);
@@ -346,7 +346,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(response.StatusCode == HttpStatusCode.OK,
             $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        WorkItem? result = JsonSerializer.Deserialize<WorkItem>(responseBody);
+        WorkItem? result = JsonSerializer.Deserialize<WorkItem>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(result is not null, $"Response body could not be deserialized into a WorkItem. Body: {responseBody}");
         Assert.Equal(created.ItemId, result!.ItemId);
         Assert.Equal(created.Name, result.Name);
@@ -394,7 +394,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(response.StatusCode == HttpStatusCode.OK,
             $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        WorkItem? updated = JsonSerializer.Deserialize<WorkItem>(responseBody);
+        WorkItem? updated = JsonSerializer.Deserialize<WorkItem>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(updated is not null, $"Response body could not be deserialized into a WorkItem. Body: {responseBody}");
         Assert.Equal(created.ItemId, updated!.ItemId);
         Assert.Equal(WorkItemTestData.UpdatedWorkItemName, updated.Name);
@@ -636,7 +636,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Created,
             $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.Created}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        Group? created = JsonSerializer.Deserialize<Group>(responseBody);
+        Group? created = JsonSerializer.Deserialize<Group>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(created is not null, $"Response body could not be deserialized into a Group. Body: {responseBody}");
         return created!;
     }
@@ -664,7 +664,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Created,
             $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.Created}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        WorkItem? created = JsonSerializer.Deserialize<WorkItem>(responseBody);
+        WorkItem? created = JsonSerializer.Deserialize<WorkItem>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(created is not null, $"Response body could not be deserialized into a WorkItem. Body: {responseBody}");
         return created!;
     }

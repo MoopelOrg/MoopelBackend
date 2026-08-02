@@ -76,7 +76,7 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.UserSettings.MySettings, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        UserSettings? result = JsonSerializer.Deserialize<UserSettings>(responseBody);
+        UserSettings? result = JsonSerializer.Deserialize<UserSettings>(responseBody, _apiFactory.JsonSerializerOptions);
 
         // Assert
         Assert.True(response.StatusCode == HttpStatusCode.OK,
@@ -126,7 +126,7 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage response =
             await client.GetAsync(Routes.UserSettings.Generate.SettingsById(created.SettingId), _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        UserSettings? result = JsonSerializer.Deserialize<UserSettings>(responseBody);
+        UserSettings? result = JsonSerializer.Deserialize<UserSettings>(responseBody, _apiFactory.JsonSerializerOptions);
 
         // Assert
         Assert.True(response.StatusCode == HttpStatusCode.OK,
@@ -220,7 +220,7 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage response =
             await client.PutAsJsonAsync(Routes.UserSettings.UpdateSettings, UserSettingsTestData.ValidUpdateRequest, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        UserSettings? updated = JsonSerializer.Deserialize<UserSettings>(responseBody);
+        UserSettings? updated = JsonSerializer.Deserialize<UserSettings>(responseBody, _apiFactory.JsonSerializerOptions);
 
         // Assert
         Assert.True(response.StatusCode == HttpStatusCode.OK,
@@ -246,7 +246,7 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage response =
             await client.PutAsJsonAsync(Routes.UserSettings.UpdateSettings, UserSettingsTestData.ValidUpdateRequest, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        UserSettings? updated = JsonSerializer.Deserialize<UserSettings>(responseBody);
+        UserSettings? updated = JsonSerializer.Deserialize<UserSettings>(responseBody, _apiFactory.JsonSerializerOptions);
 
         // Assert
         Assert.True(response.StatusCode == HttpStatusCode.OK,
@@ -274,7 +274,7 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
         // Assert
         Assert.True(response.StatusCode == HttpStatusCode.OK,
             $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        UserSettings? created = JsonSerializer.Deserialize<UserSettings>(responseBody);
+        UserSettings? created = JsonSerializer.Deserialize<UserSettings>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(created is not null, $"Response body could not be deserialized into a UserSettings. Body: {responseBody}");
         return created!;
     }

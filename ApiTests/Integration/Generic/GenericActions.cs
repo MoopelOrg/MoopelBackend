@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 
+using ApiTests.Integration;
 using ApiTests.TestData;
 
 using MoopelApi;
@@ -63,7 +64,10 @@ public static class GenericActions
         {
             HttpResponseMessage response = await client.PostAsJsonAsync(Routes.Auth.Login, request, cancelToken);
 
-            return await ApiHelper.GetClassFromResponse<LoginResult>(response, cancelToken);
+            return await ApiHelper.GetClassFromResponse<LoginResult>(
+                response,
+                MoopelApiFactory.SharedJsonSerializerOptions,
+                cancelToken);
         }
 
         public static async Task<LoginResult?> GuestLogin(HttpClient client, CancellationToken cancelToken)
@@ -72,7 +76,10 @@ public static class GenericActions
 
             HttpResponseMessage response =
                 await client.PostAsync(Routes.Auth.GuestLogin, content: null, cancelToken);
-            return await ApiHelper.GetClassFromResponse<LoginResult>(response, cancelToken);
+            return await ApiHelper.GetClassFromResponse<LoginResult>(
+                response,
+                MoopelApiFactory.SharedJsonSerializerOptions,
+                cancelToken);
         }
 
         public static async Task<UserRead?> Register(HttpClient client, RegistrationRequest request,
@@ -80,7 +87,10 @@ public static class GenericActions
         {
             HttpResponseMessage response = await client.PostAsJsonAsync(Routes.Auth.Register, request, cancelToken);
 
-            return await ApiHelper.GetClassFromResponse<UserRead>(response, cancelToken);
+            return await ApiHelper.GetClassFromResponse<UserRead>(
+                response,
+                MoopelApiFactory.SharedJsonSerializerOptions,
+                cancelToken);
         }
 
         public static HttpClient AttachBearer(HttpClient client, string? token)

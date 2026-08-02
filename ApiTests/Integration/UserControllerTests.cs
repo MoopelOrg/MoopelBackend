@@ -61,7 +61,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         string meResponseBody = await meResponse.Content.ReadAsStringAsync(_cancelToken);
-        UserRead? me = JsonSerializer.Deserialize<UserRead>(meResponseBody);
+        UserRead? me = JsonSerializer.Deserialize<UserRead>(meResponseBody, _apiFactory.JsonSerializerOptions);
         HttpResponseMessage response =
             await client.GetAsync(Routes.User.Generate.UserById(me?.UserId ?? 0), _cancelToken);
 
@@ -72,7 +72,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(response.StatusCode == HttpStatusCode.OK,
             $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        UserRead? fetched = JsonSerializer.Deserialize<UserRead>(responseBody);
+        UserRead? fetched = JsonSerializer.Deserialize<UserRead>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(fetched is not null, $"Response body could not be deserialized into a UserRead. Body: {responseBody}");
         Assert.Equal(me!.UserId, fetched!.UserId);
         Assert.Equal(me.Username, fetched.Username);
@@ -116,7 +116,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         string user1MeResponseBody = await user1MeResponse.Content.ReadAsStringAsync(_cancelToken);
-        UserRead? user1Me = JsonSerializer.Deserialize<UserRead>(user1MeResponseBody);
+        UserRead? user1Me = JsonSerializer.Deserialize<UserRead>(user1MeResponseBody, _apiFactory.JsonSerializerOptions);
         HttpResponseMessage response =
             await user2.GetAsync(Routes.User.Generate.UserById(user1Me?.UserId ?? 0), _cancelToken);
 
@@ -173,7 +173,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(response.StatusCode == HttpStatusCode.OK,
             $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        UserRead? fetched = JsonSerializer.Deserialize<UserRead>(responseBody);
+        UserRead? fetched = JsonSerializer.Deserialize<UserRead>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(fetched is not null, $"Response body could not be deserialized into a UserRead. Body: {responseBody}");
         Assert.Equal(username, fetched!.Username);
         Assert.True(fetched.UserId > 0);
@@ -268,7 +268,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         string meResponseBody = await meResponse.Content.ReadAsStringAsync(_cancelToken);
-        UserRead? me = JsonSerializer.Deserialize<UserRead>(meResponseBody);
+        UserRead? me = JsonSerializer.Deserialize<UserRead>(meResponseBody, _apiFactory.JsonSerializerOptions);
         HttpResponseMessage updateResponse =
             await client.PatchAsJsonAsync(
                 UpdateUserRoute(me?.UserId ?? 0),
@@ -282,7 +282,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
         string updateResponseBody = await updateResponse.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(updateResponse.StatusCode == HttpStatusCode.OK,
             $"Expected status {HttpStatusCode.OK}, actual {updateResponse.StatusCode}, endpoint {updateResponse.RequestMessage?.RequestUri}, raw body: {updateResponseBody}");
-        UserRead? updated = JsonSerializer.Deserialize<UserRead>(updateResponseBody);
+        UserRead? updated = JsonSerializer.Deserialize<UserRead>(updateResponseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(updated is not null, $"Response body could not be deserialized into a UserRead. Body: {updateResponseBody}");
         Assert.Equal(me!.UserId, updated!.UserId);
         Assert.Equal(me.Username, updated.Username);
@@ -329,7 +329,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         string user1MeResponseBody = await user1MeResponse.Content.ReadAsStringAsync(_cancelToken);
-        UserRead? user1Me = JsonSerializer.Deserialize<UserRead>(user1MeResponseBody);
+        UserRead? user1Me = JsonSerializer.Deserialize<UserRead>(user1MeResponseBody, _apiFactory.JsonSerializerOptions);
         HttpResponseMessage response =
             await user2.PatchAsJsonAsync(
                 UpdateUserRoute(user1Me?.UserId ?? 0),
@@ -411,7 +411,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         string user1MeResponseBody = await user1MeResponse.Content.ReadAsStringAsync(_cancelToken);
-        UserRead? user1Me = JsonSerializer.Deserialize<UserRead>(user1MeResponseBody);
+        UserRead? user1Me = JsonSerializer.Deserialize<UserRead>(user1MeResponseBody, _apiFactory.JsonSerializerOptions);
         HttpResponseMessage response =
             await user2.PatchAsJsonAsync(Routes.User.Generate.DisableUser(user1Me?.UserId ?? 0), new { }, _cancelToken);
 
@@ -443,7 +443,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         string targetMeResponseBody = await targetMeResponse.Content.ReadAsStringAsync(_cancelToken);
-        UserRead? targetUser = JsonSerializer.Deserialize<UserRead>(targetMeResponseBody);
+        UserRead? targetUser = JsonSerializer.Deserialize<UserRead>(targetMeResponseBody, _apiFactory.JsonSerializerOptions);
         HttpResponseMessage disableResponse =
             await adminClient.PatchAsJsonAsync(Routes.User.Generate.DisableUser(targetUser?.UserId ?? 0), new { }, _cancelToken);
         LoginResult? loginResult = await GenericActions.Auth.Login(

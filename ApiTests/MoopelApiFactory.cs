@@ -19,10 +19,16 @@ namespace ApiTests;
 
 public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    public MoopelApiFactory()
+    internal static JsonSerializerOptions SharedJsonSerializerOptions { get; } =
+        CreateJsonSerializerOptions();
+
+    public JsonSerializerOptions JsonSerializerOptions => SharedJsonSerializerOptions;
+
+    private static JsonSerializerOptions CreateJsonSerializerOptions()
     {
-        jsonOptions = new();
-        ConstantValues.ConfigureJsonSerializerOptions(jsonOptions);
+        JsonSerializerOptions options = new();
+        ConstantValues.ConfigureJsonSerializerOptions(options);
+        return options;
     }
 
     private const string DatabaseConnectionEnvironmentKey =
@@ -32,8 +38,6 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     new MsSqlBuilder(image: "mcr.microsoft.com/mssql/server:2022-latest")
         .WithPassword("YourStrong!Passw0rd")
         .Build();
-
-    public readonly JsonSerializerOptions jsonOptions;
 
     private Respawner _respawner = null!;
     private DbConnection _connection = null!;

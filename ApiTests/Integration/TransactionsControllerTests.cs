@@ -68,7 +68,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         Assert.True(response.StatusCode == HttpStatusCode.OK,
             $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        List<Transaction>? result = JsonSerializer.Deserialize<List<Transaction>>(responseBody);
+        List<Transaction>? result = JsonSerializer.Deserialize<List<Transaction>>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(result is not null, $"Response body could not be deserialized into a List<Transaction>. Body: {responseBody}");
         Assert.Contains(result!, transaction => transaction.TransactionId == created.TransactionId);
         Assert.Contains(result, transaction => transaction.Name == TransactionTestData.TransactionName);
@@ -151,7 +151,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Created,
             $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.Created}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        Transaction? created = JsonSerializer.Deserialize<Transaction>(responseBody);
+        Transaction? created = JsonSerializer.Deserialize<Transaction>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(created is not null, $"Response body could not be deserialized into a Transaction. Body: {responseBody}");
         Assert.True(created!.TransactionId > 0);
         Assert.Equal(account.AccountId, created.AccountId);
@@ -235,7 +235,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         Assert.True(response.StatusCode == HttpStatusCode.OK,
             $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        Transaction? result = JsonSerializer.Deserialize<Transaction>(responseBody);
+        Transaction? result = JsonSerializer.Deserialize<Transaction>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(result is not null, $"Response body could not be deserialized into a Transaction. Body: {responseBody}");
         Assert.Equal(created.TransactionId, result!.TransactionId);
         Assert.Equal(created.AccountId, result.AccountId);
@@ -403,7 +403,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Created,
             $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.Created}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        TransactionItem? created = JsonSerializer.Deserialize<TransactionItem>(responseBody);
+        TransactionItem? created = JsonSerializer.Deserialize<TransactionItem>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(created is not null, $"Response body could not be deserialized into a TransactionItem. Body: {responseBody}");
         Assert.True(created!.ItemId > 0);
         Assert.Equal(transaction.TransactionId, created.TransactionId);
@@ -493,7 +493,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         Assert.True(response.StatusCode == HttpStatusCode.OK,
             $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        TransactionItem? updated = JsonSerializer.Deserialize<TransactionItem>(responseBody);
+        TransactionItem? updated = JsonSerializer.Deserialize<TransactionItem>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(updated is not null, $"Response body could not be deserialized into a TransactionItem. Body: {responseBody}");
         Assert.Equal(created.ItemId, updated!.ItemId);
         Assert.Equal(created.TransactionId, updated.TransactionId);
@@ -723,7 +723,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Created,
             $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.Created}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        BankAccount? created = JsonSerializer.Deserialize<BankAccount>(responseBody);
+        BankAccount? created = JsonSerializer.Deserialize<BankAccount>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(created is not null, $"Response body could not be deserialized into a BankAccount. Body: {responseBody}");
         return created!;
     }
@@ -746,7 +746,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Created,
             $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.Created}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        Transaction? created = JsonSerializer.Deserialize<Transaction>(responseBody);
+        Transaction? created = JsonSerializer.Deserialize<Transaction>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(created is not null, $"Response body could not be deserialized into a Transaction. Body: {responseBody}");
         return created!;
     }
@@ -769,7 +769,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Created,
             $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.Created}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        TransactionItem? created = JsonSerializer.Deserialize<TransactionItem>(responseBody);
+        TransactionItem? created = JsonSerializer.Deserialize<TransactionItem>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(created is not null, $"Response body could not be deserialized into a TransactionItem. Body: {responseBody}");
         return created!;
     }

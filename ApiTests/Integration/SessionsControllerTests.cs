@@ -61,7 +61,7 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
 
         Assert.True(response.StatusCode == HttpStatusCode.OK,
             $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        List<Session>? sessions = JsonSerializer.Deserialize<List<Session>>(responseBody);
+        List<Session>? sessions = JsonSerializer.Deserialize<List<Session>>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(sessions is not null, $"Response body could not be deserialized into a List<Session>. Body: {responseBody}");
         Assert.NotEmpty(sessions!);
     }
@@ -103,7 +103,7 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         string mySessionsResponseBody = await mySessionsResponse.Content.ReadAsStringAsync(_cancelToken);
-        List<Session>? sessions = JsonSerializer.Deserialize<List<Session>>(mySessionsResponseBody);
+        List<Session>? sessions = JsonSerializer.Deserialize<List<Session>>(mySessionsResponseBody, _apiFactory.JsonSerializerOptions);
         Session? firstSession = sessions?.FirstOrDefault();
         HttpResponseMessage response =
             await client.GetAsync(Routes.Session.Generate.SessionById(firstSession?.SessionId ?? 0), _cancelToken);
@@ -116,7 +116,7 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(response.StatusCode == HttpStatusCode.OK,
             $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
-        Session? result = JsonSerializer.Deserialize<Session>(responseBody);
+        Session? result = JsonSerializer.Deserialize<Session>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(result is not null, $"Response body could not be deserialized into a Session. Body: {responseBody}");
         Assert.Equal(firstSession!.SessionId, result!.SessionId);
     }
@@ -159,7 +159,7 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         string user1SessionsResponseBody = await user1SessionsResponse.Content.ReadAsStringAsync(_cancelToken);
-        List<Session>? user1Sessions = JsonSerializer.Deserialize<List<Session>>(user1SessionsResponseBody);
+        List<Session>? user1Sessions = JsonSerializer.Deserialize<List<Session>>(user1SessionsResponseBody, _apiFactory.JsonSerializerOptions);
         Session? session = user1Sessions?.FirstOrDefault();
         HttpResponseMessage response =
             await user2.GetAsync(Routes.Session.Generate.SessionById(session?.SessionId ?? 0), _cancelToken);
@@ -229,7 +229,7 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         string sessionsResponseBody = await sessionsResponse.Content.ReadAsStringAsync(_cancelToken);
-        List<Session>? sessions = JsonSerializer.Deserialize<List<Session>>(sessionsResponseBody);
+        List<Session>? sessions = JsonSerializer.Deserialize<List<Session>>(sessionsResponseBody, _apiFactory.JsonSerializerOptions);
         Session? sessionToRevoke = sessions?.LastOrDefault();
         HttpResponseMessage revokeResponse =
             await primaryClient.PostAsync(Routes.Session.Generate.RevokeSession(sessionToRevoke?.SessionId ?? 0), null, _cancelToken);
@@ -290,7 +290,7 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         string user1SessionsResponseBody = await user1SessionsResponse.Content.ReadAsStringAsync(_cancelToken);
-        List<Session>? user1Sessions = JsonSerializer.Deserialize<List<Session>>(user1SessionsResponseBody);
+        List<Session>? user1Sessions = JsonSerializer.Deserialize<List<Session>>(user1SessionsResponseBody, _apiFactory.JsonSerializerOptions);
         Session? session = user1Sessions?.FirstOrDefault();
         HttpResponseMessage response =
             await user2.PostAsync(Routes.Session.Generate.RevokeSession(session?.SessionId ?? 0), null, _cancelToken);
@@ -358,7 +358,7 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         string beforeResponseBody = await beforeResponse.Content.ReadAsStringAsync(_cancelToken);
-        List<Session>? beforeSessions = JsonSerializer.Deserialize<List<Session>>(beforeResponseBody);
+        List<Session>? beforeSessions = JsonSerializer.Deserialize<List<Session>>(beforeResponseBody, _apiFactory.JsonSerializerOptions);
         HttpResponseMessage revokeAllResponse =
             await client1.PostAsync(Routes.Session.RevokeAll, null, _cancelToken);
         HttpResponseMessage afterResponse =
