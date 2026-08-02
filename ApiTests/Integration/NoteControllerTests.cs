@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
@@ -254,13 +255,14 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage response =
             await client.PostAsJsonAsync(Routes.Note.CreateNote, request, _cancelToken);
 
-        Note? created = await response.Content.ReadFromJsonAsync<Note>(_cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
             response.StatusCode == HttpStatusCode.Created,
             $"Expected {HttpStatusCode.Created} but got {response.StatusCode}. Body: {responseBody}");
+
+        Note? created = JsonSerializer.Deserialize<Note>(responseBody, _apiFactory.jsonOptions);
         Assert.True(created is not null, $"Response body could not be deserialized into a Note. Body: {responseBody}");
         Assert.NotNull(request);
         Assert.True(created.NoteId > 0, $"Expected a positive NoteId but got {created.NoteId}");

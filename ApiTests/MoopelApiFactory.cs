@@ -1,4 +1,5 @@
 ﻿using System.Data.Common;
+using System.Text.Json;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -6,6 +7,8 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
+using MoopelApi;
 
 using Respawn;
 
@@ -16,6 +19,12 @@ namespace ApiTests;
 
 public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    public MoopelApiFactory()
+    {
+        jsonOptions = new();
+        ConstantValues.ConfigureJsonSerializerOptions(jsonOptions);
+    }
+
     private const string DatabaseConnectionEnvironmentKey =
         "DatabaseConnection__ConnectionString";
 
@@ -23,6 +32,8 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     new MsSqlBuilder(image: "mcr.microsoft.com/mssql/server:2022-latest")
         .WithPassword("YourStrong!Passw0rd")
         .Build();
+
+    public readonly JsonSerializerOptions jsonOptions;
 
     private Respawner _respawner = null!;
     private DbConnection _connection = null!;
