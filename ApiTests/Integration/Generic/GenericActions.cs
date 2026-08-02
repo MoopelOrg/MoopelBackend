@@ -121,7 +121,7 @@ public static class GenericActions
 
         public static async Task<HttpClient> CreateAuthenticatedClient(HttpClient client, CancellationToken cancelToken)
         {
-            string userName = AuthTestData.ValidUserName + Guid.NewGuid();
+            string userName = AuthTestData.ValidUserName + Guid.NewGuid().ToString("N");
             string password = AuthTestData.ValidPassword + Guid.NewGuid();
 
             return await CreateAuthenticatedClient(client, userName, password, cancelToken);
