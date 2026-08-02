@@ -33,9 +33,12 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Group.MyGroups, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     [Theory]
@@ -50,11 +53,14 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Group.MyGroups, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         List<Group>? groups = await response.Content.ReadFromJsonAsync<List<Group>>(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(groups);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK,
+            $"Expected {HttpStatusCode.OK} but got {response.StatusCode}. Body: {responseBody}");
+        Assert.True(groups is not null, $"Response body could not be deserialized into a list. Body: {responseBody}");
     }
 
     #endregion
@@ -70,9 +76,12 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Group.Generate.GroupById(1), _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     [Theory]
@@ -91,18 +100,22 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage createResponse =
             await client.PostAsJsonAsync(Routes.Group.CreateGroup, createRequest, _cancelToken);
 
+        string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Group? created = await createResponse.Content.ReadFromJsonAsync<Group>(_cancelToken);
 
-        Assert.NotNull(created);
+        Assert.True(created is not null, $"Failed to create group. Status: {createResponse.StatusCode}, Body: {createBody}");
 
         HttpResponseMessage response =
             await client.GetAsync(Routes.Group.Generate.GroupById(created.GroupId), _cancelToken);
 
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Group? result = await response.Content.ReadFromJsonAsync<Group>(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(result);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK,
+            $"Expected {HttpStatusCode.OK} but got {response.StatusCode}. Body: {responseBody}");
+        Assert.True(result is not null, $"Response body could not be deserialized into a Group. Body: {responseBody}");
         Assert.Equal(created.GroupId, result.GroupId);
         Assert.Equal(created.Name, result.Name);
     }
@@ -119,9 +132,12 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Group.Generate.GroupById(9999), _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.NotFound,
+            $"Expected {HttpStatusCode.NotFound} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     [Fact]
@@ -142,17 +158,19 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage createResponse =
             await user1.PostAsJsonAsync(Routes.Group.CreateGroup, request, _cancelToken);
 
+        string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Group? created = await createResponse.Content.ReadFromJsonAsync<Group>(_cancelToken);
 
-        Assert.NotNull(created);
+        Assert.True(created is not null, $"Failed to create group for user1. Status: {createResponse.StatusCode}, Body: {createBody}");
 
         HttpResponseMessage response =
             await user2.GetAsync(Routes.Group.Generate.GroupById(created.GroupId), _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.Forbidden ||
-            response.StatusCode == HttpStatusCode.NotFound);
+            response.StatusCode == HttpStatusCode.Forbidden || response.StatusCode == HttpStatusCode.NotFound,
+            $"Expected {HttpStatusCode.Forbidden} or {HttpStatusCode.NotFound} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     #endregion
@@ -171,9 +189,12 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PostAsJsonAsync(Routes.Group.CreateGroup, request, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     [Theory]
@@ -191,15 +212,16 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
             await client.PostAsJsonAsync(Routes.Group.CreateGroup, request, _cancelToken);
 
         Group? created = await response.Content.ReadFromJsonAsync<Group>(_cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.Created);
+            response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Created,
+            $"Expected {HttpStatusCode.OK} or {HttpStatusCode.Created} but got {response.StatusCode}. Body: {responseBody}");
 
-        Assert.NotNull(created);
+        Assert.True(created is not null, $"Response body could not be deserialized into a Group. Body: {responseBody}");
         Assert.NotNull(request);
-        Assert.True(created.GroupId > 0);
+        Assert.True(created.GroupId > 0, $"Expected a positive GroupId but got {created.GroupId}");
         Assert.Equal(request.Name, created.Name);
     }
 
@@ -216,18 +238,20 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage firstResponse =
             await client.PostAsJsonAsync(Routes.Group.CreateGroup, request, _cancelToken);
+        string firstBody = await firstResponse.Content.ReadAsStringAsync(_cancelToken);
 
         HttpResponseMessage secondResponse =
             await client.PostAsJsonAsync(Routes.Group.CreateGroup, request, _cancelToken);
+        string secondBody = await secondResponse.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
-            firstResponse.StatusCode == HttpStatusCode.OK ||
-            firstResponse.StatusCode == HttpStatusCode.Created);
+            firstResponse.StatusCode == HttpStatusCode.OK || firstResponse.StatusCode == HttpStatusCode.Created,
+            $"Expected first creation to succeed but got {firstResponse.StatusCode}. Body: {firstBody}");
 
         Assert.True(
-            secondResponse.StatusCode == HttpStatusCode.BadRequest ||
-            secondResponse.StatusCode == HttpStatusCode.Conflict);
+            secondResponse.StatusCode == HttpStatusCode.BadRequest || secondResponse.StatusCode == HttpStatusCode.Conflict,
+            $"Expected duplicate creation to fail with BadRequest or Conflict but got {secondResponse.StatusCode}. Body: {secondBody}");
     }
 
     #endregion
@@ -247,19 +271,23 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage createResponse =
             await client.PostAsJsonAsync(Routes.Group.CreateGroup, createRequest, _cancelToken);
 
+        string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Group? created = await createResponse.Content.ReadFromJsonAsync<Group>(_cancelToken);
 
-        Assert.NotNull(created);
+        Assert.True(created is not null, $"Failed to create group. Status: {createResponse.StatusCode}, Body: {createBody}");
 
         // Act
         HttpResponseMessage updateResponse =
             await client.PutAsJsonAsync(Routes.Group.Generate.UpdateGroup(created.GroupId), updateRequest, _cancelToken);
 
+        string updateBody = await updateResponse.Content.ReadAsStringAsync(_cancelToken);
         Group? updated = await updateResponse.Content.ReadFromJsonAsync<Group>(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
-        Assert.NotNull(updated);
+        Assert.True(
+            updateResponse.StatusCode == HttpStatusCode.OK,
+            $"Expected {HttpStatusCode.OK} but got {updateResponse.StatusCode}. Body: {updateBody}");
+        Assert.True(updated is not null, $"Response body could not be deserialized into a Group. Body: {updateBody}");
         Assert.NotNull(createRequest);
         Assert.NotNull(updateRequest);
         Assert.Equal(created.GroupId, updated.GroupId);
@@ -281,9 +309,12 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PutAsJsonAsync(Routes.Group.Generate.UpdateGroup(9999), updateRequest, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.NotFound,
+            $"Expected {HttpStatusCode.NotFound} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     #endregion
@@ -305,23 +336,28 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage createResponse =
             await client.PostAsJsonAsync(Routes.Group.CreateGroup, createRequest, _cancelToken);
 
+        string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Group? created = await createResponse.Content.ReadFromJsonAsync<Group>(_cancelToken);
 
-        Assert.NotNull(created);
+        Assert.True(created is not null, $"Failed to create group. Status: {createResponse.StatusCode}, Body: {createBody}");
 
         // Act
         HttpResponseMessage deleteResponse =
             await client.DeleteAsync(Routes.Group.Generate.DeleteGroup(created.GroupId), _cancelToken);
+        string deleteBody = await deleteResponse.Content.ReadAsStringAsync(_cancelToken);
 
         HttpResponseMessage getResponse =
             await client.GetAsync(Routes.Group.Generate.GroupById(created.GroupId), _cancelToken);
+        string getBody = await getResponse.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
-            deleteResponse.StatusCode == HttpStatusCode.OK ||
-            deleteResponse.StatusCode == HttpStatusCode.NoContent);
+            deleteResponse.StatusCode == HttpStatusCode.OK || deleteResponse.StatusCode == HttpStatusCode.NoContent,
+            $"Expected {HttpStatusCode.OK} or {HttpStatusCode.NoContent} but got {deleteResponse.StatusCode}. Body: {deleteBody}");
 
-        Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
+        Assert.True(
+            getResponse.StatusCode == HttpStatusCode.NotFound,
+            $"Expected {HttpStatusCode.NotFound} but got {getResponse.StatusCode}. Body: {getBody}");
     }
 
     [Theory]
@@ -337,9 +373,12 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.DeleteAsync(Routes.Group.Generate.DeleteGroup(9999), _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.NotFound,
+            $"Expected {HttpStatusCode.NotFound} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     #endregion

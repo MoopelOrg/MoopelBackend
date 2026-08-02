@@ -33,9 +33,12 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Storage.MyStorages, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     [Theory]
@@ -50,11 +53,14 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Storage.MyStorages, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         List<Storage>? storages = await response.Content.ReadFromJsonAsync<List<Storage>>(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(storages);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK,
+            $"Expected {HttpStatusCode.OK} but got {response.StatusCode}. Body: {responseBody}");
+        Assert.True(storages is not null, $"Response body could not be deserialized into a list. Body: {responseBody}");
     }
 
     #endregion
@@ -70,9 +76,12 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Storage.Generate.StorageById(1), _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     [Theory]
@@ -90,19 +99,23 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage createResponse =
             await client.PostAsJsonAsync(Routes.Storage.CreateStorage, createRequest, _cancelToken);
 
+        string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Storage? created = await createResponse.Content.ReadFromJsonAsync<Storage>(_cancelToken);
 
-        Assert.NotNull(created);
+        Assert.True(created is not null, $"Failed to create storage. Status: {createResponse.StatusCode}, Body: {createBody}");
 
         // Act
         HttpResponseMessage response =
             await client.GetAsync(Routes.Storage.Generate.StorageById(created.StorageId), _cancelToken);
 
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Storage? result = await response.Content.ReadFromJsonAsync<Storage>(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(result);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK,
+            $"Expected {HttpStatusCode.OK} but got {response.StatusCode}. Body: {responseBody}");
+        Assert.True(result is not null, $"Response body could not be deserialized into a Storage. Body: {responseBody}");
         Assert.Equal(created.StorageId, result.StorageId);
         Assert.Equal(created.Name, result.Name);
     }
@@ -119,9 +132,12 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Storage.Generate.StorageById(9999), _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.NotFound,
+            $"Expected {HttpStatusCode.NotFound} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     [Fact]
@@ -141,18 +157,20 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage createResponse =
             await user1.PostAsJsonAsync(Routes.Storage.CreateStorage, request, _cancelToken);
 
+        string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Storage? created = await createResponse.Content.ReadFromJsonAsync<Storage>(_cancelToken);
 
-        Assert.NotNull(created);
+        Assert.True(created is not null, $"Failed to create storage for user1. Status: {createResponse.StatusCode}, Body: {createBody}");
 
         // Act
         HttpResponseMessage response =
             await user2.GetAsync(Routes.Storage.Generate.StorageById(created.StorageId), _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.Forbidden ||
-            response.StatusCode == HttpStatusCode.NotFound);
+            response.StatusCode == HttpStatusCode.Forbidden || response.StatusCode == HttpStatusCode.NotFound,
+            $"Expected {HttpStatusCode.Forbidden} or {HttpStatusCode.NotFound} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     #endregion
@@ -171,9 +189,12 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PostAsJsonAsync(Routes.Storage.CreateStorage, request, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     [Theory]
@@ -193,14 +214,15 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
             await client.PostAsJsonAsync(Routes.Storage.CreateStorage, request, _cancelToken);
 
         Storage? created = await response.Content.ReadFromJsonAsync<Storage>(_cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.Created);
+            response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Created,
+            $"Expected {HttpStatusCode.OK} or {HttpStatusCode.Created} but got {response.StatusCode}. Body: {responseBody}");
 
-        Assert.NotNull(created);
-        Assert.True(created.StorageId > 0);
+        Assert.True(created is not null, $"Response body could not be deserialized into a Storage. Body: {responseBody}");
+        Assert.True(created.StorageId > 0, $"Expected a positive StorageId but got {created.StorageId}");
         Assert.Equal(StorageTestData.ValidCreateRequest.Name, created.Name);
     }
 
@@ -223,9 +245,10 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage createResponse =
             await client.PostAsJsonAsync(Routes.Storage.CreateStorage, createRequest, _cancelToken);
 
+        string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Storage? created = await createResponse.Content.ReadFromJsonAsync<Storage>(_cancelToken);
 
-        Assert.NotNull(created);
+        Assert.True(created is not null, $"Failed to create storage. Status: {createResponse.StatusCode}, Body: {createBody}");
 
         StorageUpdateRequest updateRequest = StorageTestData.ValidUpdateRequest;
 
@@ -233,11 +256,14 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage updateResponse =
             await client.PutAsJsonAsync(Routes.Storage.Generate.UpdateStorage(created.StorageId), updateRequest, _cancelToken);
 
+        string updateBody = await updateResponse.Content.ReadAsStringAsync(_cancelToken);
         Storage? updated = await updateResponse.Content.ReadFromJsonAsync<Storage>(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
-        Assert.NotNull(updated);
+        Assert.True(
+            updateResponse.StatusCode == HttpStatusCode.OK,
+            $"Expected {HttpStatusCode.OK} but got {updateResponse.StatusCode}. Body: {updateBody}");
+        Assert.True(updated is not null, $"Response body could not be deserialized into a Storage. Body: {updateBody}");
         Assert.Equal(created.StorageId, updated.StorageId);
         Assert.Equal(StorageTestData.ValidUpdateRequest.Name, updated.Name);
     }
@@ -257,9 +283,12 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PutAsJsonAsync(Routes.Storage.Generate.UpdateStorage(9999), updateRequest, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.NotFound,
+            $"Expected {HttpStatusCode.NotFound} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     #endregion
@@ -280,23 +309,28 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage createResponse =
             await client.PostAsJsonAsync(Routes.Storage.CreateStorage, createRequest, _cancelToken);
 
+        string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Storage? created = await createResponse.Content.ReadFromJsonAsync<Storage>(_cancelToken);
 
-        Assert.NotNull(created);
+        Assert.True(created is not null, $"Failed to create storage. Status: {createResponse.StatusCode}, Body: {createBody}");
 
         // Act
         HttpResponseMessage deleteResponse =
             await client.DeleteAsync(Routes.Storage.Generate.DeleteStorage(created.StorageId), _cancelToken);
+        string deleteBody = await deleteResponse.Content.ReadAsStringAsync(_cancelToken);
 
         HttpResponseMessage getResponse =
             await client.GetAsync(Routes.Storage.Generate.StorageById(created.StorageId), _cancelToken);
+        string getBody = await getResponse.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
-            deleteResponse.StatusCode == HttpStatusCode.OK ||
-            deleteResponse.StatusCode == HttpStatusCode.NoContent);
+            deleteResponse.StatusCode == HttpStatusCode.OK || deleteResponse.StatusCode == HttpStatusCode.NoContent,
+            $"Expected {HttpStatusCode.OK} or {HttpStatusCode.NoContent} but got {deleteResponse.StatusCode}. Body: {deleteBody}");
 
-        Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
+        Assert.True(
+            getResponse.StatusCode == HttpStatusCode.NotFound,
+            $"Expected {HttpStatusCode.NotFound} but got {getResponse.StatusCode}. Body: {getBody}");
     }
 
     [Fact]
@@ -311,9 +345,12 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.DeleteAsync(Routes.Storage.Generate.DeleteStorage(9999), _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.NotFound,
+            $"Expected {HttpStatusCode.NotFound} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     #endregion

@@ -43,9 +43,9 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         UserRead? user = await GenericActions.Auth.Register(client, registerRequest, _cancelToken);
 
         // Assert
-        Assert.NotNull(user);
+        Assert.True(user is not null, $"Registration failed for username '{username}'.");
         Assert.Equal(username, user.Username);
-        Assert.True(user.UserId > 0);
+        Assert.True(user.UserId > 0, $"Expected a positive UserId but got {user.UserId}");
     }
 
     [Theory]
@@ -88,9 +88,9 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         UserRead? secondRegistrationUser = await GenericActions.Auth.Register(client, registerRequest, _cancelToken);
 
         // Assert
-        Assert.NotNull(firstRegistrationUser);
+        Assert.True(firstRegistrationUser is not null, $"First registration failed for username '{username}'.");
         Assert.Equal(username, firstRegistrationUser.Username);
-        Assert.Null(secondRegistrationUser);
+        Assert.True(secondRegistrationUser is null, $"Expected duplicate registration for '{username}' to fail but it succeeded.");
     }
 
     [Theory]
@@ -119,12 +119,12 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         LoginResult? loginResult = await GenericActions.Auth.Login(client, loginRequest, _cancelToken);
 
         // Assert
-        Assert.NotNull(firstUser);
-        Assert.Null(secondUser);
+        Assert.True(firstUser is not null, $"First registration failed for username '{username}'.");
+        Assert.True(secondUser is null, $"Expected duplicate registration for '{username}' to fail but it succeeded.");
 
-        Assert.NotNull(loginResult);
-        Assert.NotNull(loginResult.User);
-        Assert.NotNull(loginResult.Token);
+        Assert.True(loginResult is not null, $"Login failed for username '{username}' after duplicate registration attempt.");
+        Assert.True(loginResult.User is not null, $"Login result had no user for '{username}'.");
+        Assert.True(loginResult.Token is not null, $"Login result had no token for '{username}'.");
         Assert.Equal(username, loginResult.User.Username);
     }
 
@@ -157,10 +157,10 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         LoginResult? loginResult = await GenericActions.Auth.Login(client, loginRequest, _cancelToken);
 
         // Assert
-        Assert.NotNull(user);
-        Assert.NotNull(loginResult);
-        Assert.NotNull(loginResult.User);
-        Assert.NotNull(loginResult.Token);
+        Assert.True(user is not null, $"Registration failed for username '{username}'.");
+        Assert.True(loginResult is not null, $"Login failed for username '{username}'.");
+        Assert.True(loginResult.User is not null, $"Login result had no user for '{username}'.");
+        Assert.True(loginResult.Token is not null, $"Login result had no token for '{username}'.");
         Assert.Null(loginResult.Error);
 
         Assert.Equal(username, user.Username);
@@ -182,9 +182,9 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         LoginResult? loginResult = await GenericActions.Auth.GuestLogin(client, _cancelToken);
 
         // Assert
-        Assert.NotNull(loginResult);
-        Assert.NotNull(loginResult.User);
-        Assert.NotNull(loginResult.Token);
+        Assert.True(loginResult is not null, "Guest login failed.");
+        Assert.True(loginResult.User is not null, "Guest login result had no user.");
+        Assert.True(loginResult.Token is not null, "Guest login result had no token.");
         Assert.Null(loginResult.Error);
 
         Assert.StartsWith("Guest_", loginResult.User.Username);
@@ -224,8 +224,10 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
             await loginResponse.Content.ReadFromJsonAsync<LoginResult>(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, loginResponse.StatusCode);
-        Assert.NotNull(loginResult);
+        Assert.True(
+            loginResponse.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {loginResponse.StatusCode} for username '{username}' with wrong password.");
+        Assert.True(loginResult is not null, "Login response could not be deserialized into a LoginResult.");
         Assert.Null(loginResult.User);
         Assert.True(string.IsNullOrWhiteSpace(loginResult.Token));
         Assert.False(string.IsNullOrWhiteSpace(loginResult.Error));
@@ -253,8 +255,10 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
             await loginResponse.Content.ReadFromJsonAsync<LoginResult>(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, loginResponse.StatusCode);
-        Assert.NotNull(loginResult);
+        Assert.True(
+            loginResponse.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {loginResponse.StatusCode} for non-existent username '{username}'.");
+        Assert.True(loginResult is not null, "Login response could not be deserialized into a LoginResult.");
         Assert.Null(loginResult.User);
         Assert.True(string.IsNullOrWhiteSpace(loginResult.Token));
         Assert.False(string.IsNullOrWhiteSpace(loginResult.Error));
@@ -280,7 +284,7 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
             _cancelToken);
 
         // Assert
-        Assert.NotNull(loginResult);
+        Assert.True(loginResult is not null, $"Login failed for username '{username}'.");
         Assert.False(string.IsNullOrWhiteSpace(loginResult.Token));
         Assert.NotEqual(string.Empty, loginResult.Token);
         Assert.Contains(".", loginResult.Token);
@@ -321,10 +325,12 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         UserRead? meResult = await meResponse.Content.ReadFromJsonAsync<UserRead>(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
-        Assert.NotNull(user);
-        Assert.NotNull(loginResult.User);
-        Assert.NotNull(meResult);
+        Assert.True(
+            meResponse.StatusCode == HttpStatusCode.OK,
+            $"Expected {HttpStatusCode.OK} but got {meResponse.StatusCode} for username '{username}'.");
+        Assert.True(user is not null, $"Registration failed for username '{username}'.");
+        Assert.True(loginResult.User is not null, $"Login result had no user for '{username}'.");
+        Assert.True(meResult is not null, $"/me response could not be deserialized for username '{username}'.");
 
         Assert.Equal(username, user.Username);
         Assert.Equal(username, loginResult.User.Username);
@@ -343,7 +349,9 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage meResponse = await client.GetAsync(Routes.Auth.Me, _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, meResponse.StatusCode);
+        Assert.True(
+            meResponse.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {meResponse.StatusCode} when no bearer token was provided.");
     }
 
     [Fact]
@@ -359,7 +367,9 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage meResponse = await client.GetAsync(Routes.Auth.Me, _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, meResponse.StatusCode);
+        Assert.True(
+            meResponse.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {meResponse.StatusCode} when an invalid bearer token was provided.");
     }
 
     #endregion
@@ -391,9 +401,9 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         UserRead? me = await client.GetFromJsonAsync<UserRead>(Routes.Auth.Me, _cancelToken);
 
         // Assert
-        Assert.NotNull(registeredUser);
-        Assert.NotNull(loginResult.User);
-        Assert.NotNull(me);
+        Assert.True(registeredUser is not null, $"Registration failed for username '{username}'.");
+        Assert.True(loginResult.User is not null, $"Login result had no user for '{username}'.");
+        Assert.True(me is not null, $"/me response could not be deserialized for username '{username}'.");
 
         Assert.Equal(registeredUser.UserId, loginResult.User.UserId);
         Assert.Equal(registeredUser.UserId, me.UserId);

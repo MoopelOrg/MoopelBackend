@@ -35,9 +35,12 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Note.MyNotes, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     [Fact]
@@ -52,11 +55,14 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Note.MyNotes, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         List<Note>? notes = await response.Content.ReadFromJsonAsync<List<Note>>(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(notes);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK,
+            $"Expected {HttpStatusCode.OK} but got {response.StatusCode}. Body: {responseBody}");
+        Assert.True(notes is not null, $"Response body could not be deserialized into a list. Body: {responseBody}");
         Assert.Empty(notes);
     }
 
@@ -75,15 +81,18 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         await client.PostAsJsonAsync(Routes.Note.CreateNote, request, _cancelToken);
         HttpResponseMessage response = await client.GetAsync(Routes.Note.MyNotes, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         List<Note>? notes = await response.Content.ReadFromJsonAsync<List<Note>>(_cancelToken);
         Note? note = notes?.FirstOrDefault();
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(notes);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK,
+            $"Expected {HttpStatusCode.OK} but got {response.StatusCode}. Body: {responseBody}");
+        Assert.True(notes is not null, $"Response body could not be deserialized into a list. Body: {responseBody}");
         Assert.NotEmpty(notes);
 
-        Assert.NotNull(note);
+        Assert.True(note is not null, $"Expected at least one note in the list. Body: {responseBody}");
         Assert.Equal(request.Type, note.Type);
         Assert.Equal(request.Title, note.Title);
         Assert.Equal(request.Content, note.Content);
@@ -104,9 +113,12 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(endpoint, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode}. Endpoint: {endpoint}, Body: {responseBody}");
     }
 
     [Fact]
@@ -126,17 +138,21 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
             await client.PostAsJsonAsync(Routes.Note.CreateNote, createRequest, _cancelToken);
 
         Note? created = await createResponse.Content.ReadFromJsonAsync<Note>(_cancelToken);
+        string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
 
-        Assert.NotNull(created);
+        Assert.True(created is not null, $"Failed to create note. Status: {createResponse.StatusCode}, Body: {createBody}");
 
         string endpoint = Routes.Note.Generate.NoteById(created.NoteId);
         HttpResponseMessage response = await client.GetAsync(endpoint, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         Note? result = await response.Content.ReadFromJsonAsync<Note>(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(result);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK,
+            $"Expected {HttpStatusCode.OK} but got {response.StatusCode}. Endpoint: {endpoint}, Body: {responseBody}");
+        Assert.True(result is not null, $"Response body could not be deserialized into a Note. Body: {responseBody}");
         Assert.Equal(created.NoteId, result.NoteId);
         Assert.Equal(created.Type, result.Type);
         Assert.Equal(created.Title, result.Title);
@@ -156,9 +172,12 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(endpoint, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.NotFound,
+            $"Expected {HttpStatusCode.NotFound} but got {response.StatusCode}. Endpoint: {endpoint}, Body: {responseBody}");
     }
 
     [Fact]
@@ -181,14 +200,18 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
             await user1.PostAsJsonAsync(Routes.Note.CreateNote, request, _cancelToken);
 
         Note? created = await createResponse.Content.ReadFromJsonAsync<Note>(_cancelToken);
+        string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
 
-        Assert.NotNull(created);
+        Assert.True(created is not null, $"Failed to create note for user1. Status: {createResponse.StatusCode}, Body: {createBody}");
 
         string endpoint = Routes.Note.Generate.NoteById(created.NoteId);
         HttpResponseMessage response = await user2.GetAsync(endpoint, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Forbidden,
+            $"Expected {HttpStatusCode.Forbidden} but got {response.StatusCode}. Endpoint: {endpoint}, Body: {responseBody}");
     }
 
     #endregion
@@ -208,9 +231,12 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PostAsJsonAsync(Routes.Note.CreateNote, request, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     [Theory]
@@ -229,12 +255,15 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
             await client.PostAsJsonAsync(Routes.Note.CreateNote, request, _cancelToken);
 
         Note? created = await response.Content.ReadFromJsonAsync<Note>(_cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        Assert.NotNull(created);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Created,
+            $"Expected {HttpStatusCode.Created} but got {response.StatusCode}. Body: {responseBody}");
+        Assert.True(created is not null, $"Response body could not be deserialized into a Note. Body: {responseBody}");
         Assert.NotNull(request);
-        Assert.True(created.NoteId > 0);
+        Assert.True(created.NoteId > 0, $"Expected a positive NoteId but got {created.NoteId}");
         Assert.Equal(request.Type, created.Type);
         Assert.Equal(request.Title, created.Title);
         Assert.Equal(request.Content, created.Content);
@@ -258,9 +287,12 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PatchAsJsonAsync(endpoint, updateRequest, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode}. Endpoint: {endpoint}, Body: {responseBody}");
     }
 
     [Theory]
@@ -279,18 +311,22 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
             await client.PostAsJsonAsync(Routes.Note.CreateNote, createRequest, _cancelToken);
 
         Note? created = await createResponse.Content.ReadFromJsonAsync<Note>(_cancelToken);
+        string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
 
-        Assert.NotNull(created);
+        Assert.True(created is not null, $"Failed to create note. Status: {createResponse.StatusCode}, Body: {createBody}");
 
         string updateEndpoint = Routes.Note.Generate.UpdateNote(created.NoteId);
         HttpResponseMessage updateResponse =
             await client.PatchAsJsonAsync(updateEndpoint, updateRequest, _cancelToken);
 
+        string updateBody = await updateResponse.Content.ReadAsStringAsync(_cancelToken);
         Note? updated = await updateResponse.Content.ReadFromJsonAsync<Note>(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
-        Assert.NotNull(updated);
+        Assert.True(
+            updateResponse.StatusCode == HttpStatusCode.OK,
+            $"Expected {HttpStatusCode.OK} but got {updateResponse.StatusCode}. Body: {updateBody}");
+        Assert.True(updated is not null, $"Response body could not be deserialized into a Note. Body: {updateBody}");
         Assert.NotNull(updateRequest);
         Assert.NotNull(createRequest);
         Assert.Equal(created.NoteId, updated.NoteId);
@@ -315,9 +351,12 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PatchAsJsonAsync(endpoint, updateRequest, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.NotFound,
+            $"Expected {HttpStatusCode.NotFound} but got {response.StatusCode}. Endpoint: {endpoint}, Body: {responseBody}");
     }
 
     #endregion
@@ -335,9 +374,12 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.DeleteAsync(endpoint, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode}. Endpoint: {endpoint}, Body: {responseBody}");
     }
 
     [Theory]
@@ -356,18 +398,25 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
             await client.PostAsJsonAsync(Routes.Note.CreateNote, createRequest, _cancelToken);
 
         Note? created = await createResponse.Content.ReadFromJsonAsync<Note>(_cancelToken);
+        string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
 
-        Assert.NotNull(created);
+        Assert.True(created is not null, $"Failed to create note. Status: {createResponse.StatusCode}, Body: {createBody}");
 
         string deleteEndpoint = Routes.Note.Generate.DeleteNote(created.NoteId);
         HttpResponseMessage deleteResponse = await client.DeleteAsync(deleteEndpoint, _cancelToken);
+        string deleteBody = await deleteResponse.Content.ReadAsStringAsync(_cancelToken);
 
         string getEndpoint = Routes.Note.Generate.NoteById(created.NoteId);
         HttpResponseMessage getResponse = await client.GetAsync(getEndpoint, _cancelToken);
+        string getBody = await getResponse.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
+        Assert.True(
+            deleteResponse.StatusCode == HttpStatusCode.NoContent,
+            $"Expected {HttpStatusCode.NoContent} but got {deleteResponse.StatusCode}. Body: {deleteBody}");
+        Assert.True(
+            getResponse.StatusCode == HttpStatusCode.NotFound,
+            $"Expected {HttpStatusCode.NotFound} but got {getResponse.StatusCode}. Body: {getBody}");
     }
 
     [Fact]
@@ -383,9 +432,12 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.DeleteAsync(endpoint, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.True(
+            response.StatusCode == HttpStatusCode.NotFound,
+            $"Expected {HttpStatusCode.NotFound} but got {response.StatusCode}. Endpoint: {endpoint}, Body: {responseBody}");
     }
 
     #endregion

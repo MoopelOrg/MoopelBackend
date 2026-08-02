@@ -55,7 +55,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(tags);
+        Assert.True(tags is not null, "Response body could not be deserialized into a list of UserTag.");
         Assert.Empty(tags);
     }
 
@@ -78,10 +78,10 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(tags);
+        Assert.True(tags is not null, "Response body could not be deserialized into a list of UserTag.");
         Assert.NotEmpty(tags);
 
-        Assert.NotNull(tag);
+        Assert.True(tag is not null, "Expected at least one tag in the list.");
         Assert.Equal(request.Name, tag.Name);
         Assert.Equal(request.Color, tag.Color);
     }
@@ -126,7 +126,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(result);
+        Assert.True(result is not null, "Response body could not be deserialized into a UserTag.");
         Assert.Equal(created.TagId, result.TagId);
         Assert.Equal(created.Name, result.Name);
         Assert.Equal(created.Color, result.Color);
@@ -212,9 +212,9 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        Assert.NotNull(created);
+        Assert.True(created is not null, "Response body could not be deserialized into a UserTag.");
         Assert.NotNull(request);
-        Assert.True(created.TagId > 0);
+        Assert.True(created.TagId > 0, $"Expected a positive TagId but got {created.TagId}");
         Assert.Equal(request.Name, created.Name);
         Assert.Equal(request.Color, created.Color);
     }
@@ -260,7 +260,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
-        Assert.NotNull(updated);
+        Assert.True(updated is not null, "Response body could not be deserialized into a UserTag.");
         Assert.NotNull(createRequest);
         Assert.NotNull(updateRequest);
         Assert.Equal(created.TagId, updated.TagId);
@@ -386,10 +386,10 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(tags);
+        Assert.True(tags is not null, "Response body could not be deserialized into a list of GroupTag.");
         Assert.NotEmpty(tags);
 
-        Assert.NotNull(tag);
+        Assert.True(tag is not null, "Expected at least one group tag in the list.");
         Assert.Equal(created.TagId, tag.TagId);
         Assert.Equal(created.GroupId, tag.GroupId);
         Assert.Equal(created.Name, tag.Name);
@@ -476,7 +476,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(result);
+        Assert.True(result is not null, "Response body could not be deserialized into a GroupTag.");
         Assert.Equal(created.TagId, result.TagId);
         Assert.Equal(created.GroupId, result.GroupId);
         Assert.Equal(created.Name, result.Name);
@@ -563,9 +563,9 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        Assert.NotNull(created);
+        Assert.True(created is not null, "Response body could not be deserialized into a GroupTag.");
         Assert.NotNull(request);
-        Assert.True(created.TagId > 0);
+        Assert.True(created.TagId > 0, $"Expected a positive TagId but got {created.TagId}");
         Assert.Equal(group.GroupId, created.GroupId);
         Assert.Equal(request.Name, created.Name);
         Assert.Equal(request.Color, created.Color);
@@ -652,7 +652,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
-        Assert.NotNull(updated);
+        Assert.True(updated is not null, "Response body could not be deserialized into a GroupTag.");
         Assert.NotNull(createRequest);
         Assert.NotNull(updateRequest);
         Assert.Equal(created.TagId, updated.TagId);
@@ -798,7 +798,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
         UserTag? created = await response.Content.ReadFromJsonAsync<UserTag>(_cancelToken);
-        Assert.NotNull(created);
+        Assert.True(created is not null, "Response body could not be deserialized into a UserTag.");
 
         return created;
     }
@@ -811,7 +811,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         Group? created = await response.Content.ReadFromJsonAsync<Group>(_cancelToken);
-        Assert.NotNull(created);
+        Assert.True(created is not null, "Response body could not be deserialized into a Group.");
 
         return created;
     }
@@ -824,7 +824,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
         GroupTag? created = await response.Content.ReadFromJsonAsync<GroupTag>(_cancelToken);
-        Assert.NotNull(created);
+        Assert.True(created is not null, "Response body could not be deserialized into a GroupTag.");
 
         return created;
     }
