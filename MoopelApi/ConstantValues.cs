@@ -326,7 +326,7 @@ public class ConstantValues
                     Name = "CHK_Users_Role",
                     Type = DatabaseConstraintType.Check,
                     Fields = [UserRoleField],
-                    CheckSql = $"{UserRoleField.SelectName} IN ('Admin','Standard')"
+                    CheckSql = DatabaseField.GenerateEnumCheckSql<UserRole>(UserRoleField)
                 }
             ]
         };
@@ -638,7 +638,7 @@ public class ConstantValues
                     Name = "CHK_Logins_Status",
                     Type = DatabaseConstraintType.Check,
                     Fields = [LoginStatusField],
-                    CheckSql = $"{LoginStatusField.SelectName} IN ('Successful','Failed')"
+                    CheckSql = DatabaseField.GenerateEnumCheckSql<LoginStatus>(LoginStatusField)
                 }
             ]
         };
@@ -881,7 +881,7 @@ public class ConstantValues
                     Name = "CHK_WorkItems_Type",
                     Type = DatabaseConstraintType.Check,
                     Fields = [WorkItemTypeField],
-                    CheckSql = $"{WorkItemTypeField.SelectName} IN ('Task','Story','Epic','Project')"
+                    CheckSql = DatabaseField.GenerateEnumCheckSql<WorkItemType>(WorkItemTypeField)
                 }
             ]
         };
@@ -1239,7 +1239,7 @@ public class ConstantValues
                     Name = "CHK_Notes_Type",
                     Type = DatabaseConstraintType.Check,
                     Fields = [NoteTypeField],
-                    CheckSql = $"{NoteTypeField.SelectName} IN ('General','WorkItem','Personal')"
+                    CheckSql = DatabaseField.GenerateEnumCheckSql<NoteType>(NoteTypeField)
                 }
             ]
         };

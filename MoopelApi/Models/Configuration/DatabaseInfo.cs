@@ -79,6 +79,14 @@ public class DatabaseField
     public required string Name { get; init; }
     public string SelectName => $"[{Name}]";
 
+    public static string GenerateEnumCheckSql<TEnum>(DatabaseField field) where TEnum : struct, Enum
+    {
+        ArgumentNullException.ThrowIfNull(field, nameof(field));
+
+        string values = string.Join(",", Enum.GetNames<TEnum>().Select(name => $"'{name}'"));
+        return $"{field.SelectName} IN ({values})";
+    }
+
     public required SqlDbType Type { get; init; }
     public required bool Nullable { get; init; }
     public int? FieldSize { get; init; } = null;

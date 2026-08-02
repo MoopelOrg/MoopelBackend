@@ -6,5 +6,5 @@ public enum NoteType
     WorkItem,
     Fridge,
     Recipe,
-    Note
+    Other
 }

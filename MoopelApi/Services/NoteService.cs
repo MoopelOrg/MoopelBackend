@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
@@ -49,7 +49,7 @@ public class NoteService : INoteService
                                   {NoteTypeField.SelectName},
                                   {NoteTitleField.SelectName},
                                   {NoteContentField.SelectName})
-                                 OUTPUT INSERTED.{NotesTable.GetFields()}
+                                 {NotesTable.GenerateOutput()}
                                  VALUES
                                  (@UserId, @Type, @Title, @Content)
                              
@@ -277,7 +277,7 @@ public class NoteService : INoteService
                                  SET {NoteTypeField.SelectName} = @Type,
                                      {NoteTitleField.SelectName} = @Title,
                                      {NoteContentField.SelectName} = @Content
-                                 OUTPUT INSERTED.{NotesTable.GetFields()}
+                                 {NotesTable.GenerateOutput()}
                                  WHERE {NoteIdField.SelectName} = @NoteId
                              
                  """;
@@ -288,17 +288,19 @@ public class NoteService : INoteService
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
 
+            Note? note;
             if (await reader.ReadAsync() is false)
             {
-                await transaction.CommitAsync();
-                return null;
+                note = null;
             }
-
-            Note note = DtoReaders.ReadNote(reader);
-
-            if (await reader.ReadAsync())
+            else
             {
-                throw new InvalidOperationException($"Updated more than one note for NoteId [{noteId}].");
+                note = DtoReaders.ReadNote(reader);
+
+                if (await reader.ReadAsync())
+                {
+                    throw new InvalidOperationException($"Updated more than one note for NoteId [{noteId}].");
+                }
             }
 
             await transaction.CommitAsync();
