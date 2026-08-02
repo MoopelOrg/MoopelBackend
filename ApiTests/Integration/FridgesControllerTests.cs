@@ -22,6 +22,8 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         _cancelToken = TestContext.Current.CancellationToken;
     }
 
+    #region Fridges
+
     #region Get My Fridges
 
     [Fact]
@@ -159,8 +161,6 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
             response.StatusCode == HttpStatusCode.Unauthorized,
             $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode}. Body: {responseBody}");
     }
-
-
 
     [Theory]
     [MemberData(nameof(FridgeTestData.ValidFridgeCreateRequests), MemberType = typeof(FridgeTestData))]
@@ -319,7 +319,72 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
 
     #endregion
 
-    #region Generic Auth
+    #endregion
+
+    #region Fridge Items
+
+    #region Create Fridge Item
+
+    [Fact]
+    public async Task CreateFridgeItem_ReturnsUnauthorized_WhenNotAuthenticated()
+    {
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            Routes.Fridge.Generate.CreateFridgeItem(FridgeTestData.NonExistentFridgeId),
+            FridgeTestData.ValidItemCreateRequest,
+            _cancelToken);
+
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode} when creating a fridge item without authentication.");
+    }
+
+    #endregion
+
+    #region Update Fridge Item
+
+    [Fact]
+    public async Task UpdateFridgeItem_ReturnsUnauthorized_WhenNotAuthenticated()
+    {
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        HttpResponseMessage response = await client.PatchAsJsonAsync(
+            Routes.Fridge.Generate.UpdateFridgeItem(FridgeTestData.NonExistentFridgeItemId),
+            FridgeTestData.ValidItemUpdateRequest,
+            _cancelToken);
+
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode} when updating a fridge item without authentication.");
+    }
+
+    #endregion
+
+    #region Delete Fridge Item
+
+    [Fact]
+    public async Task DeleteFridgeItem_ReturnsUnauthorized_WhenNotAuthenticated()
+    {
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        HttpResponseMessage response = await client.DeleteAsync(
+            Routes.Fridge.Generate.DeleteFridgeItem(FridgeTestData.NonExistentFridgeItemId),
+            _cancelToken);
+
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode} when deleting a fridge item without authentication.");
+    }
+
+    #endregion
+
+    #endregion
+
+    #region Flow
 
     [Fact]
     public async Task OneUser_CannotAccess_AnotherUsersFridge()

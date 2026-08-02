@@ -9,7 +9,6 @@ using MoopelApi;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Enums;
 using MoopelApi.Models.Requests.Creation;
-using MoopelApi.Models.Requests.Update;
 
 namespace ApiTests.Integration;
 
@@ -149,6 +148,26 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
+    [Fact]
+    public async Task WorkItemsByGroupIdAndType_ReturnsUnauthorized_WhenNotAuthenticated()
+    {
+        // Arrange
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        // Act
+        HttpResponseMessage response = await client.GetAsync(
+            Routes.WorkItem.Generate.WorkItemsByGroupIdAndType(
+                WorkItemTestData.MissingGroupId,
+                WorkItemTestData.Type.ToString()),
+            _cancelToken);
+
+        // Assert
+        Assert.True(
+            response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode} when filtering work items without authentication.");
+    }
+
     [Theory]
     [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
     public async Task WorkItemsByGroupId_ReturnsList_WhenAuthenticatedAndGroupExists(string username, string password)
@@ -189,6 +208,70 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(response.StatusCode == HttpStatusCode.NotFound,
             $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+    }
+
+    [Theory]
+    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
+    public async Task WorkItemsByGroupIdAndType_ReturnsOnlyMatchingItems_WhenGroupContainsDifferentTypes(
+        string username,
+        string password)
+    {
+        // Arrange
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+
+        Group group = await CreateGroupAsync(client, WorkItemTestData.FilterGroupName);
+        WorkItem task = await CreateWorkItemAsync(
+            client,
+            group.GroupId,
+            WorkItemTestData.FilterTaskWorkItemName,
+            WorkItemType.Task);
+        WorkItem story = await CreateWorkItemAsync(
+            client,
+            group.GroupId,
+            WorkItemTestData.FilterStoryWorkItemName,
+            WorkItemType.Story);
+
+        // Act
+        HttpResponseMessage response = await client.GetAsync(
+            Routes.WorkItem.Generate.WorkItemsByGroupIdAndType(group.GroupId, WorkItemType.Task.ToString()),
+            _cancelToken);
+        List<WorkItem>? items = await response.Content.ReadFromJsonAsync<List<WorkItem>>(_cancelToken);
+
+        // Assert
+        Assert.True(
+            response.StatusCode == HttpStatusCode.OK,
+            $"Expected {HttpStatusCode.OK} but got {response.StatusCode} when filtering work items by type.");
+        Assert.True(items is not null, "Expected a work item list when filtering by an existing type.");
+        Assert.True(
+            items!.Any(item => item.ItemId == task.ItemId),
+            $"Expected filtered work items to include task {task.ItemId}.");
+        Assert.True(
+            items.All(item => item.ItemId != story.ItemId),
+            $"Expected filtered work items to exclude story {story.ItemId}.");
+    }
+
+    [Theory]
+    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
+    public async Task WorkItemsByGroupIdAndType_ReturnsBadRequest_WhenTypeIsInvalid(string username, string password)
+    {
+        // Arrange
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+
+        // Act
+        HttpResponseMessage response = await client.GetAsync(
+            Routes.WorkItem.Generate.WorkItemsByGroupIdAndType(
+                WorkItemTestData.MissingGroupId,
+                WorkItemTestData.InvalidWorkItemType),
+            _cancelToken);
+
+        // Assert
+        Assert.True(
+            response.StatusCode == HttpStatusCode.BadRequest,
+            $"Expected {HttpStatusCode.BadRequest} but got {response.StatusCode} when filtering work items with an invalid type.");
     }
 
     [Theory]
@@ -558,14 +641,18 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         return created!;
     }
 
-    private async Task<WorkItem> CreateWorkItemAsync(HttpClient client, int groupId, string title)
+    private async Task<WorkItem> CreateWorkItemAsync(
+        HttpClient client,
+        int groupId,
+        string title,
+        WorkItemType type = WorkItemType.Task)
     {
         WorkItemCreateRequest request = new()
         {
             Name = title,
             Description = WorkItemTestData.Description,
             Points = WorkItemTestData.Points,
-            Type = WorkItemType.Task
+            Type = type
         };
 
         HttpResponseMessage response =

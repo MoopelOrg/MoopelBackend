@@ -434,15 +434,18 @@ public static class Routes
         {
             public const string Upload = "/upload";
             public const string ImageById = "/{imageId:int}";
+            public const string ThumbnailById = "/{imageId:int}/thumbnail";
             public const string DeleteImage = "/delete/{imageId:int}";
         }
 
         public const string Upload = Base + Actions.Upload;
         public const string ImageById = Base + Actions.ImageById;
+        public const string ThumbnailById = Base + Actions.ThumbnailById;
         public const string DeleteImage = Base + Actions.DeleteImage;
         public static class Generate
         {
             public static string ImageById(int imageId) => Image.ImageById.Replace("{imageId:int}", imageId.ToString());
+            public static string ThumbnailById(int imageId) => Image.ThumbnailById.Replace("{imageId:int}", imageId.ToString());
             public static string DeleteImage(int imageId) => Image.DeleteImage.Replace("{imageId:int}", imageId.ToString());
         }
     }

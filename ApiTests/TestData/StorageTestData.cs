@@ -5,6 +5,9 @@ namespace ApiTests.TestData;
 
 internal static class StorageTestData
 {
+    public const int NonExistentStorageId = 9999;
+    public const int NonExistentStorageItemId = 9998;
+
     public static readonly StorageCreateRequest ValidCreateRequest = new()
     {
         Name = "StorageName",
