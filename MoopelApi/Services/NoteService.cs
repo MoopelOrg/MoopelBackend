@@ -61,7 +61,7 @@ public class NoteService : INoteService
 
             await using SqlDataReader reader = await command.ExecuteReaderAsync();
 
-            if (await reader.ReadAsync() is false)
+            if (reader.HasRows is false)
             {
                 throw new InvalidOperationException("Failed to create note.");
             }

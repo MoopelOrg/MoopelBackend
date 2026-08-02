@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace MoopelApi.Helpers;
 
@@ -9,23 +8,22 @@ public static class ApiHelper
 {
 
 
-    public async static Task<T?> GetClassFromResponse<T>(HttpResponseMessage response, CancellationToken cancelToken)
+    public async static Task<T?> GetClassFromResponse<T>(
+        HttpResponseMessage response,
+        JsonSerializerOptions jsonSerializerOptions,
+        CancellationToken cancelToken)
         where T : class
     {
+        ArgumentNullException.ThrowIfNull(jsonSerializerOptions);
+
         if (response is null)
             return null;
 
         if (response.StatusCode == HttpStatusCode.OK)
         {
-            JsonSerializerOptions options = new()
-            {
-                PropertyNameCaseInsensitive = true
-            };
-            options.Converters.Add(new JsonStringEnumConverter());
-
             try
             {
-                return await response.Content.ReadFromJsonAsync<T>(options, cancelToken);
+                return await response.Content.ReadFromJsonAsync<T>(jsonSerializerOptions, cancelToken);
             }
             catch (Exception ex)
             {
