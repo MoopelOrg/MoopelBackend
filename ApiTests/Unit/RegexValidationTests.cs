@@ -20,8 +20,10 @@ public class RegexValidationTests
         bool passwordValidationResult = RegexHelper.CheckWithRegex(password, ValidationRegex.PasswordRegex);
 
         // Assert
-        Assert.Equal(expectedUsernameValidationResult, usernameValidationResult);
-        Assert.Equal(expectedPasswordValidationResult, passwordValidationResult);
+        Assert.True(expectedUsernameValidationResult == usernameValidationResult,
+            $"Expected username validation result {expectedUsernameValidationResult}, actual {usernameValidationResult} for username '{username}'.");
+        Assert.True(expectedPasswordValidationResult == passwordValidationResult,
+            $"Expected password validation result {expectedPasswordValidationResult}, actual {passwordValidationResult} for username '{username}'.");
     }
 
     [Theory]

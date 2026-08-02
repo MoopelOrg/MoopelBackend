@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
@@ -34,9 +35,11 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.UserSettings.MySettings, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     [Theory]
@@ -51,9 +54,11 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.UserSettings.MySettings, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
+            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     [Theory]
@@ -70,11 +75,13 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.UserSettings.MySettings, _cancelToken);
-        UserSettings? result = await response.Content.ReadFromJsonAsync<UserSettings>(_cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+        UserSettings? result = JsonSerializer.Deserialize<UserSettings>(responseBody);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(result);
+        Assert.True(response.StatusCode == HttpStatusCode.OK,
+            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(result is not null, $"Response body could not be deserialized into a UserSettings. Body: {responseBody}");
         Assert.Equal(created.SettingId, result!.SettingId);
         Assert.Equal(created.UserId, result.UserId);
         Assert.Equal(UserSettingsTestData.InitialTimezone, result.Timezone);
@@ -96,9 +103,11 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.GetAsync(Routes.UserSettings.Generate.SettingsById(UserSettingsTestData.MissingSettingId), _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     [Theory]
@@ -116,11 +125,13 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.GetAsync(Routes.UserSettings.Generate.SettingsById(created.SettingId), _cancelToken);
-        UserSettings? result = await response.Content.ReadFromJsonAsync<UserSettings>(_cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+        UserSettings? result = JsonSerializer.Deserialize<UserSettings>(responseBody);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(result);
+        Assert.True(response.StatusCode == HttpStatusCode.OK,
+            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(result is not null, $"Response body could not be deserialized into a UserSettings. Body: {responseBody}");
         Assert.Equal(created.SettingId, result!.SettingId);
         Assert.Equal(created.UserId, result.UserId);
     }
@@ -138,9 +149,11 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.GetAsync(Routes.UserSettings.Generate.SettingsById(UserSettingsTestData.MissingSettingId), _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
+            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     [Fact]
@@ -160,11 +173,13 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await user2.GetAsync(Routes.UserSettings.Generate.SettingsById(created.SettingId), _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
             response.StatusCode == HttpStatusCode.Forbidden ||
-            response.StatusCode == HttpStatusCode.NotFound);
+            response.StatusCode == HttpStatusCode.NotFound,
+            $"Expected status {HttpStatusCode.Forbidden} or {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     #endregion
@@ -182,9 +197,11 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PutAsJsonAsync(Routes.UserSettings.UpdateSettings, UserSettingsTestData.ValidUpdateRequest, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
+            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     [Theory]
@@ -202,11 +219,13 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PutAsJsonAsync(Routes.UserSettings.UpdateSettings, UserSettingsTestData.ValidUpdateRequest, _cancelToken);
-        UserSettings? updated = await response.Content.ReadFromJsonAsync<UserSettings>(_cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+        UserSettings? updated = JsonSerializer.Deserialize<UserSettings>(responseBody);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(updated);
+        Assert.True(response.StatusCode == HttpStatusCode.OK,
+            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(updated is not null, $"Response body could not be deserialized into a UserSettings. Body: {responseBody}");
         Assert.Equal(created.SettingId, updated!.SettingId);
         Assert.Equal(created.UserId, updated.UserId);
         Assert.Equal(UserSettingsTestData.UpdatedTimezone, updated.Timezone);
@@ -226,11 +245,13 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PutAsJsonAsync(Routes.UserSettings.UpdateSettings, UserSettingsTestData.ValidUpdateRequest, _cancelToken);
-        UserSettings? updated = await response.Content.ReadFromJsonAsync<UserSettings>(_cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+        UserSettings? updated = JsonSerializer.Deserialize<UserSettings>(responseBody);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(updated);
+        Assert.True(response.StatusCode == HttpStatusCode.OK,
+            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(updated is not null, $"Response body could not be deserialized into a UserSettings. Body: {responseBody}");
         Assert.True(updated!.SettingId > 0);
         Assert.Equal(UserSettingsTestData.UpdatedTimezone, updated.Timezone);
         Assert.Equal(UserSettingsTestData.UpdatedDateFormat, updated.DateFormat);
@@ -248,12 +269,13 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
 
         HttpResponseMessage response =
             await client.PutAsJsonAsync(Routes.UserSettings.UpdateSettings, request, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        UserSettings? created = await response.Content.ReadFromJsonAsync<UserSettings>(_cancelToken);
-
-        Assert.NotNull(created);
+        // Assert
+        Assert.True(response.StatusCode == HttpStatusCode.OK,
+            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        UserSettings? created = JsonSerializer.Deserialize<UserSettings>(responseBody);
+        Assert.True(created is not null, $"Response body could not be deserialized into a UserSettings. Body: {responseBody}");
         return created!;
     }
 }

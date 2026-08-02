@@ -1,5 +1,6 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
@@ -38,7 +39,11 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             await client.GetAsync(Routes.Transaction.Generate.TransactionsByAccountId(TransactionTestData.MissingAccountId), _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
+
+            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     [Theory]
@@ -57,12 +62,15 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.GetAsync(Routes.Transaction.Generate.TransactionsByAccountId(account.AccountId), _cancelToken);
-        List<Transaction>? result = await response.Content.ReadFromJsonAsync<List<Transaction>>(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(result);
-        Assert.Contains(result, transaction => transaction.TransactionId == created.TransactionId);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.OK,
+            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        List<Transaction>? result = JsonSerializer.Deserialize<List<Transaction>>(responseBody);
+        Assert.True(result is not null, $"Response body could not be deserialized into a List<Transaction>. Body: {responseBody}");
+        Assert.Contains(result!, transaction => transaction.TransactionId == created.TransactionId);
         Assert.Contains(result, transaction => transaction.Name == TransactionTestData.TransactionName);
     }
 
@@ -81,7 +89,11 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             await client.GetAsync(Routes.Transaction.Generate.TransactionsByAccountId(TransactionTestData.MissingAccountId), _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
+
+            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     #endregion
@@ -101,7 +113,11 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             await client.PostAsJsonAsync(Routes.Transaction.CreateTransaction, TransactionTestData.ValidCreateRequest, _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
+
+            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     [Theory]
@@ -128,14 +144,16 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
                 TransactionTestData.ValidCreateRequest,
                 _cancelToken);
 
-        Transaction? created = await response.Content.ReadFromJsonAsync<Transaction>(_cancelToken);
-
         // Assert
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.Created);
-        Assert.NotNull(created);
-        Assert.True(created.TransactionId > 0);
+            response.StatusCode == HttpStatusCode.Created,
+            $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.Created}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Transaction? created = JsonSerializer.Deserialize<Transaction>(responseBody);
+        Assert.True(created is not null, $"Response body could not be deserialized into a Transaction. Body: {responseBody}");
+        Assert.True(created!.TransactionId > 0);
         Assert.Equal(account.AccountId, created.AccountId);
         Assert.Equal(TransactionTestData.TransactionName, created.Name);
         Assert.Equal(TransactionTestData.TransactionDescription, created.Description);
@@ -164,7 +182,11 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
                 _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
+
+            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     #endregion
@@ -184,7 +206,11 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             await client.GetAsync(Routes.Transaction.Generate.TransactionById(TransactionTestData.MissingTransactionId), _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
+
+            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     [Theory]
@@ -203,12 +229,15 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.GetAsync(Routes.Transaction.Generate.TransactionById(created.TransactionId), _cancelToken);
-        Transaction? result = await response.Content.ReadFromJsonAsync<Transaction>(_cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(result);
-        Assert.Equal(created.TransactionId, result.TransactionId);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.OK,
+            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Transaction? result = JsonSerializer.Deserialize<Transaction>(responseBody);
+        Assert.True(result is not null, $"Response body could not be deserialized into a Transaction. Body: {responseBody}");
+        Assert.Equal(created.TransactionId, result!.TransactionId);
         Assert.Equal(created.AccountId, result.AccountId);
         Assert.Equal(created.Name, result.Name);
         Assert.Equal(created.Description, result.Description);
@@ -229,7 +258,11 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             await client.GetAsync(Routes.Transaction.Generate.TransactionById(TransactionTestData.MissingTransactionId), _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
+
+            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     #endregion
@@ -249,7 +282,11 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             await client.DeleteAsync(Routes.Transaction.Generate.DeleteTransaction(TransactionTestData.MissingTransactionId), _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
+
+            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     [Theory]
@@ -272,10 +309,18 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             await client.GetAsync(Routes.Transaction.Generate.TransactionById(created.TransactionId), _cancelToken);
 
         // Assert
+        string deleteResponseBody = await deleteResponse.Content.ReadAsStringAsync(_cancelToken);
+
         Assert.True(
             deleteResponse.StatusCode == HttpStatusCode.OK ||
-            deleteResponse.StatusCode == HttpStatusCode.NoContent);
-        Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
+            deleteResponse.StatusCode == HttpStatusCode.NoContent,
+
+            $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.NoContent}, actual {deleteResponse.StatusCode}, endpoint {deleteResponse.RequestMessage?.RequestUri}, raw body: {deleteResponseBody}");
+        string getResponseBody = await getResponse.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(getResponse.StatusCode == HttpStatusCode.NotFound,
+
+            $"Expected status {HttpStatusCode.NotFound}, actual {getResponse.StatusCode}, endpoint {getResponse.RequestMessage?.RequestUri}, raw body: {getResponseBody}");
     }
 
     [Theory]
@@ -293,7 +338,11 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             await client.DeleteAsync(Routes.Transaction.Generate.DeleteTransaction(TransactionTestData.MissingTransactionId), _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
+
+            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     #endregion
@@ -316,7 +365,11 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
                 _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
+
+            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     [Theory]
@@ -343,14 +396,16 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
                     transaction.TransactionId.ToString()),
                 TransactionTestData.ValidItemCreateRequest,
                 _cancelToken);
-        TransactionItem? created = await response.Content.ReadFromJsonAsync<TransactionItem>(_cancelToken);
-
         // Assert
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.Created);
-        Assert.NotNull(created);
-        Assert.True(created.ItemId > 0);
+            response.StatusCode == HttpStatusCode.Created,
+            $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.Created}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        TransactionItem? created = JsonSerializer.Deserialize<TransactionItem>(responseBody);
+        Assert.True(created is not null, $"Response body could not be deserialized into a TransactionItem. Body: {responseBody}");
+        Assert.True(created!.ItemId > 0);
         Assert.Equal(transaction.TransactionId, created.TransactionId);
         Assert.Equal(TransactionTestData.TransactionItemName, created.Name);
         Assert.Equal(TransactionTestData.ValidItemCreateRequest.Amount, created.Amount);
@@ -379,7 +434,11 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
                 _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
+
+            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     #endregion
@@ -402,7 +461,11 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
                 _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
+
+            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     [Theory]
@@ -425,12 +488,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
                 Routes.Transaction.Generate.UpdateTransactionItem(created.ItemId),
                 TransactionTestData.ValidItemUpdateRequest,
                 _cancelToken);
-        TransactionItem? updated = await response.Content.ReadFromJsonAsync<TransactionItem>(_cancelToken);
-
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(updated);
-        Assert.Equal(created.ItemId, updated.ItemId);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.OK,
+            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        TransactionItem? updated = JsonSerializer.Deserialize<TransactionItem>(responseBody);
+        Assert.True(updated is not null, $"Response body could not be deserialized into a TransactionItem. Body: {responseBody}");
+        Assert.Equal(created.ItemId, updated!.ItemId);
         Assert.Equal(created.TransactionId, updated.TransactionId);
         Assert.Equal(TransactionTestData.UpdatedTransactionItemName, updated.Name);
         Assert.Equal(TransactionTestData.ValidItemUpdateRequest.Amount, updated.Amount);
@@ -454,7 +519,11 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
                 _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
+
+            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     #endregion
@@ -474,7 +543,11 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             await client.DeleteAsync(Routes.Transaction.Generate.DeleteTransactionItem(TransactionTestData.MissingTransactionItemId), _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
+
+            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     [Theory]
@@ -498,10 +571,18 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             await client.DeleteAsync(Routes.Transaction.Generate.DeleteTransactionItem(created.ItemId), _cancelToken);
 
         // Assert
+        string deleteResponseBody = await deleteResponse.Content.ReadAsStringAsync(_cancelToken);
+
         Assert.True(
             deleteResponse.StatusCode == HttpStatusCode.OK ||
-            deleteResponse.StatusCode == HttpStatusCode.NoContent);
-        Assert.Equal(HttpStatusCode.NotFound, secondDeleteResponse.StatusCode);
+            deleteResponse.StatusCode == HttpStatusCode.NoContent,
+
+            $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.NoContent}, actual {deleteResponse.StatusCode}, endpoint {deleteResponse.RequestMessage?.RequestUri}, raw body: {deleteResponseBody}");
+        string secondDeleteResponseBody = await secondDeleteResponse.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(secondDeleteResponse.StatusCode == HttpStatusCode.NotFound,
+
+            $"Expected status {HttpStatusCode.NotFound}, actual {secondDeleteResponse.StatusCode}, endpoint {secondDeleteResponse.RequestMessage?.RequestUri}, raw body: {secondDeleteResponseBody}");
     }
 
     [Theory]
@@ -519,7 +600,11 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             await client.DeleteAsync(Routes.Transaction.Generate.DeleteTransactionItem(TransactionTestData.MissingTransactionItemId), _cancelToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
+        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
+
+            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     #endregion
@@ -547,9 +632,13 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             await user2.GetAsync(Routes.Transaction.Generate.TransactionById(created.TransactionId), _cancelToken);
 
         // Assert
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
         Assert.True(
             response.StatusCode == HttpStatusCode.Forbidden ||
-            response.StatusCode == HttpStatusCode.NotFound);
+            response.StatusCode == HttpStatusCode.NotFound,
+
+            $"Expected status {HttpStatusCode.Forbidden} or {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     [Fact]
@@ -572,9 +661,13 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             await user2.GetAsync(Routes.Transaction.Generate.TransactionsByAccountId(account.AccountId), _cancelToken);
 
         // Assert
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
         Assert.True(
             response.StatusCode == HttpStatusCode.Forbidden ||
-            response.StatusCode == HttpStatusCode.NotFound);
+            response.StatusCode == HttpStatusCode.NotFound,
+
+            $"Expected status {HttpStatusCode.Forbidden} or {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     [Fact]
@@ -602,9 +695,13 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
                 _cancelToken);
 
         // Assert
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
+
         Assert.True(
             response.StatusCode == HttpStatusCode.Forbidden ||
-            response.StatusCode == HttpStatusCode.NotFound);
+            response.StatusCode == HttpStatusCode.NotFound,
+
+            $"Expected status {HttpStatusCode.Forbidden} or {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     #endregion
@@ -620,14 +717,15 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage response =
             await client.PostAsJsonAsync(Routes.Bank.CreateAccount, request, _cancelToken);
 
+        // Assert
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.Created);
-
-        BankAccount? created = await response.Content.ReadFromJsonAsync<BankAccount>(_cancelToken);
-
-        Assert.NotNull(created);
-        return created;
+            response.StatusCode == HttpStatusCode.Created,
+            $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.Created}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        BankAccount? created = JsonSerializer.Deserialize<BankAccount>(responseBody);
+        Assert.True(created is not null, $"Response body could not be deserialized into a BankAccount. Body: {responseBody}");
+        return created!;
     }
 
     private async Task<Transaction> CreateTransactionAsync(HttpClient client, int accountId)
@@ -642,14 +740,15 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage response =
             await client.PostAsJsonAsync(endpoint, TransactionTestData.ValidCreateRequest, _cancelToken);
 
+        // Assert
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.Created);
-
-        Transaction? created = await response.Content.ReadFromJsonAsync<Transaction>(_cancelToken);
-
-        Assert.NotNull(created);
-        return created;
+            response.StatusCode == HttpStatusCode.Created,
+            $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.Created}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Transaction? created = JsonSerializer.Deserialize<Transaction>(responseBody);
+        Assert.True(created is not null, $"Response body could not be deserialized into a Transaction. Body: {responseBody}");
+        return created!;
     }
 
     private async Task<TransactionItem> CreateTransactionItemAsync(HttpClient client, int accountId, int transactionId)
@@ -664,13 +763,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage response =
             await client.PostAsJsonAsync(endpoint, TransactionTestData.ValidItemCreateRequest, _cancelToken);
 
+        // Assert
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
-            response.StatusCode == HttpStatusCode.Created);
-
-        TransactionItem? created = await response.Content.ReadFromJsonAsync<TransactionItem>(_cancelToken);
-
-        Assert.NotNull(created);
-        return created;
+            response.StatusCode == HttpStatusCode.Created,
+            $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.Created}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        TransactionItem? created = JsonSerializer.Deserialize<TransactionItem>(responseBody);
+        Assert.True(created is not null, $"Response body could not be deserialized into a TransactionItem. Body: {responseBody}");
+        return created!;
     }
 }
