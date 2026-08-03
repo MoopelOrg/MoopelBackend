@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -10,6 +10,7 @@ using MoopelApi.Models.Attributes;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Requests.Creation;
 using MoopelApi.Models.Requests.Update;
+using static ApiTests.TestHelper;
 
 namespace ApiTests.Integration;
 
@@ -36,11 +37,11 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Theme.AllThemes, _cancelToken);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Fact]
@@ -58,8 +59,9 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         List<Theme>? themes = JsonSerializer.Deserialize<List<Theme>>(responseBody, _apiFactory.JsonSerializerOptions);
 
         // Assert
-        Assert.True(response.StatusCode == HttpStatusCode.OK,
-            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, response));
         Assert.True(themes is not null, $"Response body could not be deserialized into a List<Theme>. Body: {responseBody}");
     }
 
@@ -82,8 +84,9 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         Theme? theme = themes?.FirstOrDefault(t => t.ThemeId == created.ThemeId);
 
         // Assert
-        Assert.True(response.StatusCode == HttpStatusCode.OK,
-            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, response));
         Assert.True(themes is not null, $"Response body could not be deserialized into a List<Theme>. Body: {responseBody}");
         Assert.True(theme is not null, $"Response body could not be deserialized into a Theme. Body: {responseBody}");
         Assert.Equal(created.ThemeId, theme.ThemeId);
@@ -106,11 +109,11 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(endpoint, _cancelToken);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {endpoint}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Fact]
@@ -133,8 +136,9 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         Theme? result = JsonSerializer.Deserialize<Theme>(responseBody, _apiFactory.JsonSerializerOptions);
 
         // Assert
-        Assert.True(response.StatusCode == HttpStatusCode.OK,
-            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, response));
         Assert.True(result is not null, $"Response body could not be deserialized into a Theme. Body: {responseBody}");
         Assert.Equal(created.ThemeId, result.ThemeId);
         Assert.Equal(created.Name, result.Name);
@@ -153,11 +157,11 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.GetAsync(Routes.Theme.Generate.ThemeById(ThemeTestData.MissingThemeId), _cancelToken);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
-            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
     [Fact]
@@ -179,11 +183,11 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         Theme created = await CreateThemeAsync(user1, request);
         HttpResponseMessage response =
             await user2.GetAsync(Routes.Theme.Generate.ThemeById(created.ThemeId), _cancelToken);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.True(response.StatusCode == HttpStatusCode.OK,
-            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, response));
     }
 
     #endregion
@@ -201,11 +205,11 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PostAsJsonAsync(Routes.Theme.CreateTheme, ThemeTestData.ValidCreateRequest, _cancelToken);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Theory]
@@ -226,8 +230,9 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         Theme? created = JsonSerializer.Deserialize<Theme>(responseBody, _apiFactory.JsonSerializerOptions);
 
         // Assert
-        Assert.True(response.StatusCode == HttpStatusCode.Created,
-            $"Expected status {HttpStatusCode.Created}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Created,
+            userMessage: await TMsg(HttpStatusCode.Created, response));
         Assert.True(created is not null, $"Response body could not be deserialized into a Theme. Body: {responseBody}");
         Assert.NotNull(request);
         Assert.True(created.ThemeId > 0);
@@ -250,11 +255,11 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PatchAsJsonAsync(Routes.Theme.Generate.UpdateTheme(ThemeTestData.MissingThemeId), ThemeTestData.ValidUpdateRequest, _cancelToken);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Theory]
@@ -277,8 +282,9 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         Theme? updated = JsonSerializer.Deserialize<Theme>(updateResponseBody, _apiFactory.JsonSerializerOptions);
 
         // Assert
-        Assert.True(updateResponse.StatusCode == HttpStatusCode.OK,
-            $"Expected status {HttpStatusCode.OK}, actual {updateResponse.StatusCode}, endpoint {updateResponse.RequestMessage?.RequestUri}, raw body: {updateResponseBody}");
+        Assert.True(
+            condition: updateResponse.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, updateResponse));
         Assert.True(updated is not null, $"Response body could not be deserialized into a Theme. Body: {updateResponseBody}");
         Assert.NotNull(createRequest);
         Assert.NotNull(updateRequest);
@@ -302,11 +308,11 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PatchAsJsonAsync(Routes.Theme.Generate.UpdateTheme(ThemeTestData.MissingThemeId), updateRequest, _cancelToken);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
-            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
     #endregion
@@ -318,8 +324,9 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.True(response.StatusCode == HttpStatusCode.Created,
-            $"Expected status {HttpStatusCode.Created}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Created,
+            userMessage: await TMsg(HttpStatusCode.Created, response));
         Theme? created = JsonSerializer.Deserialize<Theme>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(created is not null, $"Response body could not be deserialized into a Theme. Body: {responseBody}");
 

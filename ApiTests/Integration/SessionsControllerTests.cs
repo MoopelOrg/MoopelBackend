@@ -8,6 +8,7 @@ using MoopelApi;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Requests;
 using MoopelApi.Models.Results;
+using static ApiTests.TestHelper;
 
 namespace ApiTests.Integration;
 
@@ -35,11 +36,10 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage response = await client.GetAsync(Routes.Session.MySessions, _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
-        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
-
-            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Theory]
@@ -58,8 +58,9 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         // Assert
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
-        Assert.True(response.StatusCode == HttpStatusCode.OK,
-            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, response));
         List<Session>? sessions = JsonSerializer.Deserialize<List<Session>>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(sessions is not null, $"Response body could not be deserialized into a List<Session>. Body: {responseBody}");
         Assert.NotEmpty(sessions!);
@@ -80,11 +81,10 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage response = await client.GetAsync(Routes.Session.Generate.SessionById(1), _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
-        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
-
-            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Theory]
@@ -106,15 +106,17 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         Session? firstSession = sessions?.FirstOrDefault();
         HttpResponseMessage response =
             await client.GetAsync(Routes.Session.Generate.SessionById(firstSession?.SessionId ?? 0), _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.True(mySessionsResponse.StatusCode == HttpStatusCode.OK,
-            $"Expected status {HttpStatusCode.OK}, actual {mySessionsResponse.StatusCode}, endpoint {mySessionsResponse.RequestMessage?.RequestUri}, raw body: {mySessionsResponseBody}");
+        Assert.True(
+            condition: mySessionsResponse.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, mySessionsResponse));
         Assert.True(sessions is not null, $"Response body could not be deserialized into a List<Session>. Body: {mySessionsResponseBody}");
         Assert.NotEmpty(sessions!);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.OK,
-            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, response));
         Session? result = JsonSerializer.Deserialize<Session>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(result is not null, $"Response body could not be deserialized into a Session. Body: {responseBody}");
         Assert.Equal(firstSession!.SessionId, result!.SessionId);
@@ -134,11 +136,10 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage response = await client.GetAsync(Routes.Session.Generate.SessionById(9999), _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
-        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
-
-            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
     [Fact]
@@ -162,13 +163,14 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         Session? session = user1Sessions?.FirstOrDefault();
         HttpResponseMessage response =
             await user2.GetAsync(Routes.Session.Generate.SessionById(session?.SessionId ?? 0), _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.True(user1SessionsResponse.StatusCode == HttpStatusCode.OK,
-            $"Expected status {HttpStatusCode.OK}, actual {user1SessionsResponse.StatusCode}, endpoint {user1SessionsResponse.RequestMessage?.RequestUri}, raw body: {user1SessionsResponseBody}");
+        Assert.True(
+            condition: user1SessionsResponse.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, user1SessionsResponse));
         Assert.True(user1Sessions is not null, $"Response body could not be deserialized into a List<Session>. Body: {user1SessionsResponseBody}");
         Assert.NotEmpty(user1Sessions!);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(
             response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound,
@@ -191,11 +193,10 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
             await client.PostAsync(Routes.Session.Generate.RevokeSession(1), null, _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
-        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
-
-            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Theory]
@@ -225,29 +226,30 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
 
         HttpResponseMessage sessionsResponse =
             await primaryClient.GetAsync(Routes.Session.MySessions, _cancelToken);
+        string sessionsResponseBody = await sessionsResponse.Content.ReadAsStringAsync(_cancelToken);
 
         // Act
-        string sessionsResponseBody = await sessionsResponse.Content.ReadAsStringAsync(_cancelToken);
         List<Session>? sessions = JsonSerializer.Deserialize<List<Session>>(sessionsResponseBody, _apiFactory.JsonSerializerOptions);
         Session? sessionToRevoke = sessions?.LastOrDefault();
         HttpResponseMessage revokeResponse =
             await primaryClient.PostAsync(Routes.Session.Generate.RevokeSession(sessionToRevoke?.SessionId ?? 0), null, _cancelToken);
+        string revokeResponseBody = await revokeResponse.Content.ReadAsStringAsync(_cancelToken);
         HttpResponseMessage getResponse =
             await primaryClient.GetAsync(Routes.Session.Generate.SessionById(sessionToRevoke?.SessionId ?? 0), _cancelToken);
 
         // Assert
-        Assert.True(sessionsResponse.StatusCode == HttpStatusCode.OK,
-            $"Expected status {HttpStatusCode.OK}, actual {sessionsResponse.StatusCode}, endpoint {sessionsResponse.RequestMessage?.RequestUri}, raw body: {sessionsResponseBody}");
+        Assert.True(
+            condition: sessionsResponse.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, sessionsResponse));
         Assert.True(sessions is not null, $"Response body could not be deserialized into a List<Session>. Body: {sessionsResponseBody}");
         Assert.NotEmpty(sessions!);
-        string revokeResponseBody = await revokeResponse.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(
             revokeResponse.StatusCode == HttpStatusCode.OK ||
             revokeResponse.StatusCode == HttpStatusCode.NoContent,
             $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.NoContent}, actual {revokeResponse.StatusCode}, endpoint {revokeResponse.RequestMessage?.RequestUri}, raw body: {revokeResponseBody}");
-        string getResponseBody = await getResponse.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(getResponse.StatusCode == HttpStatusCode.NotFound,
-            $"Expected status {HttpStatusCode.NotFound}, actual {getResponse.StatusCode}, endpoint {getResponse.RequestMessage?.RequestUri}, raw body: {getResponseBody}");
+        Assert.True(
+            condition: getResponse.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, getResponse));
     }
 
     [Theory]
@@ -265,11 +267,10 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
             await client.PostAsync(Routes.Session.Generate.RevokeSession(9999), null, _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
-        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
-
-            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
     [Fact]
@@ -293,13 +294,14 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         Session? session = user1Sessions?.FirstOrDefault();
         HttpResponseMessage response =
             await user2.PostAsync(Routes.Session.Generate.RevokeSession(session?.SessionId ?? 0), null, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.True(user1SessionsResponse.StatusCode == HttpStatusCode.OK,
-            $"Expected status {HttpStatusCode.OK}, actual {user1SessionsResponse.StatusCode}, endpoint {user1SessionsResponse.RequestMessage?.RequestUri}, raw body: {user1SessionsResponseBody}");
+        Assert.True(
+            condition: user1SessionsResponse.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, user1SessionsResponse));
         Assert.True(user1Sessions is not null, $"Response body could not be deserialized into a List<Session>. Body: {user1SessionsResponseBody}");
         Assert.NotEmpty(user1Sessions!);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(
             response.StatusCode == HttpStatusCode.Forbidden ||
             response.StatusCode == HttpStatusCode.NotFound,
@@ -322,11 +324,10 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
             await client.PostAsync(Routes.Session.RevokeAll, null, _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
-        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
-
-            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Theory]
@@ -354,32 +355,33 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
 
         HttpResponseMessage beforeResponse =
             await client1.GetAsync(Routes.Session.MySessions, _cancelToken);
+        string beforeResponseBody = await beforeResponse.Content.ReadAsStringAsync(_cancelToken);
 
         // Act
-        string beforeResponseBody = await beforeResponse.Content.ReadAsStringAsync(_cancelToken);
         List<Session>? beforeSessions = JsonSerializer.Deserialize<List<Session>>(beforeResponseBody, _apiFactory.JsonSerializerOptions);
         HttpResponseMessage revokeAllResponse =
             await client1.PostAsync(Routes.Session.RevokeAll, null, _cancelToken);
+        string revokeAllResponseBody = await revokeAllResponse.Content.ReadAsStringAsync(_cancelToken);
         HttpResponseMessage afterResponse =
             await client1.GetAsync(Routes.Session.MySessions, _cancelToken);
 
         HttpResponseMessage oldOtherSessionRequest =
             await client2.GetAsync(Routes.Session.MySessions, _cancelToken);
+        string oldOtherSessionRequestBody = await oldOtherSessionRequest.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        Assert.True(beforeResponse.StatusCode == HttpStatusCode.OK,
-            $"Expected status {HttpStatusCode.OK}, actual {beforeResponse.StatusCode}, endpoint {beforeResponse.RequestMessage?.RequestUri}, raw body: {beforeResponseBody}");
+        Assert.True(
+            condition: beforeResponse.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, beforeResponse));
         Assert.True(beforeSessions is not null, $"Response body could not be deserialized into a List<Session>. Body: {beforeResponseBody}");
         Assert.True(beforeSessions!.Count >= 2);
-        string revokeAllResponseBody = await revokeAllResponse.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(
             revokeAllResponse.StatusCode == HttpStatusCode.OK ||
             revokeAllResponse.StatusCode == HttpStatusCode.NoContent,
             $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.NoContent}, actual {revokeAllResponse.StatusCode}, endpoint {revokeAllResponse.RequestMessage?.RequestUri}, raw body: {revokeAllResponseBody}");
-        string afterResponseBody = await afterResponse.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(afterResponse.StatusCode == HttpStatusCode.OK,
-            $"Expected status {HttpStatusCode.OK}, actual {afterResponse.StatusCode}, endpoint {afterResponse.RequestMessage?.RequestUri}, raw body: {afterResponseBody}");
-        string oldOtherSessionRequestBody = await oldOtherSessionRequest.Content.ReadAsStringAsync(_cancelToken);
+        Assert.True(
+            condition: afterResponse.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, afterResponse));
         Assert.True(
             oldOtherSessionRequest.StatusCode == HttpStatusCode.Unauthorized ||
             oldOtherSessionRequest.StatusCode == HttpStatusCode.Forbidden,

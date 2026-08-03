@@ -9,6 +9,7 @@ using MoopelApi;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Enums;
 using MoopelApi.Models.Requests.Creation;
+using static ApiTests.TestHelper;
 
 namespace ApiTests.Integration;
 
@@ -35,9 +36,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             await client.GetAsync(Routes.WorkItem.Generate.WorkItemsByGroupId(WorkItemTestData.MissingGroupId), _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Fact]
@@ -52,9 +53,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             await client.GetAsync(Routes.WorkItem.Generate.WorkItemById(WorkItemTestData.MissingWorkItemId), _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Fact]
@@ -72,9 +73,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
                 _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Fact]
@@ -92,9 +93,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
                 _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Fact]
@@ -109,9 +110,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             await client.DeleteAsync(Routes.WorkItem.Generate.DeleteWorkItem(WorkItemTestData.MissingWorkItemId), _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Fact]
@@ -126,9 +127,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             await client.PostAsJsonAsync(Routes.WorkItem.AddLink, WorkItemTestData.ValidLinkRequest, _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Fact]
@@ -143,9 +144,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             await client.PostAsJsonAsync(Routes.WorkItem.RemoveLink, WorkItemTestData.ValidLinkRequest, _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected status {HttpStatusCode.Unauthorized}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Fact]
@@ -164,8 +165,8 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode} when filtering work items without authentication.");
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Theory]
@@ -185,8 +186,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.OK,
-            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, response));
         List<WorkItem>? result = JsonSerializer.Deserialize<List<WorkItem>>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(result is not null, $"Response body could not be deserialized into a List<WorkItem>. Body: {responseBody}");
     }
@@ -205,9 +207,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             await client.GetAsync(Routes.WorkItem.Generate.WorkItemsByGroupId(WorkItemTestData.MissingGroupId), _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
-            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
     [Theory]
@@ -241,8 +243,8 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.OK,
-            $"Expected {HttpStatusCode.OK} but got {response.StatusCode} when filtering work items by type.");
+            condition: response.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, response));
         Assert.True(items is not null, "Expected a work item list when filtering by an existing type.");
         Assert.True(
             items!.Any(item => item.ItemId == task.ItemId),
@@ -270,8 +272,8 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.BadRequest,
-            $"Expected {HttpStatusCode.BadRequest} but got {response.StatusCode} when filtering work items with an invalid type.");
+            condition: response.StatusCode == HttpStatusCode.BadRequest,
+            userMessage: await TMsg(HttpStatusCode.BadRequest, response));
     }
 
     [Theory]
@@ -321,9 +323,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
                 _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
-            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
     [Theory]
@@ -344,8 +346,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.OK,
-            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, response));
         WorkItem? result = JsonSerializer.Deserialize<WorkItem>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(result is not null, $"Response body could not be deserialized into a WorkItem. Body: {responseBody}");
         Assert.Equal(created.ItemId, result!.ItemId);
@@ -366,9 +369,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             await client.GetAsync(Routes.WorkItem.Generate.WorkItemById(WorkItemTestData.MissingWorkItemId), _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
-            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
     [Theory]
@@ -392,8 +395,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.OK,
-            $"Expected status {HttpStatusCode.OK}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, response));
         WorkItem? updated = JsonSerializer.Deserialize<WorkItem>(responseBody, _apiFactory.JsonSerializerOptions);
         Assert.True(updated is not null, $"Response body could not be deserialized into a WorkItem. Body: {responseBody}");
         Assert.Equal(created.ItemId, updated!.ItemId);
@@ -417,9 +421,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
                 _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
-            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
     [Theory]
@@ -448,9 +452,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             deleteResponse.StatusCode == HttpStatusCode.NoContent,
             $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.NoContent}, actual {deleteResponse.StatusCode}, endpoint {deleteResponse.RequestMessage?.RequestUri}, raw body: {deleteResponseBody}");
 
-        string getResponseBody = await getResponse.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(getResponse.StatusCode == HttpStatusCode.NotFound,
-            $"Expected status {HttpStatusCode.NotFound}, actual {getResponse.StatusCode}, endpoint {getResponse.RequestMessage?.RequestUri}, raw body: {getResponseBody}");
+        Assert.True(
+            condition: getResponse.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, getResponse));
     }
 
     [Theory]
@@ -467,9 +471,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             await client.DeleteAsync(Routes.WorkItem.Generate.DeleteWorkItem(WorkItemTestData.MissingWorkItemId), _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
-            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
     [Fact]
@@ -547,9 +551,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PostAsJsonAsync(Routes.WorkItem.AddLink, request, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Created ||
@@ -571,9 +575,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             await client.PostAsJsonAsync(Routes.WorkItem.AddLink, WorkItemTestData.MissingLinkRequest, _cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(response.StatusCode == HttpStatusCode.NotFound,
-            $"Expected status {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
     [Theory]
@@ -598,6 +602,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage addResponse =
             await client.PostAsJsonAsync(Routes.WorkItem.AddLink, addRequest, _cancelToken);
+        string addResponseBody = await addResponse.Content.ReadAsStringAsync(_cancelToken);
 
         WorkItemLinkRequest removeRequest = new()
         {
@@ -607,15 +612,14 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         HttpResponseMessage removeResponse =
             await client.PostAsJsonAsync(Routes.WorkItem.RemoveLink, removeRequest, _cancelToken);
+        string removeResponseBody = await removeResponse.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        string addResponseBody = await addResponse.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(
             addResponse.StatusCode == HttpStatusCode.OK ||
             addResponse.StatusCode == HttpStatusCode.Created ||
             addResponse.StatusCode == HttpStatusCode.NoContent,
             $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.Created} or {HttpStatusCode.NoContent}, actual {addResponse.StatusCode}, endpoint {addResponse.RequestMessage?.RequestUri}, raw body: {addResponseBody}");
-        string removeResponseBody = await removeResponse.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(
             removeResponse.StatusCode == HttpStatusCode.OK ||
             removeResponse.StatusCode == HttpStatusCode.NoContent,
@@ -629,9 +633,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
                 Routes.Group.CreateGroup,
                 new GroupCreateRequest { Name = name },
                 _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Created,
@@ -657,9 +661,9 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         HttpResponseMessage response =
             await client.PostAsJsonAsync(Routes.WorkItem.Generate.CreateWorkItem(groupId), request, _cancelToken);
+        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(
             response.StatusCode == HttpStatusCode.OK ||
             response.StatusCode == HttpStatusCode.Created,

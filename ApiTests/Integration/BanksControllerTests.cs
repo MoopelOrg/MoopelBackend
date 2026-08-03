@@ -9,6 +9,7 @@ using MoopelApi.Models.Attributes;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Requests.Creation;
 using MoopelApi.Models.Requests.Update;
+using static ApiTests.TestHelper;
 
 namespace ApiTests.Integration;
 
@@ -35,12 +36,11 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Bank.MyAccounts, _cancelToken);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode}. Body: {responseBody}");
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Fact]
@@ -60,8 +60,8 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.OK,
-            $"Expected {HttpStatusCode.OK} but got {response.StatusCode}. Body: {responseBody}");
+            condition: response.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, response));
         Assert.True(accounts is not null, $"Response body could not be deserialized into a list. Body: {responseBody}");
         Assert.Empty(accounts);
     }
@@ -88,8 +88,8 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.OK,
-            $"Expected {HttpStatusCode.OK} but got {response.StatusCode}. Body: {responseBody}");
+            condition: response.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, response));
         Assert.True(accounts is not null, $"Response body could not be deserialized into a list. Body: {responseBody}");
         Assert.NotEmpty(accounts);
 
@@ -122,8 +122,8 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            response.StatusCode == expectedResult,
-            $"Expected {expectedResult} but got {response.StatusCode}. Body: {responseBody}");
+            condition: response.StatusCode == expectedResult,
+            userMessage: await TMsg(expectedResult, response));
 
         Assert.True(result is not null, $"Response body could not be deserialized into a BankAccount. Body: {responseBody}");
         Assert.NotNull(createRequest);
@@ -165,8 +165,8 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
             created is not null,
             $"Failed to create bank account. Status: {createResponse.StatusCode}, Body: {createBody}");
         Assert.True(
-            response.StatusCode == HttpStatusCode.OK,
-            $"Expected {HttpStatusCode.OK} but got {response.StatusCode}. Endpoint: {endpoint}, Body: {responseBody}");
+            condition: response.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, response));
         Assert.True(
             result is not null,
             $"Response body could not be deserialized into a BankAccount. Body: {responseBody}");
@@ -186,12 +186,11 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         string endpoint = Routes.Bank.Generate.AccountById(99999999);
         HttpResponseMessage response = await client.GetAsync(endpoint, _cancelToken);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.NotFound,
-            $"Expected {HttpStatusCode.NotFound} but got {response.StatusCode}. Endpoint: {endpoint}, Body: {responseBody}");
+            condition: response.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
     #endregion
@@ -221,8 +220,8 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            updateResponse.StatusCode == HttpStatusCode.OK,
-            $"Expected {HttpStatusCode.OK} but got {updateResponse.StatusCode}. Endpoint: {updateEndpoint}, Body: {updateBody}");
+            condition: updateResponse.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, updateResponse));
         Assert.True(updated is not null, $"Response body could not be deserialized into a BankAccount. Body: {updateBody}");
         Assert.NotNull(updateRequest);
         Assert.Equal(updateRequest.Name, updated.Name);
@@ -254,16 +253,14 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
 
         string getEndpoint = Routes.Bank.Generate.AccountById(created?.AccountId ?? 0);
         HttpResponseMessage getResponse = await client.GetAsync(getEndpoint, _cancelToken);
-        string deleteBody = await deleteResponse.Content.ReadAsStringAsync(_cancelToken);
-        string getBody = await getResponse.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
-            deleteResponse.StatusCode == HttpStatusCode.NoContent,
-            $"Expected {HttpStatusCode.NoContent} but got {deleteResponse.StatusCode}. Endpoint: {deleteEndpoint}, Body: {deleteBody}");
+            condition: deleteResponse.StatusCode == HttpStatusCode.NoContent,
+            userMessage: await TMsg(HttpStatusCode.NoContent, deleteResponse));
         Assert.True(
-            getResponse.StatusCode == HttpStatusCode.NotFound,
-            $"Expected {HttpStatusCode.NotFound} but got {getResponse.StatusCode}. Endpoint: {getEndpoint}, Body: {getBody}");
+            condition: getResponse.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, getResponse));
     }
 
     #endregion
@@ -291,13 +288,12 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
 
         string getEndpoint = Routes.Bank.Generate.AccountById(created?.AccountId ?? 0);
         HttpResponseMessage response = await userClient2.GetAsync(getEndpoint, _cancelToken);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(created is not null, $"Failed to create bank account for user 1. Status: {createResponse.StatusCode}");
         Assert.True(
-            response.StatusCode == HttpStatusCode.Forbidden,
-            $"Expected {HttpStatusCode.Forbidden} but got {response.StatusCode}. Endpoint: {getEndpoint}, Body: {responseBody}");
+            condition: response.StatusCode == HttpStatusCode.Forbidden,
+            userMessage: await TMsg(HttpStatusCode.Forbidden, response));
     }
 
     #endregion

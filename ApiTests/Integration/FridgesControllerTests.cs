@@ -8,6 +8,7 @@ using MoopelApi;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Requests.Creation;
 using MoopelApi.Models.Requests.Update;
+using static ApiTests.TestHelper;
 
 namespace ApiTests.Integration;
 
@@ -35,12 +36,11 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Fridge.MyFridges, _cancelToken);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode}. Body: {responseBody}");
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Theory]
@@ -60,8 +60,8 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.OK,
-            $"Expected {HttpStatusCode.OK} but got {response.StatusCode}. Body: {responseBody}");
+            condition: response.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, response));
         Assert.True(fridges is not null, $"Response body could not be deserialized into a list. Body: {responseBody}");
     }
 
@@ -77,12 +77,11 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Fridge.Generate.FridgeById(FridgeTestData.ArbitraryFridgeId), _cancelToken);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode}. Body: {responseBody}");
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Theory]
@@ -111,8 +110,8 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         // Assert
         Assert.True(created is not null, $"Failed to create fridge. Status: {createResponse.StatusCode}, Body: {createBody}");
         Assert.True(
-            response.StatusCode == HttpStatusCode.OK,
-            $"Expected {HttpStatusCode.OK} but got {response.StatusCode}. Endpoint: {endpoint}, Body: {responseBody}");
+            condition: response.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, response));
         Assert.True(result is not null, $"Response body could not be deserialized into a Fridge. Body: {responseBody}");
         Assert.Equal(created.FridgeId, result.FridgeId);
         Assert.Equal(created.Name, result.Name);
@@ -130,12 +129,11 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Fridge.Generate.FridgeById(FridgeTestData.NonExistentFridgeId), _cancelToken);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.NotFound,
-            $"Expected {HttpStatusCode.NotFound} but got {response.StatusCode}. Body: {responseBody}");
+            condition: response.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
     #endregion
@@ -154,12 +152,11 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PostAsJsonAsync(Routes.Fridge.CreateFridge, request, _cancelToken);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode}. Body: {responseBody}");
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Theory]
@@ -215,14 +212,13 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage updateResponse =
             await client.PutAsJsonAsync(Routes.Fridge.Generate.UpdateFridge(created.FridgeId), updateRequest, _cancelToken);
-
         string updateBody = await updateResponse.Content.ReadAsStringAsync(_cancelToken);
         Fridge? updated = await updateResponse.Content.ReadFromJsonAsync<Fridge>(_cancelToken);
 
         // Assert
         Assert.True(
-            updateResponse.StatusCode == HttpStatusCode.OK,
-            $"Expected {HttpStatusCode.OK} but got {updateResponse.StatusCode}. Body: {updateBody}");
+            condition: updateResponse.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, updateResponse));
         Assert.True(updated is not null, $"Response body could not be deserialized into a Fridge. Body: {updateBody}");
         Assert.NotNull(updateRequest);
         Assert.NotNull(createRequest);
@@ -245,12 +241,11 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PutAsJsonAsync(Routes.Fridge.Generate.UpdateFridge(FridgeTestData.NonExistentFridgeId), updateRequest, _cancelToken);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.NotFound,
-            $"Expected {HttpStatusCode.NotFound} but got {response.StatusCode}. Body: {responseBody}");
+            condition: response.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
     #endregion
@@ -281,10 +276,8 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage deleteResponse =
             await client.DeleteAsync(Routes.Fridge.Generate.DeleteFridge(created.FridgeId), _cancelToken);
         string deleteBody = await deleteResponse.Content.ReadAsStringAsync(_cancelToken);
-
         HttpResponseMessage getResponse =
             await client.GetAsync(Routes.Fridge.Generate.FridgeById(created.FridgeId), _cancelToken);
-        string getBody = await getResponse.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
@@ -292,8 +285,8 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
             $"Expected {HttpStatusCode.OK} or {HttpStatusCode.NoContent} but got {deleteResponse.StatusCode}. Body: {deleteBody}");
 
         Assert.True(
-            getResponse.StatusCode == HttpStatusCode.NotFound,
-            $"Expected {HttpStatusCode.NotFound} but got {getResponse.StatusCode}. Body: {getBody}");
+            condition: getResponse.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, getResponse));
     }
 
     [Theory]
@@ -309,12 +302,11 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.DeleteAsync(Routes.Fridge.Generate.DeleteFridge(FridgeTestData.NonExistentFridgeId), _cancelToken);
-        string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.NotFound,
-            $"Expected {HttpStatusCode.NotFound} but got {response.StatusCode}. Body: {responseBody}");
+            condition: response.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
     #endregion
@@ -337,8 +329,8 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
             _cancelToken);
 
         Assert.True(
-            response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode} when creating a fridge item without authentication.");
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     #endregion
@@ -357,8 +349,8 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
             _cancelToken);
 
         Assert.True(
-            response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode} when updating a fridge item without authentication.");
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     #endregion
@@ -376,8 +368,8 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
             _cancelToken);
 
         Assert.True(
-            response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode} when deleting a fridge item without authentication.");
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     #endregion

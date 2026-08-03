@@ -1,9 +1,10 @@
-using System.Net;
+﻿using System.Net;
 
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 
 using MoopelApi;
+using static ApiTests.TestHelper;
 
 namespace ApiTests.Integration;
 
@@ -33,8 +34,8 @@ public class ImageControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode} when uploading without authentication.");
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Fact]
@@ -55,8 +56,8 @@ public class ImageControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.BadRequest,
-            $"Expected {HttpStatusCode.BadRequest} but got {response.StatusCode} when uploading an empty image file.");
+            condition: response.StatusCode == HttpStatusCode.BadRequest,
+            userMessage: await TMsg(HttpStatusCode.BadRequest, response));
     }
 
     #endregion
@@ -76,8 +77,8 @@ public class ImageControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode} when retrieving an image without authentication.");
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Fact]
@@ -94,8 +95,8 @@ public class ImageControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.NotFound,
-            $"Expected {HttpStatusCode.NotFound} but got {response.StatusCode} when retrieving a missing image.");
+            condition: response.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
     #endregion
@@ -115,8 +116,8 @@ public class ImageControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected {HttpStatusCode.Unauthorized} but got {response.StatusCode} when retrieving an image thumbnail without authentication.");
+            condition: response.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
     [Fact]
@@ -133,8 +134,8 @@ public class ImageControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.NotFound,
-            $"Expected {HttpStatusCode.NotFound} but got {response.StatusCode} when retrieving a missing image thumbnail.");
+            condition: response.StatusCode == HttpStatusCode.NotFound,
+            userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
     #endregion

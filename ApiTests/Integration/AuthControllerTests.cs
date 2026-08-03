@@ -9,6 +9,7 @@ using MoopelApi;
 using MoopelApi.Models.Dto.Read;
 using MoopelApi.Models.Requests;
 using MoopelApi.Models.Results;
+using static ApiTests.TestHelper;
 
 namespace ApiTests.Integration;
 
@@ -225,8 +226,8 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            loginResponse.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected {HttpStatusCode.Unauthorized} but got {loginResponse.StatusCode} for username '{username}' with wrong password.");
+            condition: loginResponse.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, loginResponse));
         Assert.True(loginResult is not null, "Login response could not be deserialized into a LoginResult.");
         Assert.Null(loginResult.User);
         Assert.True(string.IsNullOrWhiteSpace(loginResult.Token));
@@ -256,8 +257,8 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            loginResponse.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected {HttpStatusCode.Unauthorized} but got {loginResponse.StatusCode} for non-existent username '{username}'.");
+            condition: loginResponse.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, loginResponse));
         Assert.True(loginResult is not null, "Login response could not be deserialized into a LoginResult.");
         Assert.Null(loginResult.User);
         Assert.True(string.IsNullOrWhiteSpace(loginResult.Token));
@@ -326,8 +327,8 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            meResponse.StatusCode == HttpStatusCode.OK,
-            $"Expected {HttpStatusCode.OK} but got {meResponse.StatusCode} for username '{username}'.");
+            condition: meResponse.StatusCode == HttpStatusCode.OK,
+            userMessage: await TMsg(HttpStatusCode.OK, meResponse));
         Assert.True(user is not null, $"Registration failed for username '{username}'.");
         Assert.True(loginResult.User is not null, $"Login result had no user for '{username}'.");
         Assert.True(meResult is not null, $"/me response could not be deserialized for username '{username}'.");
@@ -350,8 +351,8 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            meResponse.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected {HttpStatusCode.Unauthorized} but got {meResponse.StatusCode} when no bearer token was provided.");
+            condition: meResponse.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, meResponse));
     }
 
     [Fact]
@@ -368,8 +369,8 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            meResponse.StatusCode == HttpStatusCode.Unauthorized,
-            $"Expected {HttpStatusCode.Unauthorized} but got {meResponse.StatusCode} when an invalid bearer token was provided.");
+            condition: meResponse.StatusCode == HttpStatusCode.Unauthorized,
+            userMessage: await TMsg(HttpStatusCode.Unauthorized, meResponse));
     }
 
     #endregion
