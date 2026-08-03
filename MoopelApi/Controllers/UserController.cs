@@ -67,6 +67,12 @@ public class UserController : ControllerBase
                 context, username);
             return NotFound();
         }
+        else if (user.UserId != context.UserId)
+        {
+            _logger.LogWarning("User[{ContextUserId}] attempted to get user[{TargetUserId}] from context[{Context}]",
+                context.UserId, user.UserId, context);
+            return Forbid();
+        }
 
         return Ok(user);
     }
