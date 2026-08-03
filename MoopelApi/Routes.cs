@@ -45,6 +45,7 @@ public static class Routes
             public static string UserById(int userId) => User.UserById.Replace("{userId:int}", userId.ToString());
             public static string UserByName(string username) => User.UserByName.Replace("{username}", Uri.EscapeDataString(username));
             public static string DisableUser(int userId) => User.DisableUser.Replace("{userId:int}", userId.ToString());
+            public static string UpdateUser(int userId) => User.UpdateUser.Replace("{userId:int}", userId.ToString());
         }
     }
 

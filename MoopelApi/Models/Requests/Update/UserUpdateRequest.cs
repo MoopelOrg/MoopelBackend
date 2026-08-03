@@ -2,4 +2,5 @@
 
 public record UserUpdateRequest
 {
+    public string? Email { get; init; }
 }

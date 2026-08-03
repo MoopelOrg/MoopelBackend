@@ -78,12 +78,19 @@ public class UserController : ControllerBase
     }
 
     [HttpPatch(Routes.User.UpdateUser)]
-    public async Task<ActionResult<UserRead>> UpdateUser([FromBody] UserUpdateRequest updateRequest)
+    public async Task<ActionResult<UserRead>> UpdateUser(int userId, [FromBody] UserUpdateRequest updateRequest)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
         User contextUser = await _contextService.GetContextUser(HttpContext);
 
         _logger.LogInformation("Received request to update user[{Id}] from context[{Context}]", contextUser.UserId, context);
+
+        if (context.UserId != userId)
+        {
+            _logger.LogWarning("User[{ContextUserId}] attempted to update user[{TargetUserId}] from context[{Context}]",
+                context.UserId, userId, context);
+            return Forbid();
+        }
 
         User updatedUser = await _userService.UpdateUser(updateRequest, contextUser.UserId)
             ?? throw new($"Could not find user to update [{contextUser.UserId}]");

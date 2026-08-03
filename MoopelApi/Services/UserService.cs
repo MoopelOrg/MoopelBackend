@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 
+using MoopelApi.Exceptions;
 using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
@@ -180,7 +181,73 @@ public class UserService : IUserService
 
     public async Task<User?> UpdateUser(UserUpdateRequest updateRequest, int userId)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(updateRequest);
+
+        _logger.LogInformation("Updating user[{Id}]", userId);
+
+        SqlCommand? command = null;
+        SqlTransaction? transaction = null;
+
+        User? user = await GetUserFromUserId(userId)
+            ?? throw new NotFoundException($"User [{userId}] was not found.");
+
+        try
+        {
+            await using SqlConnection connection = new(_connection.ConnectionString);
+            await connection.OpenAsync();
+
+            transaction = connection.BeginTransaction();
+
+            command = connection.CreateCommand();
+            command.Transaction = transaction;
+
+            command.CommandText =
+                $"""
+                    UPDATE {UsersTable.SelectName}
+                    SET {UserEmailField.SelectName} = @Email
+                    {UsersTable.GenerateOutput()}
+                    WHERE {UserIdField.SelectName} = @UserId   
+                 """;
+
+            command.Parameters.Add(UserEmailField.GenerateParameter("@Email", updateRequest.Email ?? user.Email));
+            command.Parameters.Add(UserIdField.GenerateParameter("@UserId", userId));
+
+            User updatedUser;
+
+            await using (SqlDataReader reader = await command.ExecuteReaderAsync())
+            {
+                if (await reader.ReadAsync() is false)
+                {
+                    throw new InvalidOperationException("Failed to create note.");
+                }
+
+                updatedUser = DtoReaders.ReadUser(reader);
+            }
+
+            await transaction.CommitAsync();
+
+            return updatedUser;
+        }
+        catch (Exception ex)
+        {
+            if (transaction is not null)
+            {
+                await transaction.RollbackAsync();
+            }
+
+            string logErrorMessage = FormatHelper.FormatErrorLogMessage(
+                "Updating User",
+                ex.Message,
+                [
+                    ("UserId", userId),
+                    ("UpdateRequest", updateRequest)
+                ],
+                command);
+
+            _logger.LogCritical(ex, "{Error}", logErrorMessage);
+
+            throw;
+        }
     }
 
     public async Task DisableUser(int userId)
