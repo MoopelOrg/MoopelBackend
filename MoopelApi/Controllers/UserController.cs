@@ -96,18 +96,20 @@ public class UserController : ControllerBase
     public async Task<ActionResult> DisableUser(int userId)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
-        User contextUser = await _contextService.GetContextUser(HttpContext);
 
         _logger.LogInformation("Received request to disable user[{Id}] from context[{Context}]", userId, context);
 
-        if (contextUser.UserId != userId)
+        User? user = await _userService.GetUserFromUserId(userId);
+
+        if (user is null)
         {
-            _logger.LogWarning("User[{ContextUserId}] attempted to disable user[{TargetUserId}] from context[{Context}]", contextUser.UserId, userId, context);
-            return Forbid();
+            _logger.LogInformation("Request[{Context}] attempted to disable user[{Id}] which was not found.",
+                context, userId);
+            return NotFound();
         }
 
         await _userService.DisableUser(userId);
 
-        return NoContent();
+        return Ok();
     }
 }

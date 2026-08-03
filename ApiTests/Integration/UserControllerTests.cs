@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Net.Http.Json;
 using System.Text.Json;
 
 using ApiTests.Integration.Generic;
@@ -421,14 +420,13 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
         Assert.True(user1Me is not null, $"Response body could not be deserialized into a UserRead. Body: {user1MeResponseBody}");
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Assert.True(
-            response.StatusCode == HttpStatusCode.Forbidden ||
-            response.StatusCode == HttpStatusCode.NotFound,
+            response.StatusCode == HttpStatusCode.Forbidden || response.StatusCode == HttpStatusCode.NotFound,
             $"Expected status {HttpStatusCode.Forbidden} or {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
     [Theory]
     [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task DisableUser_DisablesUser_WhenAllowed(string username, string password)
+    public async Task Admin_CanDisable_AnotherUser(string username, string password)
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
@@ -436,16 +434,20 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient adminClient = _apiFactory.CreateClient();
         HttpClient targetClient = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(adminClient, username, password, _cancelToken);
-        await GenericActions.Auth.CreateAuthenticatedClient(targetClient, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
-
-        HttpResponseMessage targetMeResponse = await targetClient.GetAsync(Routes.User.Generate.UserByName(AuthTestData.ValidUserName2), _cancelToken);
+        await GenericActions.Auth.CreateAdminAuthenticatedClient(adminClient, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(targetClient, username, password, _cancelToken);
 
         // Act
+
+        // Get the target user
+        HttpResponseMessage targetMeResponse = await targetClient.GetAsync(Routes.Auth.Me, _cancelToken);
         string targetMeResponseBody = await targetMeResponse.Content.ReadAsStringAsync(_cancelToken);
         UserRead? targetUser = JsonSerializer.Deserialize<UserRead>(targetMeResponseBody, _apiFactory.JsonSerializerOptions);
-        HttpResponseMessage disableResponse =
-            await adminClient.PatchAsJsonAsync(Routes.User.Generate.DisableUser(targetUser?.UserId ?? 0), new { }, _cancelToken);
+
+        // try disabling user
+        string disableRoute = Routes.User.Generate.DisableUser(targetUser?.UserId ?? 0);
+        HttpResponseMessage disableResponse = await adminClient.PatchAsJsonAsync(disableRoute, new { }, _cancelToken);
+
         LoginResult? loginResult = await GenericActions.Auth.Login(
             _apiFactory.CreateClient(),
             new LoginRequest
@@ -459,21 +461,15 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
         Assert.True(targetMeResponse.StatusCode == HttpStatusCode.OK,
             $"Expected status {HttpStatusCode.OK}, actual {targetMeResponse.StatusCode}, endpoint {targetMeResponse.RequestMessage?.RequestUri}, raw body: {targetMeResponseBody}");
         Assert.True(targetUser is not null, $"Response body could not be deserialized into a UserRead. Body: {targetMeResponseBody}");
-        string disableResponseBody = await disableResponse.Content.ReadAsStringAsync(_cancelToken);
-        Assert.True(
-            disableResponse.StatusCode == HttpStatusCode.OK ||
-            disableResponse.StatusCode == HttpStatusCode.NoContent ||
-            disableResponse.StatusCode == HttpStatusCode.Forbidden,
-            $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.NoContent} or {HttpStatusCode.Forbidden}, actual {disableResponse.StatusCode}, endpoint {disableResponse.RequestMessage?.RequestUri}, raw body: {disableResponseBody}");
 
-        if (disableResponse.StatusCode == HttpStatusCode.OK ||
-            disableResponse.StatusCode == HttpStatusCode.NoContent)
-        {
-            Assert.True(
-                loginResult is null ||
-                loginResult.User is null ||
-                !string.IsNullOrWhiteSpace(loginResult.Error));
-        }
+        string disableResponseBody = await disableResponse.Content.ReadAsStringAsync(_cancelToken);
+        Assert.True(disableResponse.StatusCode == HttpStatusCode.OK,
+            $"Expected status {HttpStatusCode.OK}, actual {disableResponse.StatusCode}, endpoint {disableResponse.RequestMessage?.RequestUri}, raw body: {disableResponseBody}");
+
+        Assert.True(
+            loginResult is null ||
+            loginResult.User is null ||
+            !string.IsNullOrWhiteSpace(loginResult.Error));
     }
 
     #endregion

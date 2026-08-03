@@ -203,7 +203,7 @@ public class UserService : IUserService
                 $"""
 
                                  UPDATE {UsersTable.SelectName}
-                                 SET {UserDeactivatedField} = 1
+                                 SET {UserDeactivatedField.SelectName} = 1
                                  WHERE {UserIdField.SelectName} = @UserId
                              
                  """;

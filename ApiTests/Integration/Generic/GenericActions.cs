@@ -1,7 +1,4 @@
-﻿using System.Net.Http.Json;
-
-using ApiTests.Integration;
-using ApiTests.TestData;
+﻿using ApiTests.TestData;
 
 using MoopelApi;
 using MoopelApi.Helpers;
@@ -135,6 +132,25 @@ public static class GenericActions
             string password = AuthTestData.ValidPassword + Guid.NewGuid();
 
             return await CreateAuthenticatedClient(client, userName, password, cancelToken);
+        }
+
+        public static async Task<HttpClient> CreateAdminAuthenticatedClient(HttpClient client, CancellationToken cancelToken)
+        {
+            // The admin user is already seeded by MoopelApiFactory.ResetDatabaseAsync,
+            // so we only need to log in rather than register again.
+            LoginRequest loginRequest = new()
+            {
+                Username = AuthTestData.AdminUsername,
+                Password = AuthTestData.AdminPassword,
+            };
+
+            LoginResult? loginResult = await Login(client, loginRequest, cancelToken);
+            Assert.NotNull(loginResult);
+            Assert.NotNull(loginResult.Token);
+
+            AttachBearer(client, loginResult.Token);
+
+            return client;
         }
     }
 }

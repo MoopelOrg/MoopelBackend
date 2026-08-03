@@ -2,6 +2,9 @@
 
 public static class AuthTestData
 {
+    public const string AdminUsername = "testAdmin";
+    public const string AdminPassword = "TestAdmin1!";
+
     public const string ValidUserName = "validUser1";
     public const string ValidPassword = "pAssword1#!";
 
