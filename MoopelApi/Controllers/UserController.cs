@@ -33,6 +33,13 @@ public class UserController : ControllerBase
 
         _logger.LogInformation("Received request to retrieve user[{Id}] from context[{Context}]", userId, context);
 
+        if (context.UserId != userId)
+        {
+            _logger.LogWarning("User[{ContextUserId}] attempted to get user[{TargetUserId}] from context[{Context}]",
+                context.UserId, userId, context);
+            return Forbid();
+        }
+
         User? user = await _userService.GetUserFromUserId(userId);
 
         if (user is null)
