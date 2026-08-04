@@ -59,14 +59,16 @@ public class NoteService : INoteService
             command.Parameters.Add(NoteTitleField.GenerateParameter("@Title", request.Title));
             command.Parameters.Add(NoteContentField.GenerateParameter("@Content", request.Content));
 
-            await using SqlDataReader reader = await command.ExecuteReaderAsync();
-
-            if (reader.HasRows is false)
+            Note note;
+            await using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
-                throw new InvalidOperationException("Failed to create note.");
-            }
+                if (!await reader.ReadAsync())
+                {
+                    throw new("Could not retrieve inserted note");
+                }
 
-            Note note = DtoReaders.ReadNote(reader);
+                note = DtoReaders.ReadNote(reader);
+            }
 
             await transaction.CommitAsync();
 
