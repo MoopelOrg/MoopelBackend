@@ -358,7 +358,7 @@ public class AuthService : IAuthService
             command.CommandText =
             $"""
 
-                             SELECT {GroupUsersTable.GenerateSelect()}
+                             {GroupUsersTable.GenerateSelect()}
                              WHERE {GroupUsersUserIdField.SelectName} = @UserId
                              AND {GroupUsersGroupIdField.SelectName} = @GroupId;
                          

@@ -275,7 +275,7 @@ public class StorageService : IStorageService
             command.CommandText =
                 $"""
 
-                                 SELECT {StoragesTable.GenerateSelect()}
+                                 {StoragesTable.GenerateSelect()}
                                  WHERE {StorageIdField.SelectName} = @StorageId
                              
                  """;
@@ -324,7 +324,7 @@ public class StorageService : IStorageService
             command.CommandText =
                 $"""
 
-                                 SELECT {StorageItemsTable.GenerateSelect()}
+                                 {StorageItemsTable.GenerateSelect()}
                                  WHERE {StorageItemIdField.SelectName} = @ItemId
                              
                  """;
@@ -373,7 +373,7 @@ public class StorageService : IStorageService
             command.CommandText =
                 $"""
 
-                                 SELECT {StoragesTable.GenerateSelect()}
+                                 {StoragesTable.GenerateSelect()}
                                  WHERE {StorageUserIdField.SelectName} = @UserId
                              
                  """;

@@ -374,7 +374,7 @@ public class WorkItemService : IWorkItemService
             command.CommandText =
                 $"""
 
-                                 SELECT {WorkItemsTable.GenerateSelect()}
+                                 {WorkItemsTable.GenerateSelect()}
                                  WHERE {WorkItemIdField.SelectName} = @ItemId
                              
                  """;
@@ -428,7 +428,7 @@ public class WorkItemService : IWorkItemService
             command.CommandText =
                 $"""
 
-                                 SELECT {WorkItemsTable.GenerateSelect()}
+                                 {WorkItemsTable.GenerateSelect()}
                                  WHERE {WorkItemGroupIdField.SelectName} = @GroupId
                              
                  """;

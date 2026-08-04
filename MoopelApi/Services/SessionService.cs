@@ -105,7 +105,7 @@ public class SessionService : ISessionService
             command.CommandText =
                 $"""
 
-                                 SELECT {SessionsTable.GenerateSelect()}
+                                 {SessionsTable.GenerateSelect()}
                                  WHERE {SessionIdField.SelectName} = @SessionId
                              
                  """;
@@ -154,7 +154,7 @@ public class SessionService : ISessionService
             command.CommandText =
                 $"""
 
-                                 SELECT {SessionsTable.GenerateSelect()}
+                                 {SessionsTable.GenerateSelect()}
                                  WHERE {SessionUserIdField.SelectName} = @UserId
                              
                  """;
@@ -203,7 +203,7 @@ public class SessionService : ISessionService
 
             command.CommandText =
             $"""
-                SELECT {SessionsTable.GenerateSelect()}
+                {SessionsTable.GenerateSelect()}
                 WHERE {SessionIsGuestField.SelectName} = 1
             """;
 

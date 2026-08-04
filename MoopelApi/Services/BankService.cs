@@ -389,7 +389,7 @@ public class BankService : IBankService
             command.CommandText =
                 $"""
 
-                                 SELECT {BankAccountsTable.GenerateSelect()}
+                                 {BankAccountsTable.GenerateSelect()}
                                  WHERE {BankAccountIdField.SelectName} = @AccountId
                              
                  """;
@@ -441,7 +441,7 @@ public class BankService : IBankService
             command.CommandText =
                 $"""
 
-                                 SELECT {TransactionsTable.GenerateSelect()}
+                                 {TransactionsTable.GenerateSelect()}
                                  WHERE {TransactionIdField.SelectName} = @TransactionId
                              
                  """;
@@ -493,7 +493,7 @@ public class BankService : IBankService
             command.CommandText =
                 $"""
 
-                                 SELECT {TransactionItemsTable.GenerateSelect()}
+                                 {TransactionItemsTable.GenerateSelect()}
                                  WHERE {TransactionItemIdField.SelectName} = @ItemId
                              
                  """;
@@ -609,7 +609,7 @@ public class BankService : IBankService
             command.CommandText =
                 $"""
 
-                                 SELECT {BankAccountsTable.GenerateSelect()}
+                                 {BankAccountsTable.GenerateSelect()}
                                  WHERE {BankAccountUserIdField.SelectName} = @UserId
                              
                  """;

@@ -167,10 +167,8 @@ public class NoteService : INoteService
 
             command.CommandText =
                 $"""
-
-                                 SELECT {NotesTable.GenerateSelect()}
-                                 WHERE {NoteIdField.SelectName} = @NoteId
-                             
+                        {NotesTable.GenerateSelect()}
+                        WHERE {NoteIdField.SelectName} = @NoteId
                  """;
             command.Parameters.Add(NoteIdField.GenerateParameter("@NoteId", noteId));
 
@@ -218,7 +216,7 @@ public class NoteService : INoteService
 
             command.CommandText =
             $"""
-                 SELECT {NotesTable.GenerateSelect()}
+                 {NotesTable.GenerateSelect()}
                  WHERE {NoteUserIdField.SelectName} = @UserId
              """;
             command.Parameters.Add(NoteUserIdField.GenerateParameter("@UserId", userId));
@@ -288,24 +286,16 @@ public class NoteService : INoteService
             command.Parameters.Add(NoteTitleField.GenerateParameter("@Title", request.Title));
             command.Parameters.Add(NoteContentField.GenerateParameter("@Content", request.Content));
 
-            await using SqlDataReader reader = await command.ExecuteReaderAsync();
-
-            Note? note;
-            if (await reader.ReadAsync() is false)
+            Note note;
+            await using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
-                note = null;
-            }
-            else
-            {
-                note = DtoReaders.ReadNote(reader);
-
-                if (await reader.ReadAsync())
+                if (!await reader.ReadAsync())
                 {
-                    throw new InvalidOperationException($"Updated more than one note for NoteId [{noteId}].");
+                    throw new("Could not retrieve inserted note");
                 }
-            }
 
-            await transaction.CommitAsync();
+                note = DtoReaders.ReadNote(reader);
+            }
 
             return note;
         }

@@ -39,7 +39,7 @@ public class TagService : ITagService
             command.CommandText =
                 $"""
 
-                                 SELECT {UserTagsTable.GenerateSelect()}
+                                 {UserTagsTable.GenerateSelect()}
                                  WHERE {UserTagUserIdField.SelectName} = @UserId
                              
                  """;
@@ -92,7 +92,7 @@ public class TagService : ITagService
             command.CommandText =
                 $"""
 
-                                 SELECT {UserTagsTable.GenerateSelect()}
+                                 {UserTagsTable.GenerateSelect()}
                                  WHERE {UserTagIdField.SelectName} = @TagId
                              
                  """;
@@ -332,7 +332,7 @@ public class TagService : ITagService
             command.CommandText =
                 $"""
 
-                                 SELECT {GroupTagsTable.GenerateSelect()}
+                                 {GroupTagsTable.GenerateSelect()}
                                  WHERE {GroupTagGroupIdField.SelectName} = @GroupId
                              
                  """;
@@ -385,7 +385,7 @@ public class TagService : ITagService
             command.CommandText =
                 $"""
 
-                                 SELECT {GroupTagsTable.GenerateSelect()}
+                                 {GroupTagsTable.GenerateSelect()}
                                  WHERE {GroupTagIdField.SelectName} = @GroupTagId
                              
                  """;

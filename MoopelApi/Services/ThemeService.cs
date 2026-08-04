@@ -158,7 +158,7 @@ public class ThemeService : IThemeService
             command.CommandText =
                 $"""
 
-                                 SELECT {ThemesTable.GenerateSelect()}
+                                 {ThemesTable.GenerateSelect()}
                              
                  """;
 
@@ -212,7 +212,7 @@ public class ThemeService : IThemeService
             command.CommandText =
                 $"""
 
-                                 SELECT {ThemesTable.GenerateSelect()}
+                                 {ThemesTable.GenerateSelect()}
                                  WHERE {ThemeIdField.SelectName} = @ThemeId
                              
                  """;
