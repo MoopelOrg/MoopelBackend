@@ -321,7 +321,7 @@ public class UserService : IUserService
                 $"""
 
                                  {SettingsTable.GenerateSelect()}
-                                 WHERE {SettingsUserIdField.SelectName} = @SettingsId
+                                WHERE {SettingsUserIdField.SelectName} = @UserId
                              
                  """;
             command.Parameters.Add(SettingsUserIdField.GenerateParameter("@UserId", userId));
@@ -411,7 +411,71 @@ public class UserService : IUserService
 
     public async Task<UserSettings?> UpdateUserSettings(UserSettingsUpdateRequest updateRequest, int settingsId)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(updateRequest);
+
+        _logger.LogInformation("Updating settings[{SettingsId}]", settingsId);
+
+        SqlCommand? command = null;
+        SqlTransaction? transaction = null;
+
+        UserSettings existingSettings = await GetSettingsFromSettingId(settingsId)
+            ?? throw new NotFoundException($"User settings [{settingsId}] were not found.");
+
+        try
+        {
+            await using SqlConnection connection = new(_connection.ConnectionString);
+            await connection.OpenAsync();
+
+            transaction = connection.BeginTransaction();
+
+            command = connection.CreateCommand();
+            command.Transaction = transaction;
+
+            command.CommandText =
+                $"""
+                    UPDATE {SettingsTable.SelectName}
+                    SET {SettingTimezoneField.SelectName} = @Timezone,
+                        {SettingDateFormatField.SelectName} = @DateFormat,
+                        {SettingsLastUpdatedAtUtcField.SelectName} = SYSUTCDATETIME()
+                    {SettingsTable.GenerateOutput()}
+                    WHERE {SettingsIdField.SelectName} = @SettingsId
+                  """;
+
+            command.Parameters.Add(SettingTimezoneField.GenerateParameter("@Timezone", updateRequest.Timezone ?? existingSettings.Timezone));
+            command.Parameters.Add(SettingDateFormatField.GenerateParameter("@DateFormat", updateRequest.DateFormat ?? existingSettings.DateFormat));
+            command.Parameters.Add(SettingsIdField.GenerateParameter("@SettingsId", settingsId));
+
+            await using SqlDataReader reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                UserSettings updatedSettings = DtoReaders.ReadUserSettings(reader);
+                await transaction.CommitAsync();
+                return updatedSettings;
+            }
+
+            throw new InvalidOperationException("Failed to update user settings.");
+        }
+        catch (Exception ex)
+        {
+            if (transaction is not null)
+            {
+                await transaction.RollbackAsync();
+            }
+
+            string logErrorMessage = FormatHelper.FormatErrorLogMessage(
+                "Updating UserSettings",
+                ex.Message,
+                [
+                    ("SettingsId", settingsId),
+                    ("UpdateRequest", updateRequest)
+                ],
+                command);
+
+            _logger.LogCritical(ex, "{Error}", logErrorMessage);
+
+            throw;
+        }
     }
 
     public async Task<UserSettings> CreateUserSettings(UserSettingsCreateRequest createRequest, int userId)
@@ -432,8 +496,8 @@ public class UserService : IUserService
                 $"""
 
                                  INSERT INTO {SettingsTable.SelectName}
-                                 ({SettingsUserIdField}, {SettingTimezoneField.SelectName}, {SettingDateFormatField.SelectName})
-                                 OUTPUT INSERTED.{SettingsIdField.SelectName}
+                                ({SettingsUserIdField.SelectName}, {SettingTimezoneField.SelectName}, {SettingDateFormatField.SelectName})
+                                {SettingsTable.GenerateOutput()}
                                  VALUES(@UserId, @Timezone, @DateFormat)
                              
                  """;
@@ -442,18 +506,14 @@ public class UserService : IUserService
             command.Parameters.Add(SettingTimezoneField.GenerateParameter("@Timezone", createRequest.Timezone));
             command.Parameters.Add(SettingDateFormatField.GenerateParameter("@DateFormat", createRequest.DateFormat));
 
-            int userSettingsId = (int)(await command.ExecuteScalarAsync()
-                ?? throw new InvalidOperationException("Failed to create user settings."));
+            await using SqlDataReader reader = await command.ExecuteReaderAsync();
 
-            return new()
+            if (await reader.ReadAsync())
             {
-                UserId = userId,
-                SettingId = userSettingsId,
-                Timezone = createRequest.Timezone,
-                DateFormat = createRequest.DateFormat,
-                CreatedAtUtc = DateTime.UtcNow,
-                LastUpdatedAtUtc = DateTime.UtcNow,
-            };
+                return DtoReaders.ReadUserSettings(reader);
+            }
+
+            throw new InvalidOperationException("Failed to create user settings.");
         }
         catch (Exception ex)
         {

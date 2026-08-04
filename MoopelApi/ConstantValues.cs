@@ -391,6 +391,7 @@ public class ConstantValues
                 SettingsIdField,
                 SettingsUserIdField,
                 SettingTimezoneField,
+                SettingDateFormatField,
                 SettingsCreatedAtUtcField,
                 SettingsLastUpdatedAtUtcField
             ],

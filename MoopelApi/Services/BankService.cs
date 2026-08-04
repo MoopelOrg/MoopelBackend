@@ -47,7 +47,7 @@ public class BankService : IBankService
                                  INSERT INTO {BankAccountsTable.SelectName}
                                  ({BankAccountNameField.SelectName},
                                   {BankAccountDescriptionField.SelectName},
-                                  {BankAccountUserIdField.SelectName}
+                                  {BankAccountUserIdField.SelectName})
                                  OUTPUT INSERTED.{BankAccountIdField.SelectName} 
                                  VALUES
                                  (@AccountName, @Description, @UserId)
@@ -116,7 +116,7 @@ public class BankService : IBankService
 
                                  INSERT INTO {TransactionsTable.SelectName}
                                  ({TransactionNameField.SelectName}, 
-                                  {TransactionDescriptionField.SelectName}
+                                  {TransactionDescriptionField.SelectName})
                                  OUTPUT INSERTED.{TransactionIdField.SelectName} 
                                  VALUES
                                  (@Name, @Description)
@@ -186,7 +186,7 @@ public class BankService : IBankService
                                  INSERT INTO {TransactionItemsTable.SelectName}
                                  ({TransactionItemTransactionIdField.SelectName}, 
                                   {TransactionItemNameField.SelectName},
-                                  {TransactionItemAmountField.SelectName}
+                                  {TransactionItemAmountField.SelectName})
                                  OUTPUT INSERTED.{TransactionIdField.SelectName} 
                                  VALUES
                                  (@TransactionId, @Name, @Amount)
