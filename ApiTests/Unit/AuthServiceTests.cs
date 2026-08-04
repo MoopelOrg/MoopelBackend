@@ -1,16 +1,10 @@
-using System.Net;
-using System.Net.Http.Json;
-
 using ApiTests.TestData;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
-using MoopelApi;
 using MoopelApi.Helpers;
 using MoopelApi.Models;
-using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Enums;
 using MoopelApi.Models.Requests;

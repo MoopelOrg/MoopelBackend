@@ -4,6 +4,7 @@ using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 
 using MoopelApi;
+
 using static ApiTests.TestHelper;
 
 namespace ApiTests.Integration;

@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Net.Http.Json;
 using System.Text.Json;
 
 using ApiTests.Integration.Generic;
@@ -9,6 +8,7 @@ using MoopelApi;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Enums;
 using MoopelApi.Models.Requests.Creation;
+
 using static ApiTests.TestHelper;
 
 namespace ApiTests.Integration;

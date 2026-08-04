@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Net.Http.Json;
 
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
@@ -9,7 +8,6 @@ using MoopelApi.Models.Attributes;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Requests.Creation;
 using MoopelApi.Models.Requests.Update;
-using static ApiTests.TestHelper;
 
 namespace ApiTests.Integration;
 
@@ -732,7 +730,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
-        
+
         Group group = await CreateGroupAsync(client);
         GroupTag created = await CreateGroupTagAsync(client, group.GroupId, request);
 
@@ -755,9 +753,9 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        
+
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
-        
+
         // Act
         HttpResponseMessage response =
             await client.DeleteAsync(Routes.Tag.Generate.DeleteGroupTag(TagTestData.MissingTagId), _cancelToken);

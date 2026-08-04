@@ -1,5 +1,3 @@
-using System.Data;
-
 using ApiTests.TestData;
 
 using Microsoft.Data.SqlClient;
@@ -8,8 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using MoopelApi.Exceptions;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Enums;
-using MoopelApi.Models.Requests.Creation;
-using MoopelApi.Models.Requests.Update;
 using MoopelApi.Services;
 
 using static MoopelApi.ConstantValues.Database;

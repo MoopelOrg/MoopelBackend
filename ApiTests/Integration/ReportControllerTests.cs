@@ -1,12 +1,4 @@
-﻿using System.Net;
-using System.Net.Http.Json;
-using ApiTests.Integration.Generic;
-using ApiTests.TestData;
-using MoopelApi;
-using MoopelApi.Models.Dto.Read;
-using static ApiTests.TestHelper;
-
-namespace ApiTests.Integration;
+﻿namespace ApiTests.Integration;
 
 public class ReportControllerTests : IClassFixture<MoopelApiFactory>
 {

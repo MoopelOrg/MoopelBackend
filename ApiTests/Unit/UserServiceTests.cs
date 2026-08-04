@@ -1,5 +1,3 @@
-using System.Data;
-
 using ApiTests.TestData;
 
 using Microsoft.Data.SqlClient;

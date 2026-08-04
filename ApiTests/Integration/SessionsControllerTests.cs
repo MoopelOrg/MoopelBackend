@@ -8,6 +8,7 @@ using MoopelApi;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Requests;
 using MoopelApi.Models.Results;
+
 using static ApiTests.TestHelper;
 
 namespace ApiTests.Integration;
