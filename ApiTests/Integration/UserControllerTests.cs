@@ -82,13 +82,33 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
     [Theory]
     [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task UserById_ReturnsNotFound_WhenMissing(string username, string password)
+    public async Task UserById_ReturnsForbidden_WhenMissing_AndRoleIsNotAdmin(string username, string password)
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
         await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+
+        // Act
+        HttpResponseMessage response =
+            await client.GetAsync(Routes.User.Generate.UserById(UserTestData.MissingUserId), _cancelToken);
+
+        // Assert
+
+        Assert.True(
+            condition: response.StatusCode == HttpStatusCode.Forbidden,
+            userMessage: await TMsg(HttpStatusCode.Forbidden, response));
+    }
+
+    [Fact]
+    public async Task UserById_ReturnsNotFound_WhenMissing_AndRoleIsAdmin()
+    {
+        // Arrange
+        await _apiFactory.ResetDatabaseAsync();
+        HttpClient client = _apiFactory.CreateClient();
+
+        await GenericActions.Auth.CreateAdminAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =
