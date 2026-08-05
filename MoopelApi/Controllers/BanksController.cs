@@ -78,7 +78,7 @@ public class BanksController : ControllerBase
         BankAccount newAccount = await _bankService.CreateBankAccount(contextUser.UserId, request);
 
         _logger.LogInformation("{Context} created bank account {AccountId}", context, newAccount.AccountId);
-        return Ok(newAccount);
+        return CreatedAtAction(nameof(GetAccountById), new { accountId = newAccount.AccountId }, newAccount);
     }
 
     [HttpPatch(Routes.Bank.UpdateAccount)]
