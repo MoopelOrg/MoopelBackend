@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 
+using MoopelApi.Exceptions;
 using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
@@ -659,6 +660,12 @@ public class BankService : IBankService
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
 
+        BankAccount account = await GetBankAccountById(accountId)
+            ?? throw new NotFoundException($"Could not find Bank Account [{accountId}]");
+
+        request.Name ??= account.Name;
+        request.Description ??= account.Description;
+
         try
         {
             await using SqlConnection connection = new(_connection.ConnectionString);
@@ -670,23 +677,30 @@ public class BankService : IBankService
 
             command.CommandText =
                 $"""
-
-                                 UPDATE {BankAccountsTable.SelectName}
-                                 SET {BankAccountNameField.SelectName} = @Name
-                                 OUTPUT INSERTED.{BankAccountsTable.GetFields()}
-                                 WHERE {BankAccountIdField.SelectName} = @AccountId
-                             
+                    UPDATE {BankAccountsTable.SelectName}
+                    SET 
+                    {BankAccountNameField.SelectName} = @Name, 
+                    {BankAccountDescriptionField.SelectName} = @Description
+                    {BankAccountsTable.GenerateOutput()}
+                    WHERE {BankAccountIdField.SelectName} = @AccountId
                  """;
             command.Parameters.Add(BankAccountNameField.GenerateParameter("@Name", request.Name));
+            command.Parameters.Add(BankAccountDescriptionField.GenerateParameter("@Description", request.Description));
             command.Parameters.Add(BankAccountIdField.GenerateParameter("@AccountId", accountId));
 
-            using SqlDataReader reader = await command.ExecuteReaderAsync();
+            BankAccount updatedAccount;
+            await using (SqlDataReader reader = await command.ExecuteReaderAsync())
+            {
+                if (!await reader.ReadAsync())
+                {
+                    throw new InvalidOperationException("Failed to read updated account.");
+                }
 
-            BankAccount account = DtoReaders.ReadBankAccount(reader);
+                updatedAccount = DtoReaders.ReadBankAccount(reader);
+            }
 
             await transaction.CommitAsync();
-
-            return account;
+            return updatedAccount;
         }
         catch (Exception ex)
         {

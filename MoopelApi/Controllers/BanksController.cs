@@ -81,7 +81,7 @@ public class BanksController : ControllerBase
         return CreatedAtAction(nameof(GetAccountById), new { accountId = newAccount.AccountId }, newAccount);
     }
 
-    [HttpPatch(Routes.Bank.UpdateAccount)]
+    [HttpPut(Routes.Bank.UpdateAccount)]
     public async Task<ActionResult<BankAccount>> UpdateAccount(int accountId, [FromBody] BankAccountUpdateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
