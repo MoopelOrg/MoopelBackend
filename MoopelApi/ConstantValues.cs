@@ -1653,6 +1653,7 @@ public class ConstantValues
                 BankAccountIdField,
                 BankAccountUserIdField,
                 BankAccountNameField,
+                BankAccountDescriptionField,
                 BankAccountBalanceField,
                 BankAccountCreatedAtUtcField
             ],

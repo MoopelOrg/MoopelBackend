@@ -48,7 +48,7 @@ public class BankService : IBankService
                                  ({BankAccountNameField.SelectName},
                                   {BankAccountDescriptionField.SelectName},
                                   {BankAccountUserIdField.SelectName})
-                                 OUTPUT INSERTED.{BankAccountIdField.SelectName} 
+                                 {BankAccountsTable.GenerateOutput()}
                                  VALUES
                                  (@AccountName, @Description, @UserId)
                              
@@ -57,22 +57,19 @@ public class BankService : IBankService
             command.Parameters.Add(BankAccountDescriptionField.GenerateParameter("@Description", request.Description));
             command.Parameters.Add(BankAccountUserIdField.GenerateParameter("@UserId", userId));
 
-            int accountId = (int)(await command.ExecuteScalarAsync()
-                ?? throw new InvalidOperationException("Failed to create bank account."));
+            BankAccount createdAccount;
+            await using (SqlDataReader reader = await command.ExecuteReaderAsync())
+            {
+                if (!await reader.ReadAsync())
+                {
+                    throw new InvalidOperationException("Failed to read created bank account.");
+                }
+
+                createdAccount = DtoReaders.ReadBankAccount(reader);
+            }
 
             await transaction.CommitAsync();
-
-            return new()
-            {
-                AccountId = accountId,
-                UserId = userId,
-
-                Name = request.Name,
-                Description = request.Description,
-                Balance = 0m,
-
-                CreatedAtUtc = DateTime.UtcNow,
-            };
+            return createdAccount;
         }
         catch (Exception ex)
         {
