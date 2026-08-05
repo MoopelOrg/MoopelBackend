@@ -5,13 +5,16 @@ using ApiTests.TestData;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using MoopelApi;
+using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Enums;
 using MoopelApi.Models.Requests;
@@ -40,13 +43,12 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         return options;
     }
 
-    private const string DatabaseConnectionEnvironmentKey =
-        "DatabaseConnection__ConnectionString";
-
     private readonly MsSqlContainer _dbContainer =
     new MsSqlBuilder(image: "mcr.microsoft.com/mssql/server:2022-latest")
         .WithPassword("YourStrong!Passw0rd")
         .Build();
+
+    private const int DatabaseTimeoutSeconds = 30;
 
     private Respawner _respawner = null!;
     private DbConnection _connection = null!;
@@ -66,10 +68,6 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     async ValueTask IAsyncLifetime.InitializeAsync()
     {
         await _dbContainer.StartAsync();
-
-        Environment.SetEnvironmentVariable(
-            DatabaseConnectionEnvironmentKey,
-            ConnectionString);
 
         // Force the app to build and run BuildDatabase so that all application
         // tables exist before Respawner takes its schema snapshot.
@@ -93,12 +91,26 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
         builder.ConfigureAppConfiguration((context, config) =>
         {
+            config.Sources.Clear();
+
             Dictionary<string, string?> overrideConfig = new()
             {
                 ["DatabaseConnection:ConnectionString"] = ConnectionString
             };
 
+            config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
             config.AddInMemoryCollection(overrideConfig);
+        });
+
+        builder.ConfigureTestServices(services =>
+        {
+            services.RemoveAll<DatabaseConnection>();
+            services.AddSingleton(new DatabaseConnection
+            {
+                ConnectionString = ConnectionString,
+                DatabaseName = "MoopelDB",
+                Timeout = DatabaseTimeoutSeconds
+            });
         });
 
         builder.ConfigureLogging(logging =>
