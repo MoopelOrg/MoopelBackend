@@ -45,15 +45,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
-    [Theory]
+    [Fact]
     [TestDocumentation("Get transactions by account should return transactions when the authenticated user owns the account", HttpStatusCode.OK)]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task TransactionsByAccountId_ReturnsList_WhenAuthenticatedAndOwnsAccount(string username, string password)
+    public async Task TransactionsByAccountId_ReturnsList_WhenAuthenticatedAndOwnsAccount()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         BankAccount account = await CreateBankAccountAsync(client);
         Transaction created = await CreateTransactionAsync(client, account.AccountId);
@@ -74,15 +73,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Contains(result, transaction => transaction.Name == TransactionTestData.TransactionName);
     }
 
-    [Theory]
+    [Fact]
     [TestDocumentation("Get transactions by account should return not found when the account does not exist", HttpStatusCode.NotFound)]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task TransactionsByAccountId_ReturnsNotFound_WhenAccountMissing(string username, string password)
+    public async Task TransactionsByAccountId_ReturnsNotFound_WhenAccountMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =
@@ -118,15 +116,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
-    [Theory]
+    [Fact]
     [TestDocumentation("Create transaction should return created transaction when request is valid", HttpStatusCode.Created)]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task CreateTransaction_ReturnsTransaction_WhenValid(string username, string password)
+    public async Task CreateTransaction_ReturnsTransaction_WhenValid()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         BankAccount account = await CreateBankAccountAsync(client);
 
@@ -157,15 +154,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(TransactionTestData.TransactionDescription, created.Description);
     }
 
-    [Theory]
+    [Fact]
     [TestDocumentation("Create transaction should return not found when the account does not exist", HttpStatusCode.NotFound)]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task CreateTransaction_ReturnsNotFound_WhenAccountMissing(string username, string password)
+    public async Task CreateTransaction_ReturnsNotFound_WhenAccountMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =
@@ -209,15 +205,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
-    [Theory]
+    [Fact]
     [TestDocumentation("Get transaction by id should return the transaction when it exists", HttpStatusCode.OK)]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task TransactionById_ReturnsTransaction_WhenItExists(string username, string password)
+    public async Task TransactionById_ReturnsTransaction_WhenItExists()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         BankAccount account = await CreateBankAccountAsync(client);
         Transaction created = await CreateTransactionAsync(client, account.AccountId);
@@ -240,15 +235,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(created.Description, result.Description);
     }
 
-    [Theory]
+    [Fact]
     [TestDocumentation("Get transaction by id should return not found when the transaction does not exist", HttpStatusCode.NotFound)]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task TransactionById_ReturnsNotFound_WhenMissing(string username, string password)
+    public async Task TransactionById_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =
@@ -284,15 +278,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
-    [Theory]
+    [Fact]
     [TestDocumentation("Delete transaction should remove the transaction when it exists and belongs to the user", HttpStatusCode.NoContent)]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task DeleteTransaction_RemovesTransaction_WhenValid(string username, string password)
+    public async Task DeleteTransaction_RemovesTransaction_WhenValid()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         BankAccount account = await CreateBankAccountAsync(client);
         Transaction created = await CreateTransactionAsync(client, account.AccountId);
@@ -317,15 +310,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.NotFound, getResponse));
     }
 
-    [Theory]
+    [Fact]
     [TestDocumentation("Delete transaction should return not found when the transaction does not exist", HttpStatusCode.NotFound)]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task DeleteTransaction_ReturnsNotFound_WhenMissing(string username, string password)
+    public async Task DeleteTransaction_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =
@@ -364,15 +356,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
-    [Theory]
+    [Fact]
     [TestDocumentation("Create transaction item should return created item when request is valid", HttpStatusCode.Created)]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task CreateTransactionItem_ReturnsItem_WhenValid(string username, string password)
+    public async Task CreateTransactionItem_ReturnsItem_WhenValid()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         BankAccount account = await CreateBankAccountAsync(client);
         Transaction transaction = await CreateTransactionAsync(client, account.AccountId);
@@ -403,15 +394,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(TransactionTestData.ValidItemCreateRequest.Amount, created.Amount);
     }
 
-    [Theory]
+    [Fact]
     [TestDocumentation("Create transaction item should return not found when the account or transaction does not exist", HttpStatusCode.NotFound)]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task CreateTransactionItem_ReturnsNotFound_WhenMissing(string username, string password)
+    public async Task CreateTransactionItem_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =
@@ -458,15 +448,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
-    [Theory]
+    [Fact]
     [TestDocumentation("Update transaction item should return updated item when request is valid", HttpStatusCode.OK)]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task UpdateTransactionItem_UpdatesItem_WhenValid(string username, string password)
+    public async Task UpdateTransactionItem_UpdatesItem_WhenValid()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         BankAccount account = await CreateBankAccountAsync(client);
         Transaction transaction = await CreateTransactionAsync(client, account.AccountId);
@@ -492,15 +481,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(TransactionTestData.ValidItemUpdateRequest.Amount, updated.Amount);
     }
 
-    [Theory]
+    [Fact]
     [TestDocumentation("Update transaction item should return not found when the item does not exist", HttpStatusCode.NotFound)]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task UpdateTransactionItem_ReturnsNotFound_WhenMissing(string username, string password)
+    public async Task UpdateTransactionItem_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =
@@ -539,15 +527,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
-    [Theory]
+    [Fact]
     [TestDocumentation("Delete transaction item should remove the item when it exists and belongs to the user", HttpStatusCode.NoContent)]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task DeleteTransactionItem_RemovesItem_WhenValid(string username, string password)
+    public async Task DeleteTransactionItem_RemovesItem_WhenValid()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         BankAccount account = await CreateBankAccountAsync(client);
         Transaction transaction = await CreateTransactionAsync(client, account.AccountId);
@@ -573,15 +560,14 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.NotFound, secondDeleteResponse));
     }
 
-    [Theory]
+    [Fact]
     [TestDocumentation("Delete transaction item should return not found when the item does not exist", HttpStatusCode.NotFound)]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task DeleteTransactionItem_ReturnsNotFound_WhenMissing(string username, string password)
+    public async Task DeleteTransactionItem_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =

@@ -43,15 +43,14 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task MyFridges_ReturnsList_WhenAuthenticated(string username, string password)
+    [Fact]
+    public async Task MyFridges_ReturnsList_WhenAuthenticated()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Fridge.MyFridges, _cancelToken);
@@ -84,15 +83,14 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task FridgeById_ReturnsFridge_WhenItExists(string username, string password)
+    [Fact]
+    public async Task FridgeById_ReturnsFridge_WhenItExists()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         FridgeCreateRequest createRequest = FridgeTestData.ValidCreateRequest;
 
@@ -117,15 +115,14 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(created.Name, result.Name);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task FridgeById_ReturnsNotFound_WhenMissing(string username, string password)
+    [Fact]
+    public async Task FridgeById_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Fridge.Generate.FridgeById(FridgeTestData.NonExistentFridgeId), _cancelToken);
@@ -226,15 +223,14 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(updateRequest.Name, updated.Name);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task UpdateFridge_ReturnsNotFound_WhenMissing(string username, string password)
+    [Fact]
+    public async Task UpdateFridge_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         FridgeUpdateRequest updateRequest = FridgeTestData.ValidUpdateRequest;
 
@@ -252,15 +248,14 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
 
     #region Delete Fridge
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task DeleteFridge_RemovesFridge_WhenValid(string username, string password)
+    [Fact]
+    public async Task DeleteFridge_RemovesFridge_WhenValid()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         FridgeCreateRequest createRequest = FridgeTestData.ValidCreateRequest;
 
@@ -289,15 +284,14 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.NotFound, getResponse));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task DeleteFridge_ReturnsNotFound_WhenMissing(string username, string password)
+    [Fact]
+    public async Task DeleteFridge_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =

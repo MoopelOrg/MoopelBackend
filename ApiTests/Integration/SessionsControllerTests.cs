@@ -43,15 +43,14 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task MySessions_ReturnsList_WhenAuthenticated(string username, string password)
+    [Fact]
+    public async Task MySessions_ReturnsList_WhenAuthenticated()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Session.MySessions, _cancelToken);
@@ -88,15 +87,14 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task SessionById_ReturnsOwnedSession_WhenItExists(string username, string password)
+    [Fact]
+    public async Task SessionById_ReturnsOwnedSession_WhenItExists()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         HttpResponseMessage mySessionsResponse =
             await client.GetAsync(Routes.Session.MySessions, _cancelToken);
@@ -123,15 +121,14 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(firstSession!.SessionId, result!.SessionId);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task SessionById_ReturnsNotFound_WhenMissing(string username, string password)
+    [Fact]
+    public async Task SessionById_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Session.Generate.SessionById(9999), _cancelToken);
@@ -253,15 +250,14 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.NotFound, getResponse));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task RevokeSession_ReturnsNotFound_WhenMissing(string username, string password)
+    [Fact]
+    public async Task RevokeSession_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =

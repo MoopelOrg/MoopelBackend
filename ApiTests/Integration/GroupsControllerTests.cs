@@ -41,15 +41,14 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task MyGroups_ReturnsList_WhenAuthenticated(string username, string password)
+    [Fact]
+    public async Task MyGroups_ReturnsList_WhenAuthenticated()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Group.MyGroups, _cancelToken);
@@ -83,15 +82,14 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task GroupById_ReturnsGroup_WhenItExists(string username, string password)
+    [Fact]
+    public async Task GroupById_ReturnsGroup_WhenItExists()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         GroupCreateRequest createRequest = GroupTestData.ValidCreateRequest;
 
@@ -118,15 +116,14 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(created.Name, result.Name);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task GroupById_ReturnsNotFound_WhenMissing(string username, string password)
+    [Fact]
+    public async Task GroupById_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Group.Generate.GroupById(9999), _cancelToken);
@@ -289,15 +286,14 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(updateRequest.Name, updated.Name);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task UpdateGroup_ReturnsNotFound_WhenMissing(string username, string password)
+    [Fact]
+    public async Task UpdateGroup_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         GroupUpdateRequest updateRequest = GroupTestData.ValidUpdateRequest;
 
@@ -315,15 +311,14 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
     #region Delete Group
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task DeleteGroup_RemovesGroup_WhenValid(string username, string password)
+    [Fact]
+    public async Task DeleteGroup_RemovesGroup_WhenValid()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         GroupCreateRequest createRequest = GroupTestData.ValidCreateRequest;
 
@@ -352,15 +347,14 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.NotFound, getResponse));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task DeleteGroup_ReturnsNotFound_WhenMissing(string username, string password)
+    [Fact]
+    public async Task DeleteGroup_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =

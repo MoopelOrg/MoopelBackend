@@ -306,14 +306,13 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(WorkItemTestData.WorkItemName, created.Name);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task CreateWorkItem_ReturnsNotFound_WhenGroupMissing(string username, string password)
+    [Fact]
+    public async Task CreateWorkItem_ReturnsNotFound_WhenGroupMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =
@@ -328,14 +327,13 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task WorkItemById_ReturnsWorkItem_WhenItExists(string username, string password)
+    [Fact]
+    public async Task WorkItemById_ReturnsWorkItem_WhenItExists()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         Group group = await CreateGroupAsync(client, WorkItemTestData.ReadGroupName);
         WorkItem created = await CreateWorkItemAsync(client, group.GroupId, WorkItemTestData.ExistingWorkItemName);
@@ -355,14 +353,13 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(created.Name, result.Name);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task WorkItemById_ReturnsNotFound_WhenMissing(string username, string password)
+    [Fact]
+    public async Task WorkItemById_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =
@@ -374,14 +371,13 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task UpdateWorkItem_UpdatesWorkItem_WhenValid(string username, string password)
+    [Fact]
+    public async Task UpdateWorkItem_UpdatesWorkItem_WhenValid()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         Group group = await CreateGroupAsync(client, WorkItemTestData.UpdateGroupName);
         WorkItem created = await CreateWorkItemAsync(client, group.GroupId, WorkItemTestData.OldWorkItemName);
@@ -404,14 +400,13 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(WorkItemTestData.UpdatedWorkItemName, updated.Name);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task UpdateWorkItem_ReturnsNotFound_WhenMissing(string username, string password)
+    [Fact]
+    public async Task UpdateWorkItem_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =
@@ -426,14 +421,13 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task DeleteWorkItem_RemovesWorkItem_WhenValid(string username, string password)
+    [Fact]
+    public async Task DeleteWorkItem_RemovesWorkItem_WhenValid()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         Group group = await CreateGroupAsync(client, WorkItemTestData.DeleteGroupName);
         WorkItem created = await CreateWorkItemAsync(client, group.GroupId, WorkItemTestData.DeleteWorkItemName);
@@ -457,14 +451,13 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.NotFound, getResponse));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task DeleteWorkItem_ReturnsNotFound_WhenMissing(string username, string password)
+    [Fact]
+    public async Task DeleteWorkItem_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =
@@ -529,14 +522,13 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             $"Expected status {HttpStatusCode.Forbidden} or {HttpStatusCode.NotFound}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task AddParent_AddsParentRelationship_WhenValid(string username, string password)
+    [Fact]
+    public async Task AddParent_AddsParentRelationship_WhenValid()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         Group group = await CreateGroupAsync(client, WorkItemTestData.ParentGroupName);
         WorkItem parent = await CreateWorkItemAsync(client, group.GroupId, WorkItemTestData.ParentWorkItemName);
@@ -561,14 +553,13 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             $"Expected status {HttpStatusCode.OK} or {HttpStatusCode.Created} or {HttpStatusCode.NoContent}, actual {response.StatusCode}, endpoint {response.RequestMessage?.RequestUri}, raw body: {responseBody}");
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task AddParent_ReturnsNotFound_WhenWorkItemMissing(string username, string password)
+    [Fact]
+    public async Task AddParent_ReturnsNotFound_WhenWorkItemMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response =
@@ -580,14 +571,13 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.NotFound, response));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task RemoveParent_RemovesParentRelationship_WhenValid(string username, string password)
+    [Fact]
+    public async Task RemoveParent_RemovesParentRelationship_WhenValid()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         Group group = await CreateGroupAsync(client, WorkItemTestData.RemoveParentGroupName);
         WorkItem parent = await CreateWorkItemAsync(client, group.GroupId, WorkItemTestData.RemoveParentWorkItemName);

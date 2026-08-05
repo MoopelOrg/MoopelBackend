@@ -43,15 +43,14 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task MyStorages_ReturnsList_WhenAuthenticated(string username, string password)
+    [Fact]
+    public async Task MyStorages_ReturnsList_WhenAuthenticated()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Storage.MyStorages, _cancelToken);
@@ -85,15 +84,14 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task StorageById_ReturnsStorage_WhenItExists(string username, string password)
+    [Fact]
+    public async Task StorageById_ReturnsStorage_WhenItExists()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         StorageCreateRequest createRequest = StorageTestData.ValidCreateRequest;
 
@@ -120,15 +118,14 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(created.Name, result.Name);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task StorageById_ReturnsNotFound_WhenMissing(string username, string password)
+    [Fact]
+    public async Task StorageById_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(Routes.Storage.Generate.StorageById(9999), _cancelToken);
@@ -195,15 +192,14 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
             userMessage: await TMsg(HttpStatusCode.Unauthorized, response));
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task CreateStorage_ReturnsStorage_WhenValid(string username, string password)
+    [Fact]
+    public async Task CreateStorage_ReturnsStorage_WhenValid()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         StorageCreateRequest request = StorageTestData.ValidCreateRequest;
 
@@ -228,15 +224,14 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
 
     #region Update Storage
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task UpdateStorage_UpdatesStorage_WhenValid(string username, string password)
+    [Fact]
+    public async Task UpdateStorage_UpdatesStorage_WhenValid()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         StorageCreateRequest createRequest = StorageTestData.ValidCreateRequest;
 
@@ -265,21 +260,20 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         Assert.Equal(StorageTestData.ValidUpdateRequest.Name, updated.Name);
     }
 
-    [Theory]
-    [MemberData(nameof(AuthTestData.ValidUsers), MemberType = typeof(AuthTestData))]
-    public async Task UpdateStorage_ReturnsNotFound_WhenMissing(string username, string password)
+    [Fact]
+    public async Task UpdateStorage_ReturnsNotFound_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
 
-        await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
+        await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         StorageUpdateRequest updateRequest = StorageTestData.ValidUpdateRequest;
 
         // Act
         HttpResponseMessage response =
-            await client.PutAsJsonAsync(Routes.Storage.Generate.UpdateStorage(9999), updateRequest, _cancelToken);
+            await client.PutAsJsonAsync(Routes.Storage.Generate.UpdateStorage(StorageTestData.NonExistentStorageId), updateRequest, _cancelToken);
 
         // Assert
         Assert.True(
