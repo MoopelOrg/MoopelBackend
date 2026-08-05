@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using MoopelApi.Helpers;
 using MoopelApi.Models;
 using MoopelApi.Models.Dto;
 using MoopelApi.Models.Dto.Read;
@@ -33,12 +34,7 @@ public class UserController : ControllerBase
 
         _logger.LogInformation("Received request to retrieve user[{Id}] from context[{Context}]", userId, context);
 
-        if (context.UserId != userId)
-        {
-            _logger.LogWarning("User[{ContextUserId}] attempted to get user[{TargetUserId}] from context[{Context}]",
-                context.UserId, userId, context);
-            return Forbid();
-        }
+        AuthHelper.CanAccess(userId, context.UserId, context.Role, "Retrieve their information", _logger);
 
         User? user = await _userService.GetUserFromUserId(userId);
 
