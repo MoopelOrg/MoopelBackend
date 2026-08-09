@@ -27,10 +27,18 @@ public class GroupService : IGroupService
     public async Task<Group> CreateGroup(User creator, GroupCreateRequest createRequest)
     {
         ArgumentNullException.ThrowIfNull(createRequest, nameof(createRequest));
+        ArgumentNullException.ThrowIfNull(creator);
 
         _logger.LogInformation("Creating group for [{User}]", creator);
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
+
+        Group? existingGroup = await GetGroupByName(createRequest.Name);
+
+        if (existingGroup is not null)
+        {
+            throw new ArgumentException($"A group with the name '{createRequest.Name}' already exists.");
+        }
 
         try
         {
@@ -66,6 +74,27 @@ public class GroupService : IGroupService
                 createdGroup = DtoReaders.ReadGroup(reader);
             }
 
+            using (SqlCommand ownerCommand = connection.CreateCommand())
+            {
+                ownerCommand.Transaction = transaction;
+                ownerCommand.CommandText =
+                    $"""
+                        INSERT INTO {GroupUsersTable.SelectName}
+                        ({GroupUsersGroupIdField.SelectName}, {GroupUsersUserIdField.SelectName},
+                        {GroupUsersIsOwnerField.SelectName}, {GroupUsersIsAdminField.SelectName},
+                        {GroupUsersCanReadWorkItemsField.SelectName}, {GroupUsersCanCreateWorkItemsField.SelectName},
+                        {GroupUsersCanUpdateWorkItemsField.SelectName}, {GroupUsersCanDeleteWorkItemsField.SelectName},
+                        {GroupUsersCanCreateTagsField.SelectName}, {GroupUsersCanUpdateTagsField.SelectName},
+                        {GroupUsersCanDeleteTagsField.SelectName})
+                        VALUES
+                        (@GroupId, @UserId, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+                     """;
+                ownerCommand.Parameters.Add(GroupUsersGroupIdField.GenerateParameter("@GroupId", createdGroup.GroupId));
+                ownerCommand.Parameters.Add(GroupUsersUserIdField.GenerateParameter("@UserId", creator.UserId));
+
+                await ownerCommand.ExecuteNonQueryAsync();
+            }
+
             await transaction.CommitAsync();
             return createdGroup;
         }
@@ -86,14 +115,6 @@ public class GroupService : IGroupService
                 command);
 
             _logger.LogCritical(ex, "{Error}", logErrorMessage);
-
-            if (ex is SqlException
-                {
-                    Number: SqlErrorNumbers.UniqueConstraintViolation or SqlErrorNumbers.UniqueIndexViolation
-                })
-            {
-                throw new ArgumentException($"A group with the name '{createRequest.Name}' already exists.", ex);
-            }
 
             throw;
         }
@@ -216,10 +237,8 @@ public class GroupService : IGroupService
 
             command.CommandText =
                 $"""
-
-                                 {GroupsTable.GenerateSelect()}
-                                 WHERE {GroupNameField.SelectName} = @Name
-
+                    {GroupsTable.GenerateSelect()}
+                    WHERE {GroupNameField.SelectName} = @Name
                  """;
             command.Parameters.Add(GroupNameField.GenerateParameter("@Name", name));
 
@@ -322,13 +341,11 @@ public class GroupService : IGroupService
 
             command.CommandText =
                 $"""
-
-                                 {UsersTable.GetFields(UsersTable.Alias)}
-                                 FROM {UsersTable.SelectName} AS {UsersTable.Alias}
-                                 JOIN {GroupUsersTable.SelectName} AS {GroupUsersTable.Alias}
-                                     ON {GroupUsersTable.Alias}.{GroupUsersUserIdField.SelectName} = {UsersTable.Alias}.{UserIdField.SelectName}
-                                 WHERE {GroupUsersTable.Alias}.{GroupUsersGroupIdField.SelectName} = @GroupId
-                             
+                    {UsersTable.GetFields(UsersTable.Alias)}
+                    FROM {UsersTable.SelectName} AS {UsersTable.Alias}
+                    JOIN {GroupUsersTable.SelectName} AS {GroupUsersTable.Alias}
+                        ON {GroupUsersTable.Alias}.{GroupUsersUserIdField.SelectName} = {UsersTable.Alias}.{UserIdField.SelectName}
+                    WHERE {GroupUsersTable.Alias}.{GroupUsersGroupIdField.SelectName} = @GroupId
                  """;
             command.Parameters.Add(GroupUsersGroupIdField.GenerateParameter("@GroupId", groupId));
 
@@ -388,7 +405,7 @@ public class GroupService : IGroupService
                                  UPDATE {GroupsTable.SelectName}
                                  SET {GroupNameField.SelectName} = @Name,
                                      {GroupDescriptionField.SelectName} = @Description
-                                 OUTPUT INSERTED.*
+                                 {GroupsTable.GenerateOutput()}
                                  WHERE {GroupIdField.SelectName} = @GroupId
                              
                  """;
