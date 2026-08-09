@@ -9,6 +9,7 @@ public interface IGroupService
     public Task<List<User>?> GetUsersInGroup(int groupId);
     public Task<List<Group>?> GetUserGroups(int userId);
     public Task<Group?> GetGroup(int groupId);
+    public Task<Group?> GetGroupByName(string name);
 
 
     public Task<Group> CreateGroup(User creator, GroupCreateRequest creationRequest);

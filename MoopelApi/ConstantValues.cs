@@ -34,6 +34,12 @@ public class ConstantValues
 
     public static class Database
     {
+        public static class SqlErrorNumbers
+        {
+            public const int UniqueConstraintViolation = 2627;
+            public const int UniqueIndexViolation = 2601;
+        }
+
         #region Groups
 
         public static readonly DatabaseField GroupIdField =
@@ -76,7 +82,7 @@ public class ConstantValues
         public static readonly DatabaseTable GroupsTable = new()
         {
             Name = "Groups",
-            Alias = "group",
+            Alias = "grp",
             Fields =
             [
                 GroupIdField,
