@@ -272,10 +272,8 @@ public class FridgeService : IFridgeService
 
             command.CommandText =
                 $"""
-
-                                 {FridgesTable.GenerateSelect}
-                                 WHERE {FridgeIdField.SelectName} = @FridgeId
-                             
+                    {FridgesTable.GenerateSelect()}
+                    WHERE {FridgeIdField.SelectName} = @FridgeId
                  """;
             command.Parameters.Add(FridgeIdField.GenerateParameter("@FridgeId", fridgeId));
 
