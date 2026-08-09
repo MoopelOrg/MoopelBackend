@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 
+using MoopelApi.Exceptions;
 using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
 using MoopelApi.Models.Dto;
@@ -368,7 +369,7 @@ public class FridgeService : IFridgeService
 
             command.CommandText =
                 $"""
-                    {FridgeItemsTable.GenerateSelect()}
+                    {FridgesTable.GenerateSelect()}
                     WHERE {FridgeUserIdField.SelectName} = @UserId
                  """;
             command.Parameters.Add(FridgeUserIdField.GenerateParameter("@UserId", userId));
@@ -414,6 +415,12 @@ public class FridgeService : IFridgeService
         SqlCommand? command = null;
         SqlTransaction? transaction = null;
 
+        Fridge fridge = await GetFridgeById(fridgeId)
+            ?? throw new NotFoundException($"Could not find Fridge [{fridgeId}]");
+
+        request.Name ??= fridge.Name;
+        request.Description ??= fridge.Description;
+
         try
         {
             await using SqlConnection connection = new(_connection.ConnectionString);
@@ -425,13 +432,11 @@ public class FridgeService : IFridgeService
 
             command.CommandText =
                 $"""
-
-                                 UPDATE {FridgesTable.SelectName}
-                                 SET {FridgeNameField.SelectName} = @Name, 
-                                     {FridgeDescriptionField.SelectName} = @Description
-                                 OUTPUT INSERTED.{FridgeUserIdField.SelectName}
-                                 WHERE {FridgeIdField.SelectName} = @FridgeId;
-                             
+                    UPDATE {FridgesTable.SelectName}
+                    SET {FridgeNameField.SelectName} = @Name, 
+                        {FridgeDescriptionField.SelectName} = @Description
+                    OUTPUT INSERTED.{FridgeUserIdField.SelectName}
+                    WHERE {FridgeIdField.SelectName} = @FridgeId;
                  """;
 
             command.Parameters.Add(FridgeIdField.GenerateParameter("@FridgeId", fridgeId));
