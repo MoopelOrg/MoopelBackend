@@ -46,8 +46,8 @@ public class GroupService : IGroupService
 
                                  INSERT INTO {GroupsTable.SelectName}
                                  ({GroupNameField.SelectName}, 
-                                  {GroupDescriptionField.SelectName}
-                                 OUTPUT INSERTED.{GroupIdField.SelectName} 
+                                  {GroupDescriptionField.SelectName})
+                                 {GroupsTable.GenerateOutput()}
                                  VALUES
                                  (@Name, @Description)
                              
@@ -55,23 +55,26 @@ public class GroupService : IGroupService
             command.Parameters.Add(GroupNameField.GenerateParameter("@Name", createRequest.Name));
             command.Parameters.Add(GroupDescriptionField.GenerateParameter("@Description", createRequest.Description));
 
-            int groupId = (int)(await command.ExecuteScalarAsync()
-                ?? throw new InvalidOperationException("Failed to create group."));
+            Group createdGroup;
+            await using (SqlDataReader reader = await command.ExecuteReaderAsync())
+            {
+                if (!await reader.ReadAsync())
+                {
+                    throw new InvalidOperationException("Failed to read updated account.");
+                }
+
+                createdGroup = DtoReaders.ReadGroup(reader);
+            }
 
             await transaction.CommitAsync();
-
-            return new()
-            {
-                GroupId = groupId,
-                Name = createRequest.Name,
-                Description = createRequest.Description,
-                CreatedAtUtc = DateTime.UtcNow,
-            };
+            return createdGroup;
         }
         catch (Exception ex)
         {
-            if (transaction is not null)
+            if (transaction is not null && transaction.Connection is not null)
+            {
                 await transaction.RollbackAsync();
+            }
 
             string logErrorMessage = FormatHelper.FormatErrorLogMessage(
                 "Creating Group",
@@ -83,6 +86,14 @@ public class GroupService : IGroupService
                 command);
 
             _logger.LogCritical(ex, "{Error}", logErrorMessage);
+
+            if (ex is SqlException
+                {
+                    Number: SqlErrorNumbers.UniqueConstraintViolation or SqlErrorNumbers.UniqueIndexViolation
+                })
+            {
+                throw new ArgumentException($"A group with the name '{createRequest.Name}' already exists.", ex);
+            }
 
             throw;
         }
@@ -121,7 +132,7 @@ public class GroupService : IGroupService
         }
         catch (Exception ex)
         {
-            if (transaction is not null)
+            if (transaction is not null && transaction.Connection is not null)
                 await transaction.RollbackAsync();
 
             string logErrorMessage = FormatHelper.FormatErrorLogMessage(
@@ -189,6 +200,59 @@ public class GroupService : IGroupService
         }
     }
 
+    public async Task<Group?> GetGroupByName(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
+
+        _logger.LogInformation("Getting group by name [{Name}]", name);
+        SqlCommand? command = null;
+
+        try
+        {
+            await using SqlConnection connection = new(_connection.ConnectionString);
+            await connection.OpenAsync();
+
+            command = connection.CreateCommand();
+
+            command.CommandText =
+                $"""
+
+                                 {GroupsTable.GenerateSelect()}
+                                 WHERE {GroupNameField.SelectName} = @Name
+
+                 """;
+            command.Parameters.Add(GroupNameField.GenerateParameter("@Name", name));
+
+            await using SqlDataReader reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                _logger.LogInformation("Found group [{Name}]", name);
+                Group group = DtoReaders.ReadGroup(reader);
+                return group;
+            }
+            else
+            {
+                _logger.LogInformation("Could not find group [{Name}]", name);
+                return null;
+            }
+        }
+        catch (Exception ex)
+        {
+            string logErrorMessage = FormatHelper.FormatErrorLogMessage(
+                "Getting Group By Name",
+                ex.Message,
+                [
+                    ("Name", name),
+                ],
+                command);
+
+            _logger.LogCritical(ex, "{Error}", logErrorMessage);
+
+            throw;
+        }
+    }
+
     public async Task<List<Group>?> GetUserGroups(int userId)
     {
         _logger.LogInformation("Getting groups for user [{UserId}]", userId);
@@ -203,13 +267,11 @@ public class GroupService : IGroupService
 
             command.CommandText =
                 $"""
-
-                                 {GroupsTable.GetFields(GroupsTable.Alias)}
-                                 FROM {GroupsTable.SelectName} AS {GroupsTable.Alias}
-                                 JOIN {GroupUsersTable.SelectName} AS {GroupUsersTable.Alias}
-                                     ON {GroupUsersTable.Alias}.{GroupUsersUserIdField.SelectName} = {GroupsTable.Alias}.{GroupIdField.SelectName}
-                                 WHERE {GroupUsersTable.Alias}.{GroupUsersUserIdField.SelectName} = @UserId
-                             
+                    SELECT {GroupsTable.GetFields(GroupsTable.Alias)}
+                    FROM {GroupsTable.SelectName} {GroupsTable.Alias}
+                    JOIN {GroupUsersTable.SelectName} {GroupUsersTable.Alias}
+                        ON {GroupUsersTable.Alias}.{GroupUsersGroupIdField.SelectName} = {GroupsTable.Alias}.{GroupIdField.SelectName}
+                    WHERE {GroupUsersTable.Alias}.{GroupUsersUserIdField.SelectName} = @UserId
                  """;
             command.Parameters.Add(GroupUsersUserIdField.GenerateParameter("@UserId", userId));
 
@@ -355,7 +417,7 @@ public class GroupService : IGroupService
         }
         catch (Exception ex)
         {
-            if (transaction is not null)
+            if (transaction is not null && transaction.Connection is not null)
                 await transaction.RollbackAsync();
 
             string logErrorMessage = FormatHelper.FormatErrorLogMessage(
@@ -477,7 +539,7 @@ public class GroupService : IGroupService
         }
         catch (Exception ex)
         {
-            if (transaction is not null)
+            if (transaction is not null && transaction.Connection is not null)
                 await transaction.RollbackAsync();
 
             string logErrorMessage = FormatHelper.FormatErrorLogMessage(

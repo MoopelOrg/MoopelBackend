@@ -269,7 +269,7 @@ public class SessionService : ISessionService
         }
         catch (Exception ex)
         {
-            if (transaction is not null)
+            if (transaction is not null && transaction.Connection is not null)
                 await transaction.RollbackAsync();
 
             string logErrorMessage = FormatHelper.FormatErrorLogMessage(
@@ -321,7 +321,7 @@ public class SessionService : ISessionService
         }
         catch (Exception ex)
         {
-            if (transaction is not null)
+            if (transaction is not null && transaction.Connection is not null)
                 await transaction.RollbackAsync();
 
             string logErrorMessage = FormatHelper.FormatErrorLogMessage(
