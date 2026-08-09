@@ -47,8 +47,8 @@ public class FridgeService : IFridgeService
                                  INSERT INTO {FridgesTable.SelectName}
                                  ({FridgeUserIdField.SelectName}, 
                                   {FridgeNameField.SelectName}, 
-                                  {FridgeDescriptionField.SelectName}
-                                 OUTPUT INSERTED.{FridgeIdField.SelectName} 
+                                  {FridgeDescriptionField.SelectName})
+                                 {FridgesTable.GenerateOutput()}
                                  VALUES
                                  (@UserId, @Name, @Description)
                              
@@ -57,19 +57,20 @@ public class FridgeService : IFridgeService
             command.Parameters.Add(FridgeNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(FridgeDescriptionField.GenerateParameter("@Description", request.Description));
 
-            int fridgeId = (int)(await command.ExecuteScalarAsync()
-                ?? throw new InvalidOperationException("Failed to create fridge."));
+            Fridge createdFridge;
+            await using (SqlDataReader reader = await command.ExecuteReaderAsync())
+            {
+                if (!await reader.ReadAsync())
+                {
+                    throw new InvalidOperationException("Failed to read created fridge.");
+                }
+
+                createdFridge = DtoReaders.ReadFridge(reader);
+            }
 
             await transaction.CommitAsync();
 
-            return new()
-            {
-                FridgeId = fridgeId,
-                UserId = userId,
-                Name = request.Name,
-                Description = request.Description,
-                CreatedAtUtc = DateTime.UtcNow,
-            };
+            return createdFridge;
         }
         catch (Exception ex)
         {
