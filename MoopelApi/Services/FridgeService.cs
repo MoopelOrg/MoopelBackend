@@ -320,10 +320,8 @@ public class FridgeService : IFridgeService
 
             command.CommandText =
                 $"""
-
-                                 {FridgeItemsTable.GenerateSelect}
-                                 WHERE {FridgeItemIdField.SelectName} = @ItemId
-                             
+                    {FridgeItemsTable.GenerateSelect()}
+                    WHERE {FridgeItemIdField.SelectName} = @ItemId
                  """;
             command.Parameters.Add(FridgeItemIdField.GenerateParameter("@ItemId", itemId));
 
@@ -370,10 +368,8 @@ public class FridgeService : IFridgeService
 
             command.CommandText =
                 $"""
-
-                                 {FridgeItemsTable.GenerateSelect}
-                                 WHERE {FridgeUserIdField.SelectName} = @UserId
-                             
+                    {FridgeItemsTable.GenerateSelect()}
+                    WHERE {FridgeUserIdField.SelectName} = @UserId
                  """;
             command.Parameters.Add(FridgeUserIdField.GenerateParameter("@UserId", userId));
 
