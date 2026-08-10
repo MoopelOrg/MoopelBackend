@@ -440,7 +440,7 @@ public class StorageService : IStorageService
                                  UPDATE {StoragesTable.SelectName}
                                  SET {StorageNameField.SelectName} = @Name,
                                      {StorageDescriptionField.SelectName} = @Description
-                                 OUTPUT INSERTED.{StoragesTable.GetFields()}
+                                 {StoragesTable.GenerateOutput()}
                                  WHERE {StorageIdField.SelectName} = @StorageId
                              
                  """;
@@ -448,18 +448,18 @@ public class StorageService : IStorageService
             command.Parameters.Add(StorageDescriptionField.GenerateParameter("@Description", request.Description));
             command.Parameters.Add(StorageIdField.GenerateParameter("@StorageId", storageId));
 
-            await using SqlDataReader reader = await command.ExecuteReaderAsync();
+            Storage storage;
 
-            if (await reader.ReadAsync() is false)
+            await using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
-                throw new InvalidOperationException($"No storage found for StorageId [{storageId}].");
-            }
-
-            Storage storage = DtoReaders.ReadStorage(reader);
-
-            if (await reader.ReadAsync())
-            {
-                throw new InvalidOperationException($"Updated more than one storage for StorageId [{storageId}].");
+                if (await reader.ReadAsync())
+                {
+                    storage = DtoReaders.ReadStorage(reader);
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Updated more than one storage for StorageId [{storageId}].");
+                }
             }
 
             await transaction.CommitAsync();

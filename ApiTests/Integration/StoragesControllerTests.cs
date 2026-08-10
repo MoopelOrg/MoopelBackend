@@ -247,7 +247,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage updateResponse =
-            await client.PutAsJsonAsync(Routes.Storage.Generate.UpdateStorage(created.StorageId), updateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(Routes.Storage.Generate.UpdateStorage(created.StorageId), updateRequest, _cancelToken);
         string updateBody = await updateResponse.Content.ReadAsStringAsync(_cancelToken);
         Storage? updated = await updateResponse.Content.ReadFromJsonAsync<Storage>(_cancelToken);
 
@@ -273,7 +273,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PutAsJsonAsync(Routes.Storage.Generate.UpdateStorage(StorageTestData.NonExistentStorageId), updateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(Routes.Storage.Generate.UpdateStorage(StorageTestData.NonExistentStorageId), updateRequest, _cancelToken);
 
         // Assert
         Assert.True(
