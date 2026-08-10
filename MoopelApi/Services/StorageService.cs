@@ -43,28 +43,28 @@ public class StorageService : IStorageService
 
             command.CommandText =
                 $"""
-
-                                 INSERT INTO {StoragesTable.SelectName}
-                                 ({StorageUserIdField.SelectName},
-                                  {StorageNameField.SelectName},
-                                  {StorageDescriptionField.SelectName})
-                                 OUTPUT INSERTED.{StoragesTable.GetFields()}
-                                 VALUES
-                                 (@UserId, @Name, @Description)
-                             
+                    INSERT INTO {StoragesTable.SelectName}
+                    ({StorageUserIdField.SelectName},
+                    {StorageNameField.SelectName},
+                    {StorageDescriptionField.SelectName})
+                    {StoragesTable.GenerateOutput()}
+                    VALUES
+                    (@UserId, @Name, @Description)
                  """;
             command.Parameters.Add(StorageUserIdField.GenerateParameter("@UserId", userId));
             command.Parameters.Add(StorageNameField.GenerateParameter("@Name", request.Name));
             command.Parameters.Add(StorageDescriptionField.GenerateParameter("@Description", request.Description));
 
-            await using SqlDataReader reader = await command.ExecuteReaderAsync();
-
-            if (await reader.ReadAsync() is false)
+            Storage storage;
+            await using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
-                throw new InvalidOperationException("Failed to create storage.");
-            }
+                if (await reader.ReadAsync() is false)
+                {
+                    throw new InvalidOperationException("Failed to create storage.");
+                }
 
-            Storage storage = DtoReaders.ReadStorage(reader);
+                storage = DtoReaders.ReadStorage(reader);
+            }
 
             await transaction.CommitAsync();
 
