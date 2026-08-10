@@ -415,10 +415,12 @@ public class GroupService : IGroupService
 
             List<Group> updatedGroups = [];
 
-            using SqlDataReader reader = await command.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
+            await using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
-                updatedGroups.Add(DtoReaders.ReadGroup(reader, GroupsTable.Alias));
+                while (await reader.ReadAsync())
+                {
+                    updatedGroups.Add(DtoReaders.ReadGroup(reader));
+                }
             }
 
             if (updatedGroups.Count == 0)
