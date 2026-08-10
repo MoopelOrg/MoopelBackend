@@ -52,13 +52,7 @@ public class SessionsController : ControllerBase
 
         Session? session = await _sessionService.GetSessionById(sessionId);
 
-        if (session is null)
-        {
-            _logger.LogInformation("Request[{Context}] attempted to get session[{SessionId}] which was not found.",
-                context, sessionId);
-            return NotFound();
-        }
-        if (session.UserId != contextUser.UserId)
+        if (session?.UserId != contextUser.UserId)
         {
             _logger.LogWarning("Request[{Context}] attempted to get session[{SessionId}] without sufficient permissions.",
                 context, sessionId);

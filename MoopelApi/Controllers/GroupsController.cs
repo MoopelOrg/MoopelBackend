@@ -43,6 +43,7 @@ public class GroupsController : ControllerBase
     [HttpGet(Routes.Group.GroupById)]
     public async Task<ActionResult<Group>> GetGroupById(int groupId)
     {
+        User contextUser = await _contextService.GetContextUser(HttpContext);
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
         _logger.LogInformation("Received request to retrieve group[{Id}] from context[{Context}]", groupId, context);
 
@@ -52,6 +53,15 @@ public class GroupsController : ControllerBase
             _logger.LogInformation("Request[{Context}] attempted to get group[{GroupId}] which was not found.",
                 context, groupId);
             return NotFound();
+        }
+
+        GroupAccess groupAccess = await _authService.GetUserGroupAccess(contextUser, group);
+
+        if (groupAccess.CanViewGroup() is false)
+        {
+            _logger.LogWarning("Request[{Context}] attempted to view group[{GroupId}] without sufficient permissions.",
+                context, groupId);
+            return Forbid();
         }
 
         return Ok(group);
