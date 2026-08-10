@@ -90,7 +90,7 @@ public class SessionService : ISessionService
         }
     }
 
-    public async Task<Session> GetSessionById(int sessionId)
+    public async Task<Session?> GetSessionById(int sessionId)
     {
         _logger.LogInformation("Getting session [{SessionId}]", sessionId);
         SqlCommand? command = null;
@@ -104,10 +104,8 @@ public class SessionService : ISessionService
 
             command.CommandText =
                 $"""
-
-                                 {SessionsTable.GenerateSelect()}
-                                 WHERE {SessionIdField.SelectName} = @SessionId
-                             
+                    {SessionsTable.GenerateSelect()}
+                    WHERE {SessionIdField.SelectName} = @SessionId
                  """;
             command.Parameters.Add(SessionIdField.GenerateParameter("@SessionId", sessionId));
 
@@ -119,9 +117,11 @@ public class SessionService : ISessionService
                 _logger.LogInformation("Found [{Session}] for [{SessionId}]", session, sessionId);
                 return session;
             }
-
-            _logger.LogInformation("No session found for [{SessionId}]", sessionId);
-            throw new InvalidOperationException($"No session found for SessionId [{sessionId}].");
+            else
+            {
+                _logger.LogInformation("No session found for [{SessionId}]", sessionId);
+                return null;
+            }
         }
         catch (Exception ex)
         {

@@ -12,7 +12,7 @@ public interface ISessionService
 
     Task<List<Session>> GetGuestUserSessions(CancellationToken cancelToken);
 
-    Task<Session> GetSessionById(int sessionId);
+    Task<Session?> GetSessionById(int sessionId);
 
     Task RevokeSession(int sessionId);
 
