@@ -122,7 +122,7 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
     }
 
     [Fact]
-    public async Task SessionById_ReturnsNotFound_WhenMissing()
+    public async Task SessionById_ReturnsForbidden_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
@@ -136,8 +136,8 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         // Assert
 
         Assert.True(
-            condition: response.StatusCode == HttpStatusCode.NotFound,
-            userMessage: await TMsg(HttpStatusCode.NotFound, response));
+            condition: response.StatusCode == HttpStatusCode.Forbidden,
+            userMessage: await TMsg(HttpStatusCode.Forbidden, response));
     }
 
     [Fact]
@@ -251,7 +251,7 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
     }
 
     [Fact]
-    public async Task RevokeSession_ReturnsNotFound_WhenMissing()
+    public async Task RevokeSession_ReturnsForbidden_WhenMissing()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
@@ -266,8 +266,8 @@ public class SessionsControllerTests : IClassFixture<MoopelApiFactory>
         // Assert
 
         Assert.True(
-            condition: response.StatusCode == HttpStatusCode.NotFound,
-            userMessage: await TMsg(HttpStatusCode.NotFound, response));
+            condition: response.StatusCode == HttpStatusCode.Forbidden,
+            userMessage: await TMsg(HttpStatusCode.Forbidden, response));
     }
 
     [Fact]

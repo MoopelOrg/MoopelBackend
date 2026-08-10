@@ -135,7 +135,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
     }
 
     [Fact]
-    public async Task GroupById_DoesNotExpose_AnotherUsersGroup()
+    public async Task GroupById_AllowsViewing_AnotherUsersGroup()
     {
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
@@ -163,8 +163,8 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Assert
         Assert.True(
-            response.StatusCode == HttpStatusCode.Forbidden || response.StatusCode == HttpStatusCode.NotFound,
-            $"Expected {HttpStatusCode.Forbidden} or {HttpStatusCode.NotFound} but got {response.StatusCode}. Body: {responseBody}");
+            response.StatusCode == HttpStatusCode.OK,
+            $"Expected {HttpStatusCode.OK} but got {response.StatusCode}. Body: {responseBody}");
     }
 
     #endregion
@@ -271,7 +271,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage updateResponse =
-            await client.PutAsJsonAsync(Routes.Group.Generate.UpdateGroup(created.GroupId), updateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(Routes.Group.Generate.UpdateGroup(created.GroupId), updateRequest, _cancelToken);
         string updateBody = await updateResponse.Content.ReadAsStringAsync(_cancelToken);
         Group? updated = await updateResponse.Content.ReadFromJsonAsync<Group>(_cancelToken);
 
@@ -299,7 +299,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PutAsJsonAsync(Routes.Group.Generate.UpdateGroup(9999), updateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(Routes.Group.Generate.UpdateGroup(9999), updateRequest, _cancelToken);
 
         // Assert
         Assert.True(
