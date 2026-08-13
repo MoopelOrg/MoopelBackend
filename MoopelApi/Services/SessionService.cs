@@ -3,10 +3,11 @@
 using MoopelApi.Helpers;
 using MoopelApi.Models;
 using MoopelApi.Models.Configuration;
-using MoopelApi.Models.Dto;
-using MoopelApi.Models.Dto.Read;
-using MoopelApi.Models.Enums;
 using MoopelApi.Services.Interfaces;
+
+using MoopelObjects.Dto;
+using MoopelObjects.Dto.Read;
+using MoopelObjects.Enums;
 
 using static MoopelApi.ConstantValues.Database;
 

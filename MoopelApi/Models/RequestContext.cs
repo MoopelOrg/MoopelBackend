@@ -1,4 +1,4 @@
-﻿using MoopelApi.Models.Enums;
+﻿using MoopelObjects.Enums;
 
 namespace MoopelApi.Models;
 

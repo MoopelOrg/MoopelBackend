@@ -1,6 +1,6 @@
-﻿using MoopelApi.Models.Dto;
-using MoopelApi.Models.Requests.Creation;
-using MoopelApi.Models.Requests.Update;
+﻿using MoopelObjects.Dto;
+using MoopelObjects.Requests.Creation;
+using MoopelObjects.Requests.Update;
 
 namespace MoopelApi.Services.Interfaces;
 

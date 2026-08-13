@@ -2,11 +2,12 @@
 
 using MoopelApi;
 using MoopelApi.Helpers;
-using MoopelApi.Models.Dto;
-using MoopelApi.Models.Dto.Read;
-using MoopelApi.Models.Requests;
-using MoopelApi.Models.Requests.Creation;
-using MoopelApi.Models.Results;
+
+using MoopelObjects.Dto;
+using MoopelObjects.Dto.Read;
+using MoopelObjects.Requests;
+using MoopelObjects.Requests.Creation;
+using MoopelObjects.Results;
 
 namespace ApiTests.Integration.Generic;
 

@@ -55,6 +55,7 @@ public static class SqlHelper
             // Other
             "uniqueidentifier" => SqlDbType.UniqueIdentifier,
             "xml" => SqlDbType.Xml,
+            "json" => SqlDbType.Json,
 
             _ => throw new Exception($"Could not identify SqlDbType of '{type}'")
         };

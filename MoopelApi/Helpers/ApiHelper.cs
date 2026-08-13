@@ -6,8 +6,6 @@ namespace MoopelApi.Helpers;
 
 public static class ApiHelper
 {
-
-
     public async static Task<T?> GetClassFromResponse<T>(
         HttpResponseMessage response,
         JsonSerializerOptions jsonSerializerOptions,

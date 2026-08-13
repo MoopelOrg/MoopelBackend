@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Data.SqlClient;
 
 using MoopelApi.Helpers;
-using MoopelApi.Models.Dto;
+
+using MoopelObjects.Dto;
+using MoopelObjects.Enums;
 
 namespace ApiTests.Unit;
 
@@ -91,7 +93,7 @@ public class FormatHelperTests
             UserId = FormatHelperTestData.UserId,
             Username = FormatHelperTestData.UserName,
             PasswordHash = "hash",
-            Role = MoopelApi.Models.Enums.UserRole.Standard,
+            Role = UserRole.Standard,
             CreatedAtUtc = FormatHelperTestData.UtcDateTime,
             Deactivated = false,
             ThemeId = null
@@ -115,7 +117,7 @@ public class FormatHelperTests
             UserId = FormatHelperTestData.UserId,
             Username = FormatHelperTestData.UserName,
             PasswordHash = "hash",
-            Role = MoopelApi.Models.Enums.UserRole.Standard,
+            Role = UserRole.Standard,
             CreatedAtUtc = FormatHelperTestData.UtcDateTime,
             Deactivated = false,
             ThemeId = null

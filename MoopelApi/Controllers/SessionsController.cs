@@ -2,9 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 
 using MoopelApi.Models;
-using MoopelApi.Models.Dto;
-using MoopelApi.Models.Enums;
 using MoopelApi.Services.Interfaces;
+
+using MoopelObjects.Dto;
+using MoopelObjects.Enums;
 
 namespace MoopelApi.Controllers;
 

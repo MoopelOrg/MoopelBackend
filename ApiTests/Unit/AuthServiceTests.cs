@@ -5,11 +5,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 using MoopelApi.Helpers;
 using MoopelApi.Models;
-using MoopelApi.Models.Dto;
-using MoopelApi.Models.Enums;
-using MoopelApi.Models.Requests;
-using MoopelApi.Models.Results;
 using MoopelApi.Services;
+
+using MoopelObjects.Dto;
+using MoopelObjects.Enums;
+using MoopelObjects.Requests;
+using MoopelObjects.Results;
 
 using static MoopelApi.ConstantValues.Database;
 

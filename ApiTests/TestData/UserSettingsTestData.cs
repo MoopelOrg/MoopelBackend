@@ -1,4 +1,4 @@
-using MoopelApi.Models.Requests.Update;
+using MoopelObjects.Requests.Update;
 
 namespace ApiTests.TestData;
 

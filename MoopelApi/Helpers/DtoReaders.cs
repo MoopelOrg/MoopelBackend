@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 
-using MoopelApi.Models.Dto;
-using MoopelApi.Models.Enums;
+using MoopelObjects.Dto;
+using MoopelObjects.Enums;
 
 using static MoopelApi.ConstantValues.Database;
 

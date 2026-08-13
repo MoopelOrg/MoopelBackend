@@ -134,6 +134,7 @@ public class DatabaseField
                 SqlDbType.Image => "IMAGE",
 
                 SqlDbType.Xml => "XML",
+                SqlDbType.Json => "JSON",
 
                 _ => throw new NotSupportedException($"Unsupported SQL data type: {Type}")
             };

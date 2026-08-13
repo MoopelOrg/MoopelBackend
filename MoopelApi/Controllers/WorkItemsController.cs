@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-using MoopelApi.Exceptions;
 using MoopelApi.Models;
-using MoopelApi.Models.Dto;
-using MoopelApi.Models.Enums;
-using MoopelApi.Models.Requests.Creation;
-using MoopelApi.Models.Requests.Update;
 using MoopelApi.Services.Interfaces;
+
+using MoopelObjects.Dto;
+using MoopelObjects.Enums;
+using MoopelObjects.Exceptions;
+using MoopelObjects.Requests.Creation;
+using MoopelObjects.Requests.Update;
 
 namespace MoopelApi.Controllers;
 

@@ -1,5 +1,5 @@
-﻿using MoopelApi.Exceptions;
-using MoopelApi.Models.Enums;
+﻿using MoopelObjects.Enums;
+using MoopelObjects.Exceptions;
 
 namespace MoopelApi.Helpers;
 

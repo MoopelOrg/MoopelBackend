@@ -1,7 +1,8 @@
 ﻿using MoopelApi.Models;
-using MoopelApi.Models.Dto;
-using MoopelApi.Models.Requests;
-using MoopelApi.Models.Results;
+
+using MoopelObjects.Dto;
+using MoopelObjects.Requests;
+using MoopelObjects.Results;
 
 namespace MoopelApi.Services.Interfaces;
 

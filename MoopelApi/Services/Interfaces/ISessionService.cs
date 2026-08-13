@@ -1,6 +1,7 @@
 ﻿using MoopelApi.Models;
-using MoopelApi.Models.Dto;
-using MoopelApi.Models.Dto.Read;
+
+using MoopelObjects.Dto;
+using MoopelObjects.Dto.Read;
 
 namespace MoopelApi.Services.Interfaces;
 

@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 
 using MoopelApi.Helpers;
 using MoopelApi.Models;
-using MoopelApi.Models.Dto;
-using MoopelApi.Models.Dto.Read;
-using MoopelApi.Models.Requests;
-using MoopelApi.Models.Results;
 using MoopelApi.Services.Interfaces;
+
+using MoopelObjects.Dto;
+using MoopelObjects.Dto.Read;
+using MoopelObjects.Requests;
+using MoopelObjects.Results;
 
 using static MoopelApi.ConstantValues;
 

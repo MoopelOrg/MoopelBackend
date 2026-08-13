@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 
-namespace ApiTests.Integration;
+namespace ApiTests;
 
 public static class TestHttpJsonExtensions
 {

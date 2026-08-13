@@ -1,5 +1,5 @@
-﻿using MoopelApi.Models.Requests.Creation;
-using MoopelApi.Models.Requests.Update;
+﻿using MoopelObjects.Requests.Creation;
+using MoopelObjects.Requests.Update;
 
 namespace ApiTests.TestData;
 

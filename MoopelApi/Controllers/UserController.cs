@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 
 using MoopelApi.Helpers;
 using MoopelApi.Models;
-using MoopelApi.Models.Dto;
-using MoopelApi.Models.Dto.Read;
-using MoopelApi.Models.Requests.Update;
 using MoopelApi.Services.Interfaces;
+
+using MoopelObjects.Dto;
+using MoopelObjects.Dto.Read;
+using MoopelObjects.Requests.Update;
 
 namespace MoopelApi.Controllers;
 

@@ -5,9 +5,10 @@ using ApiTests.TestData;
 
 using MoopelApi;
 using MoopelApi.Models.Attributes;
-using MoopelApi.Models.Dto;
-using MoopelApi.Models.Requests.Creation;
-using MoopelApi.Models.Requests.Update;
+
+using MoopelObjects.Dto;
+using MoopelObjects.Requests.Creation;
+using MoopelObjects.Requests.Update;
 
 using static ApiTests.TestHelper;
 

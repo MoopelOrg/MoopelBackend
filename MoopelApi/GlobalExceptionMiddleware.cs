@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-using MoopelApi.Exceptions;
+using MoopelObjects.Exceptions;
 
 namespace MoopelApi;
 

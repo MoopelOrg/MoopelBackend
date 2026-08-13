@@ -2,10 +2,12 @@
 
 using MoopelApi.Helpers;
 using MoopelApi.Models.Configuration;
-using MoopelApi.Models.Dto;
-using MoopelApi.Models.Requests.Creation;
-using MoopelApi.Models.Requests.Update;
 using MoopelApi.Services.Interfaces;
+
+
+using MoopelObjects.Dto;
+using MoopelObjects.Requests.Creation;
+using MoopelObjects.Requests.Update;
 
 using static MoopelApi.ConstantValues.Database;
 

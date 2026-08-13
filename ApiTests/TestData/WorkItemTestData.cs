@@ -1,6 +1,6 @@
-using MoopelApi.Models.Enums;
-using MoopelApi.Models.Requests.Creation;
-using MoopelApi.Models.Requests.Update;
+using MoopelObjects.Enums;
+using MoopelObjects.Requests.Creation;
+using MoopelObjects.Requests.Update;
 
 namespace ApiTests.TestData;
 

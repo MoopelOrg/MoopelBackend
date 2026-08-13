@@ -10,11 +10,12 @@ using Microsoft.IdentityModel.Tokens;
 using MoopelApi.Helpers;
 using MoopelApi.Models;
 using MoopelApi.Models.Configuration;
-using MoopelApi.Models.Dto;
-using MoopelApi.Models.Enums;
-using MoopelApi.Models.Requests;
-using MoopelApi.Models.Results;
 using MoopelApi.Services.Interfaces;
+
+using MoopelObjects.Dto;
+using MoopelObjects.Enums;
+using MoopelObjects.Requests;
+using MoopelObjects.Results;
 
 using static MoopelApi.ConstantValues.Database;
 

@@ -15,10 +15,11 @@ using Microsoft.Extensions.Logging;
 
 using MoopelApi;
 using MoopelApi.Models.Configuration;
-using MoopelApi.Models.Dto;
-using MoopelApi.Models.Enums;
-using MoopelApi.Models.Requests;
 using MoopelApi.Services.Interfaces;
+
+using MoopelObjects.Dto;
+using MoopelObjects.Enums;
+using MoopelObjects.Requests;
 
 using Respawn;
 

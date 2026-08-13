@@ -4,7 +4,8 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 using MoopelApi.Models.Configuration;
-using MoopelApi.Models.Enums;
+
+using MoopelObjects.Enums;
 
 namespace MoopelApi;
 
@@ -135,7 +136,7 @@ public class ConstantValues
             new()
             {
                 Name = "ThemeData",
-                Type = SqlDbType.NVarChar, // SQL Server does not support JSON type directly
+                Type = SqlDbType.Json, // SQL Server does not support JSON type directly
                 Nullable = false,
                 FieldSize = null,
                 DefaultValue = "'{}'"
