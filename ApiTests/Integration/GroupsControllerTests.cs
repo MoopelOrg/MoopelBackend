@@ -3,8 +3,7 @@
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 
-using MoopelApi;
-
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
@@ -34,7 +33,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Group.MyGroups, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Group.MyGroups, _cancelToken);
 
         // Assert
         Assert.True(
@@ -52,7 +51,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Group.MyGroups, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Group.MyGroups, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         List<Group>? groups = await response.Content.ReadFromJsonAsync<List<Group>>(_cancelToken);
 
@@ -75,7 +74,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Group.Generate.GroupById(1), _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Group.Generate.GroupById(1), _cancelToken);
 
         // Assert
         Assert.True(
@@ -96,7 +95,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage createResponse =
-            await client.PostAsJsonAsync(Routes.Group.CreateGroup, createRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Group.CreateGroup, createRequest, _cancelToken);
 
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Group? created = await createResponse.Content.ReadFromJsonAsync<Group>(_cancelToken);
@@ -104,7 +103,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         Assert.True(created is not null, $"Failed to create group. Status: {createResponse.StatusCode}, Body: {createBody}");
 
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Group.Generate.GroupById(created.GroupId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Group.Generate.GroupById(created.GroupId), _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Group? result = await response.Content.ReadFromJsonAsync<Group>(_cancelToken);
 
@@ -127,7 +126,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Group.Generate.GroupById(9999), _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Group.Generate.GroupById(9999), _cancelToken);
 
         // Assert
         Assert.True(
@@ -151,7 +150,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage createResponse =
-            await user1.PostAsJsonAsync(Routes.Group.CreateGroup, request, _cancelToken);
+            await user1.PostAsJsonAsync(ApiRoutes.Group.CreateGroup, request, _cancelToken);
 
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Group? created = await createResponse.Content.ReadFromJsonAsync<Group>(_cancelToken);
@@ -159,7 +158,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         Assert.True(created is not null, $"Failed to create group for user1. Status: {createResponse.StatusCode}, Body: {createBody}");
 
         HttpResponseMessage response =
-            await user2.GetAsync(Routes.Group.Generate.GroupById(created.GroupId), _cancelToken);
+            await user2.GetAsync(ApiRoutes.Group.Generate.GroupById(created.GroupId), _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
@@ -183,7 +182,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Group.CreateGroup, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Group.CreateGroup, request, _cancelToken);
 
         // Assert
         Assert.True(
@@ -203,7 +202,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Group.CreateGroup, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Group.CreateGroup, request, _cancelToken);
 
         Group? created = await response.Content.ReadFromJsonAsync<Group>(_cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
@@ -231,11 +230,11 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage firstResponse =
-            await client.PostAsJsonAsync(Routes.Group.CreateGroup, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Group.CreateGroup, request, _cancelToken);
         string firstBody = await firstResponse.Content.ReadAsStringAsync(_cancelToken);
 
         HttpResponseMessage secondResponse =
-            await client.PostAsJsonAsync(Routes.Group.CreateGroup, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Group.CreateGroup, request, _cancelToken);
         string secondBody = await secondResponse.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
@@ -263,7 +262,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         HttpResponseMessage createResponse =
-            await client.PostAsJsonAsync(Routes.Group.CreateGroup, createRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Group.CreateGroup, createRequest, _cancelToken);
 
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Group? created = await createResponse.Content.ReadFromJsonAsync<Group>(_cancelToken);
@@ -272,7 +271,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage updateResponse =
-            await client.PatchAsJsonAsync(Routes.Group.Generate.UpdateGroup(created.GroupId), updateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(ApiRoutes.Group.Generate.UpdateGroup(created.GroupId), updateRequest, _cancelToken);
         string updateBody = await updateResponse.Content.ReadAsStringAsync(_cancelToken);
         Group? updated = await updateResponse.Content.ReadFromJsonAsync<Group>(_cancelToken);
 
@@ -300,7 +299,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PatchAsJsonAsync(Routes.Group.Generate.UpdateGroup(9999), updateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(ApiRoutes.Group.Generate.UpdateGroup(9999), updateRequest, _cancelToken);
 
         // Assert
         Assert.True(
@@ -324,7 +323,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
         GroupCreateRequest createRequest = GroupTestData.ValidCreateRequest;
 
         HttpResponseMessage createResponse =
-            await client.PostAsJsonAsync(Routes.Group.CreateGroup, createRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Group.CreateGroup, createRequest, _cancelToken);
 
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Group? created = await createResponse.Content.ReadFromJsonAsync<Group>(_cancelToken);
@@ -333,10 +332,10 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage deleteResponse =
-            await client.DeleteAsync(Routes.Group.Generate.DeleteGroup(created.GroupId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Group.Generate.DeleteGroup(created.GroupId), _cancelToken);
         string deleteBody = await deleteResponse.Content.ReadAsStringAsync(_cancelToken);
         HttpResponseMessage getResponse =
-            await client.GetAsync(Routes.Group.Generate.GroupById(created.GroupId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Group.Generate.GroupById(created.GroupId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -359,7 +358,7 @@ public class GroupsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.DeleteAsync(Routes.Group.Generate.DeleteGroup(9999), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Group.Generate.DeleteGroup(9999), _cancelToken);
 
         // Assert
         Assert.True(

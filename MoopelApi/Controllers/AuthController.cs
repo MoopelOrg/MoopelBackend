@@ -5,6 +5,7 @@ using MoopelApi.Helpers;
 using MoopelApi.Models;
 using MoopelApi.Services.Interfaces;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Dto.Read;
 using MoopelObjects.Requests;
@@ -31,7 +32,7 @@ public class AuthController : ControllerBase
         _userService = userService;
     }
 
-    [HttpPost(Routes.Auth.Login)]
+    [HttpPost(ApiRoutes.Auth.Login)]
     public async Task<ActionResult<LoginResult>> Login([FromBody] LoginRequest request, CancellationToken cancelToken)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
@@ -55,7 +56,7 @@ public class AuthController : ControllerBase
         }
     }
 
-    [HttpPost(Routes.Auth.GuestLogin)]
+    [HttpPost(ApiRoutes.Auth.GuestLogin)]
     public async Task<ActionResult<LoginResult>> GuestLogin(CancellationToken cancelToken)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
@@ -67,7 +68,7 @@ public class AuthController : ControllerBase
         return Ok(loginResult);
     }
 
-    [HttpPost(Routes.Auth.Register)]
+    [HttpPost(ApiRoutes.Auth.Register)]
     public async Task<ActionResult<UserRead>> Register([FromBody] RegistrationRequest request)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
@@ -115,7 +116,7 @@ public class AuthController : ControllerBase
     }
 
     [Authorize]
-    [HttpPost(Routes.Auth.Logout)]
+    [HttpPost(ApiRoutes.Auth.Logout)]
     public async Task<ActionResult<bool>> Logout()
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -130,7 +131,7 @@ public class AuthController : ControllerBase
     }
 
     [Authorize]
-    [HttpGet(Routes.Auth.Me)]
+    [HttpGet(ApiRoutes.Auth.Me)]
     public async Task<ActionResult<UserRead>> Me()
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);

@@ -4,9 +4,9 @@ using System.Text.Json;
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 
-using MoopelApi;
 using MoopelApi.Models.Attributes;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
@@ -37,7 +37,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Theme.AllThemes, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Theme.AllThemes, _cancelToken);
 
         // Assert
         Assert.True(
@@ -55,7 +55,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Theme.AllThemes, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Theme.AllThemes, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         List<Theme>? themes = JsonSerializer.Deserialize<List<Theme>>(responseBody, _apiFactory.JsonSerializerOptions);
 
@@ -79,7 +79,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         Theme created = await CreateThemeAsync(client, request);
-        HttpResponseMessage response = await client.GetAsync(Routes.Theme.AllThemes, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Theme.AllThemes, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         List<Theme>? themes = JsonSerializer.Deserialize<List<Theme>>(responseBody, _apiFactory.JsonSerializerOptions);
         Theme? theme = themes?.FirstOrDefault(t => t.ThemeId == created.ThemeId);
@@ -106,7 +106,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        string endpoint = Routes.Theme.Generate.ThemeById(ThemeTestData.MissingThemeId);
+        string endpoint = ApiRoutes.Theme.Generate.ThemeById(ThemeTestData.MissingThemeId);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(endpoint, _cancelToken);
@@ -131,7 +131,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         Theme created = await CreateThemeAsync(client, createRequest);
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Theme.Generate.ThemeById(created.ThemeId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Theme.Generate.ThemeById(created.ThemeId), _cancelToken);
 
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Theme? result = JsonSerializer.Deserialize<Theme>(responseBody, _apiFactory.JsonSerializerOptions);
@@ -157,7 +157,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Theme.Generate.ThemeById(ThemeTestData.MissingThemeId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Theme.Generate.ThemeById(ThemeTestData.MissingThemeId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -183,7 +183,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         Theme created = await CreateThemeAsync(user1, request);
         HttpResponseMessage response =
-            await user2.GetAsync(Routes.Theme.Generate.ThemeById(created.ThemeId), _cancelToken);
+            await user2.GetAsync(ApiRoutes.Theme.Generate.ThemeById(created.ThemeId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -205,7 +205,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Theme.CreateTheme, ThemeTestData.ValidCreateRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Theme.CreateTheme, ThemeTestData.ValidCreateRequest, _cancelToken);
 
         // Assert
         Assert.True(
@@ -225,7 +225,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Theme.CreateTheme, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Theme.CreateTheme, request, _cancelToken);
 
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Theme? created = JsonSerializer.Deserialize<Theme>(responseBody, _apiFactory.JsonSerializerOptions);
@@ -255,7 +255,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PatchAsJsonAsync(Routes.Theme.Generate.UpdateTheme(ThemeTestData.MissingThemeId), ThemeTestData.ValidUpdateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(ApiRoutes.Theme.Generate.UpdateTheme(ThemeTestData.MissingThemeId), ThemeTestData.ValidUpdateRequest, _cancelToken);
 
         // Assert
         Assert.True(
@@ -277,7 +277,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
         Theme created = await CreateThemeAsync(client, createRequest);
 
         HttpResponseMessage updateResponse =
-            await client.PatchAsJsonAsync(Routes.Theme.Generate.UpdateTheme(created.ThemeId), updateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(ApiRoutes.Theme.Generate.UpdateTheme(created.ThemeId), updateRequest, _cancelToken);
 
         string updateResponseBody = await updateResponse.Content.ReadAsStringAsync(_cancelToken);
         Theme? updated = JsonSerializer.Deserialize<Theme>(updateResponseBody, _apiFactory.JsonSerializerOptions);
@@ -308,7 +308,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PatchAsJsonAsync(Routes.Theme.Generate.UpdateTheme(ThemeTestData.MissingThemeId), updateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(ApiRoutes.Theme.Generate.UpdateTheme(ThemeTestData.MissingThemeId), updateRequest, _cancelToken);
 
         // Assert
         Assert.True(
@@ -321,7 +321,7 @@ public class ThemesControllerTests : IClassFixture<MoopelApiFactory>
     private async Task<Theme> CreateThemeAsync(HttpClient client, ThemeCreateRequest request)
     {
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Theme.CreateTheme, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Theme.CreateTheme, request, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MoopelApi.Models;
 using MoopelApi.Services.Interfaces;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
@@ -33,7 +34,7 @@ public class TransactionsController : ControllerBase
         _bankService = bankService;
     }
 
-    [HttpGet(Routes.Transaction.TransactionsByAccountId)]
+    [HttpGet(ApiRoutes.Transaction.TransactionsByAccountId)]
     public async Task<ActionResult<List<Transaction>>> GetTransactionsForAccount(int accountId, CancellationToken cancelToken)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -62,7 +63,7 @@ public class TransactionsController : ControllerBase
         return Ok(transactions ?? []);
     }
 
-    [HttpGet(Routes.Transaction.TransactionById)]
+    [HttpGet(ApiRoutes.Transaction.TransactionById)]
     public async Task<ActionResult<Transaction>> GetTransactionById(int transactionId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -97,7 +98,7 @@ public class TransactionsController : ControllerBase
         return Ok(transaction);
     }
 
-    [HttpPost(Routes.Transaction.CreateTransaction)]
+    [HttpPost(ApiRoutes.Transaction.CreateTransaction)]
     public async Task<ActionResult<Transaction>> CreateTransaction(int accountId, [FromBody] TransactionCreateRequest createRequest)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -122,7 +123,7 @@ public class TransactionsController : ControllerBase
             createdTransaction);
     }
 
-    [HttpDelete(Routes.Transaction.DeleteTransaction)]
+    [HttpDelete(ApiRoutes.Transaction.DeleteTransaction)]
     public async Task<ActionResult> DeleteTransaction(int transactionId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -154,7 +155,7 @@ public class TransactionsController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost(Routes.Transaction.CreateTransactionItem)]
+    [HttpPost(ApiRoutes.Transaction.CreateTransactionItem)]
     public async Task<ActionResult<TransactionItem>> CreateTransactionItem(int transactionId, TransactionItemCreateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -184,7 +185,7 @@ public class TransactionsController : ControllerBase
         return CreatedAtAction(nameof(GetTransactionById), new { transactionId }, item);
     }
 
-    [HttpPatch(Routes.Transaction.UpdateTransactionItem)]
+    [HttpPatch(ApiRoutes.Transaction.UpdateTransactionItem)]
     public async Task<ActionResult<TransactionItem>> UpdateTransactionItem(int transactionItemId, TransactionItemUpdateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -222,7 +223,7 @@ public class TransactionsController : ControllerBase
         return Ok(updatedItem);
     }
 
-    [HttpDelete(Routes.Transaction.DeleteTransactionItem)]
+    [HttpDelete(ApiRoutes.Transaction.DeleteTransactionItem)]
     public async Task<ActionResult> DeleteTransactionItem(int transactionItemId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 using MoopelApi.Services.Interfaces;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 
 namespace MoopelApi.Controllers;
@@ -34,7 +35,7 @@ public class ImageController : ControllerBase
         return Ok(new { ImageId = imageId });
     }
 
-    [HttpGet(Routes.Image.ImageById)]
+    [HttpGet(ApiRoutes.Image.ImageById)]
     public async Task<IActionResult> GetImage(int imageId)
     {
         MoopelImage image = await _imageService.GetImage(imageId);
@@ -47,7 +48,7 @@ public class ImageController : ControllerBase
         return File(image.FullImage.Data, image.FullImage.ContentType);
     }
 
-    [HttpGet(Routes.Image.ThumbnailById)]
+    [HttpGet(ApiRoutes.Image.ThumbnailById)]
     public async Task<IActionResult> GetThumbnail(int imageId)
     {
         MoopelImage image = await _imageService.GetImage(imageId);

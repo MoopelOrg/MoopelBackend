@@ -5,6 +5,7 @@ using MoopelApi.Helpers;
 using MoopelApi.Models;
 using MoopelApi.Services.Interfaces;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Dto.Read;
 using MoopelObjects.Requests.Update;
@@ -28,7 +29,7 @@ public class UserController : ControllerBase
         _contextService = contextService;
     }
 
-    [HttpGet(Routes.User.UserById)]
+    [HttpGet(ApiRoutes.User.UserById)]
     public async Task<ActionResult<UserRead>> GetUser(int userId)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
@@ -49,7 +50,7 @@ public class UserController : ControllerBase
         return Ok(user);
     }
 
-    [HttpGet(Routes.User.UserByName)]
+    [HttpGet(ApiRoutes.User.UserByName)]
     public async Task<ActionResult<UserRead>> GetUserByName(string username)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
@@ -74,7 +75,7 @@ public class UserController : ControllerBase
         return Ok(user);
     }
 
-    [HttpPatch(Routes.User.UpdateUser)]
+    [HttpPatch(ApiRoutes.User.UpdateUser)]
     public async Task<ActionResult<UserRead>> UpdateUser(int userId, [FromBody] UserUpdateRequest updateRequest)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
@@ -96,7 +97,7 @@ public class UserController : ControllerBase
     }
 
     [Authorize(Policy = Policies.AdminOnly)]
-    [HttpPatch(Routes.User.DisableUser)]
+    [HttpPatch(ApiRoutes.User.DisableUser)]
     public async Task<ActionResult> DisableUser(int userId)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);

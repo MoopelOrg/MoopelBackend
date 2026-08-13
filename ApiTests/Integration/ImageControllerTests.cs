@@ -3,7 +3,7 @@
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 
-using MoopelApi;
+using MoopelObjects;
 
 using static ApiTests.TestHelper;
 
@@ -31,7 +31,7 @@ public class ImageControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsync(Routes.Image.Upload, content: null, _cancelToken);
+            await client.PostAsync(ApiRoutes.Image.Upload, content: null, _cancelToken);
 
         // Assert
         Assert.True(
@@ -53,7 +53,7 @@ public class ImageControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsync(Routes.Image.Upload, form, _cancelToken);
+            await client.PostAsync(ApiRoutes.Image.Upload, form, _cancelToken);
 
         // Assert
         Assert.True(
@@ -74,7 +74,7 @@ public class ImageControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Image.Generate.ImageById(ImageTestData.MissingImageId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Image.Generate.ImageById(ImageTestData.MissingImageId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -92,7 +92,7 @@ public class ImageControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Image.Generate.ImageById(ImageTestData.MissingImageId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Image.Generate.ImageById(ImageTestData.MissingImageId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -113,7 +113,7 @@ public class ImageControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Image.Generate.ThumbnailById(ImageTestData.MissingImageId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Image.Generate.ThumbnailById(ImageTestData.MissingImageId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -131,7 +131,7 @@ public class ImageControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Image.Generate.ThumbnailById(ImageTestData.MissingImageId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Image.Generate.ThumbnailById(ImageTestData.MissingImageId), _cancelToken);
 
         // Assert
         Assert.True(

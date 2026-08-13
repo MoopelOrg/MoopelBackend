@@ -4,8 +4,7 @@ using System.Text.Json;
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 
-using MoopelApi;
-
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Enums;
 using MoopelObjects.Requests.Creation;
@@ -34,7 +33,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.WorkItem.Generate.WorkItemsByGroupId(WorkItemTestData.MissingGroupId), _cancelToken);
+            await client.GetAsync(ApiRoutes.WorkItem.Generate.WorkItemsByGroupId(WorkItemTestData.MissingGroupId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -51,7 +50,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.WorkItem.Generate.WorkItemById(WorkItemTestData.MissingWorkItemId), _cancelToken);
+            await client.GetAsync(ApiRoutes.WorkItem.Generate.WorkItemById(WorkItemTestData.MissingWorkItemId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -69,7 +68,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PostAsJsonAsync(
-                Routes.WorkItem.Generate.CreateWorkItem(WorkItemTestData.MissingGroupId),
+                ApiRoutes.WorkItem.Generate.CreateWorkItem(WorkItemTestData.MissingGroupId),
                 WorkItemTestData.ValidCreateRequest,
                 _cancelToken);
 
@@ -89,7 +88,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PutAsJsonAsync(
-                Routes.WorkItem.Generate.UpdateWorkItem(WorkItemTestData.MissingWorkItemId),
+                ApiRoutes.WorkItem.Generate.UpdateWorkItem(WorkItemTestData.MissingWorkItemId),
                 WorkItemTestData.ValidUpdateRequest,
                 _cancelToken);
 
@@ -108,7 +107,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.DeleteAsync(Routes.WorkItem.Generate.DeleteWorkItem(WorkItemTestData.MissingWorkItemId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.WorkItem.Generate.DeleteWorkItem(WorkItemTestData.MissingWorkItemId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -125,7 +124,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.WorkItem.AddLink, WorkItemTestData.ValidLinkRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.WorkItem.AddLink, WorkItemTestData.ValidLinkRequest, _cancelToken);
 
         // Assert
         Assert.True(
@@ -142,7 +141,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.WorkItem.RemoveLink, WorkItemTestData.ValidLinkRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.WorkItem.RemoveLink, WorkItemTestData.ValidLinkRequest, _cancelToken);
 
         // Assert
         Assert.True(
@@ -159,7 +158,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(
-            Routes.WorkItem.Generate.WorkItemsByGroupIdAndType(
+            ApiRoutes.WorkItem.Generate.WorkItemsByGroupIdAndType(
                 WorkItemTestData.MissingGroupId,
                 WorkItemTestData.Type.ToString()),
             _cancelToken);
@@ -183,7 +182,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.WorkItem.Generate.WorkItemsByGroupId(group.GroupId), _cancelToken);
+            await client.GetAsync(ApiRoutes.WorkItem.Generate.WorkItemsByGroupId(group.GroupId), _cancelToken);
 
         // Assert
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
@@ -205,7 +204,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.WorkItem.Generate.WorkItemsByGroupId(WorkItemTestData.MissingGroupId), _cancelToken);
+            await client.GetAsync(ApiRoutes.WorkItem.Generate.WorkItemsByGroupId(WorkItemTestData.MissingGroupId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -238,7 +237,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(
-            Routes.WorkItem.Generate.WorkItemsByGroupIdAndType(group.GroupId, WorkItemType.Task.ToString()),
+            ApiRoutes.WorkItem.Generate.WorkItemsByGroupIdAndType(group.GroupId, WorkItemType.Task.ToString()),
             _cancelToken);
         List<WorkItem>? items = await response.Content.ReadFromJsonAsync<List<WorkItem>>(_cancelToken);
 
@@ -266,7 +265,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response = await client.GetAsync(
-            Routes.WorkItem.Generate.WorkItemsByGroupIdAndType(
+            ApiRoutes.WorkItem.Generate.WorkItemsByGroupIdAndType(
                 WorkItemTestData.MissingGroupId,
                 WorkItemTestData.InvalidWorkItemType),
             _cancelToken);
@@ -291,7 +290,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PostAsJsonAsync(
-                Routes.WorkItem.Generate.CreateWorkItem(group.GroupId),
+                ApiRoutes.WorkItem.Generate.CreateWorkItem(group.GroupId),
                 WorkItemTestData.ValidCreateRequest,
                 _cancelToken);
 
@@ -318,7 +317,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PostAsJsonAsync(
-                Routes.WorkItem.Generate.CreateWorkItem(WorkItemTestData.MissingGroupId),
+                ApiRoutes.WorkItem.Generate.CreateWorkItem(WorkItemTestData.MissingGroupId),
                 WorkItemTestData.MissingGroupCreateRequest,
                 _cancelToken);
 
@@ -341,7 +340,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.WorkItem.Generate.WorkItemById(created.ItemId), _cancelToken);
+            await client.GetAsync(ApiRoutes.WorkItem.Generate.WorkItemById(created.ItemId), _cancelToken);
 
         // Assert
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
@@ -364,7 +363,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.WorkItem.Generate.WorkItemById(WorkItemTestData.MissingWorkItemId), _cancelToken);
+            await client.GetAsync(ApiRoutes.WorkItem.Generate.WorkItemById(WorkItemTestData.MissingWorkItemId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -386,7 +385,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PutAsJsonAsync(
-                Routes.WorkItem.Generate.UpdateWorkItem(created.ItemId),
+                ApiRoutes.WorkItem.Generate.UpdateWorkItem(created.ItemId),
                 WorkItemTestData.ValidUpdateRequest,
                 _cancelToken);
 
@@ -412,7 +411,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PutAsJsonAsync(
-                Routes.WorkItem.Generate.UpdateWorkItem(WorkItemTestData.MissingWorkItemId),
+                ApiRoutes.WorkItem.Generate.UpdateWorkItem(WorkItemTestData.MissingWorkItemId),
                 WorkItemTestData.MissingWorkItemUpdateRequest,
                 _cancelToken);
 
@@ -435,10 +434,10 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage deleteResponse =
-            await client.DeleteAsync(Routes.WorkItem.Generate.DeleteWorkItem(created.ItemId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.WorkItem.Generate.DeleteWorkItem(created.ItemId), _cancelToken);
 
         HttpResponseMessage getResponse =
-            await client.GetAsync(Routes.WorkItem.Generate.WorkItemById(created.ItemId), _cancelToken);
+            await client.GetAsync(ApiRoutes.WorkItem.Generate.WorkItemById(created.ItemId), _cancelToken);
 
         // Assert
         string deleteResponseBody = await deleteResponse.Content.ReadAsStringAsync(_cancelToken);
@@ -462,7 +461,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.DeleteAsync(Routes.WorkItem.Generate.DeleteWorkItem(WorkItemTestData.MissingWorkItemId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.WorkItem.Generate.DeleteWorkItem(WorkItemTestData.MissingWorkItemId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -487,7 +486,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await user2.GetAsync(Routes.WorkItem.Generate.WorkItemById(created.ItemId), _cancelToken);
+            await user2.GetAsync(ApiRoutes.WorkItem.Generate.WorkItemById(created.ItemId), _cancelToken);
 
         // Assert
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
@@ -513,7 +512,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await user2.GetAsync(Routes.WorkItem.Generate.WorkItemsByGroupId(group.GroupId), _cancelToken);
+            await user2.GetAsync(ApiRoutes.WorkItem.Generate.WorkItemsByGroupId(group.GroupId), _cancelToken);
 
         // Assert
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
@@ -543,7 +542,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.WorkItem.AddLink, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.WorkItem.AddLink, request, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
@@ -564,7 +563,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.WorkItem.AddLink, WorkItemTestData.MissingLinkRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.WorkItem.AddLink, WorkItemTestData.MissingLinkRequest, _cancelToken);
 
         // Assert
         Assert.True(
@@ -592,7 +591,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage addResponse =
-            await client.PostAsJsonAsync(Routes.WorkItem.AddLink, addRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.WorkItem.AddLink, addRequest, _cancelToken);
         string addResponseBody = await addResponse.Content.ReadAsStringAsync(_cancelToken);
 
         WorkItemLinkRequest removeRequest = new()
@@ -602,7 +601,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         HttpResponseMessage removeResponse =
-            await client.PostAsJsonAsync(Routes.WorkItem.RemoveLink, removeRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.WorkItem.RemoveLink, removeRequest, _cancelToken);
         string removeResponseBody = await removeResponse.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
@@ -621,7 +620,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
     {
         HttpResponseMessage response =
             await client.PostAsJsonAsync(
-                Routes.Group.CreateGroup,
+                ApiRoutes.Group.CreateGroup,
                 new GroupCreateRequest { Name = name },
                 _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
@@ -651,7 +650,7 @@ public class WorkItemsControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.WorkItem.Generate.CreateWorkItem(groupId), request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.WorkItem.Generate.CreateWorkItem(groupId), request, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert

@@ -3,8 +3,7 @@
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 
-using MoopelApi;
-
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
@@ -36,7 +35,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Fridge.MyFridges, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Fridge.MyFridges, _cancelToken);
 
         // Assert
         Assert.True(
@@ -54,7 +53,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Fridge.MyFridges, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Fridge.MyFridges, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         List<Fridge>? fridges = await response.Content.ReadFromJsonAsync<List<Fridge>>(_cancelToken);
 
@@ -76,7 +75,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Fridge.Generate.FridgeById(FridgeTestData.ArbitraryFridgeId), _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Fridge.Generate.FridgeById(FridgeTestData.ArbitraryFridgeId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -96,12 +95,12 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         FridgeCreateRequest createRequest = FridgeTestData.ValidCreateRequest;
 
         // Act
-        HttpResponseMessage createResponse = await client.PostAsJsonAsync(Routes.Fridge.CreateFridge, createRequest, _cancelToken);
+        HttpResponseMessage createResponse = await client.PostAsJsonAsync(ApiRoutes.Fridge.CreateFridge, createRequest, _cancelToken);
 
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Fridge? created = await createResponse.Content.ReadFromJsonAsync<Fridge>(_cancelToken);
 
-        string endpoint = Routes.Fridge.Generate.FridgeById(created?.FridgeId ?? 0);
+        string endpoint = ApiRoutes.Fridge.Generate.FridgeById(created?.FridgeId ?? 0);
         HttpResponseMessage response = await client.GetAsync(endpoint, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Fridge? result = await response.Content.ReadFromJsonAsync<Fridge>(_cancelToken);
@@ -126,7 +125,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Fridge.Generate.FridgeById(FridgeTestData.NonExistentFridgeId), _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Fridge.Generate.FridgeById(FridgeTestData.NonExistentFridgeId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -149,7 +148,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Fridge.CreateFridge, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Fridge.CreateFridge, request, _cancelToken);
 
         // Assert
         Assert.True(
@@ -169,7 +168,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Fridge.CreateFridge, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Fridge.CreateFridge, request, _cancelToken);
 
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Fridge? fridge = await response.Content.ReadFromJsonAsync<Fridge>(_cancelToken);
@@ -200,7 +199,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         HttpResponseMessage createResponse =
-            await client.PostAsJsonAsync(Routes.Fridge.CreateFridge, createRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Fridge.CreateFridge, createRequest, _cancelToken);
 
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Fridge? created = await createResponse.Content.ReadFromJsonAsync<Fridge>(_cancelToken);
@@ -209,7 +208,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage updateResponse =
-            await client.PatchAsJsonAsync(Routes.Fridge.Generate.UpdateFridge(created.FridgeId), updateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(ApiRoutes.Fridge.Generate.UpdateFridge(created.FridgeId), updateRequest, _cancelToken);
         string updateBody = await updateResponse.Content.ReadAsStringAsync(_cancelToken);
         Fridge? updated = await updateResponse.Content.ReadFromJsonAsync<Fridge>(_cancelToken);
 
@@ -237,7 +236,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PatchAsJsonAsync(Routes.Fridge.Generate.UpdateFridge(FridgeTestData.NonExistentFridgeId), updateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(ApiRoutes.Fridge.Generate.UpdateFridge(FridgeTestData.NonExistentFridgeId), updateRequest, _cancelToken);
 
         // Assert
         Assert.True(
@@ -261,7 +260,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         FridgeCreateRequest createRequest = FridgeTestData.ValidCreateRequest;
 
         HttpResponseMessage createResponse =
-            await client.PostAsJsonAsync(Routes.Fridge.CreateFridge, createRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Fridge.CreateFridge, createRequest, _cancelToken);
 
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Fridge? created = await createResponse.Content.ReadFromJsonAsync<Fridge>(_cancelToken);
@@ -270,10 +269,10 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage deleteResponse =
-            await client.DeleteAsync(Routes.Fridge.Generate.DeleteFridge(created.FridgeId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Fridge.Generate.DeleteFridge(created.FridgeId), _cancelToken);
         string deleteBody = await deleteResponse.Content.ReadAsStringAsync(_cancelToken);
         HttpResponseMessage getResponse =
-            await client.GetAsync(Routes.Fridge.Generate.FridgeById(created.FridgeId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Fridge.Generate.FridgeById(created.FridgeId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -296,7 +295,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.DeleteAsync(Routes.Fridge.Generate.DeleteFridge(FridgeTestData.NonExistentFridgeId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Fridge.Generate.DeleteFridge(FridgeTestData.NonExistentFridgeId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -319,7 +318,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         HttpResponseMessage response = await client.PostAsJsonAsync(
-            Routes.Fridge.Generate.CreateFridgeItem(FridgeTestData.NonExistentFridgeId),
+            ApiRoutes.Fridge.Generate.CreateFridgeItem(FridgeTestData.NonExistentFridgeId),
             FridgeTestData.ValidItemCreateRequest,
             _cancelToken);
 
@@ -339,7 +338,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         HttpResponseMessage response = await client.PatchAsJsonAsync(
-            Routes.Fridge.Generate.UpdateFridgeItem(FridgeTestData.NonExistentFridgeItemId),
+            ApiRoutes.Fridge.Generate.UpdateFridgeItem(FridgeTestData.NonExistentFridgeItemId),
             FridgeTestData.ValidItemUpdateRequest,
             _cancelToken);
 
@@ -359,7 +358,7 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         HttpResponseMessage response = await client.DeleteAsync(
-            Routes.Fridge.Generate.DeleteFridgeItem(FridgeTestData.NonExistentFridgeItemId),
+            ApiRoutes.Fridge.Generate.DeleteFridgeItem(FridgeTestData.NonExistentFridgeItemId),
             _cancelToken);
 
         Assert.True(
@@ -389,13 +388,13 @@ public class FridgesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage createResponse =
-            await user1.PostAsJsonAsync(Routes.Fridge.CreateFridge, request, _cancelToken);
+            await user1.PostAsJsonAsync(ApiRoutes.Fridge.CreateFridge, request, _cancelToken);
 
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Fridge? created = await createResponse.Content.ReadFromJsonAsync<Fridge>(_cancelToken);
 
         HttpResponseMessage response =
-            await user2.GetAsync(Routes.Fridge.Generate.FridgeById(created?.FridgeId ?? 0), _cancelToken);
+            await user2.GetAsync(ApiRoutes.Fridge.Generate.FridgeById(created?.FridgeId ?? 0), _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert

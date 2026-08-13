@@ -4,9 +4,9 @@ using System.Text.Json;
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 
-using MoopelApi;
 using MoopelApi.Models.Attributes;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Update;
 
@@ -36,7 +36,7 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.UserSettings.MySettings, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.UserSettings.MySettings, _cancelToken);
 
         // Assert
         Assert.True(
@@ -55,7 +55,7 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.UserSettings.MySettings, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.UserSettings.MySettings, _cancelToken);
 
         // Assert
         Assert.True(
@@ -76,7 +76,7 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
         UserSettings created = await CreateOrUpdateSettingsAsync(client, UserSettingsTestData.InitialTimezone, UserSettingsTestData.InitialDateFormat);
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.UserSettings.MySettings, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.UserSettings.MySettings, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         UserSettings? result = JsonSerializer.Deserialize<UserSettings>(responseBody, _apiFactory.JsonSerializerOptions);
 
@@ -105,7 +105,7 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.UserSettings.Generate.SettingsById(UserSettingsTestData.MissingSettingId), _cancelToken);
+            await client.GetAsync(ApiRoutes.UserSettings.Generate.SettingsById(UserSettingsTestData.MissingSettingId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -127,7 +127,7 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.UserSettings.Generate.SettingsById(created.SettingId), _cancelToken);
+            await client.GetAsync(ApiRoutes.UserSettings.Generate.SettingsById(created.SettingId), _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         UserSettings? result = JsonSerializer.Deserialize<UserSettings>(responseBody, _apiFactory.JsonSerializerOptions);
 
@@ -152,7 +152,7 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.UserSettings.Generate.SettingsById(UserSettingsTestData.MissingSettingId), _cancelToken);
+            await client.GetAsync(ApiRoutes.UserSettings.Generate.SettingsById(UserSettingsTestData.MissingSettingId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -176,7 +176,7 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await user2.GetAsync(Routes.UserSettings.Generate.SettingsById(created.SettingId), _cancelToken);
+            await user2.GetAsync(ApiRoutes.UserSettings.Generate.SettingsById(created.SettingId), _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
@@ -200,7 +200,7 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PutAsJsonAsync(Routes.UserSettings.UpdateSettings, UserSettingsTestData.ValidUpdateRequest, _cancelToken);
+            await client.PutAsJsonAsync(ApiRoutes.UserSettings.UpdateSettings, UserSettingsTestData.ValidUpdateRequest, _cancelToken);
 
         // Assert
         Assert.True(
@@ -222,7 +222,7 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PutAsJsonAsync(Routes.UserSettings.UpdateSettings, UserSettingsTestData.ValidUpdateRequest, _cancelToken);
+            await client.PutAsJsonAsync(ApiRoutes.UserSettings.UpdateSettings, UserSettingsTestData.ValidUpdateRequest, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         UserSettings? updated = JsonSerializer.Deserialize<UserSettings>(responseBody, _apiFactory.JsonSerializerOptions);
 
@@ -249,7 +249,7 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PutAsJsonAsync(Routes.UserSettings.UpdateSettings, UserSettingsTestData.ValidUpdateRequest, _cancelToken);
+            await client.PutAsJsonAsync(ApiRoutes.UserSettings.UpdateSettings, UserSettingsTestData.ValidUpdateRequest, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         UserSettings? updated = JsonSerializer.Deserialize<UserSettings>(responseBody, _apiFactory.JsonSerializerOptions);
 
@@ -274,7 +274,7 @@ public class UserSettingsControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         HttpResponseMessage response =
-            await client.PutAsJsonAsync(Routes.UserSettings.UpdateSettings, request, _cancelToken);
+            await client.PutAsJsonAsync(ApiRoutes.UserSettings.UpdateSettings, request, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert

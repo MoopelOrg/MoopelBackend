@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MoopelApi.Models;
 using MoopelApi.Services.Interfaces;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
@@ -28,7 +29,7 @@ public class GroupsController : ControllerBase
         _groupService = groupService;
     }
 
-    [HttpGet(Routes.Group.MyGroups)]
+    [HttpGet(ApiRoutes.Group.MyGroups)]
     public async Task<ActionResult<List<Group>>> GetMyGroups()
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
@@ -41,7 +42,7 @@ public class GroupsController : ControllerBase
         return Ok(groups ?? []);
     }
 
-    [HttpGet(Routes.Group.GroupById)]
+    [HttpGet(ApiRoutes.Group.GroupById)]
     public async Task<ActionResult<Group>> GetGroupById(int groupId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -68,7 +69,7 @@ public class GroupsController : ControllerBase
         return Ok(group);
     }
 
-    [HttpPost(Routes.Group.CreateGroup)]
+    [HttpPost(ApiRoutes.Group.CreateGroup)]
     public async Task<ActionResult<Group>> CreateGroup([FromBody] GroupCreateRequest request)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
@@ -89,7 +90,7 @@ public class GroupsController : ControllerBase
         return Ok(group);
     }
 
-    [HttpPatch(Routes.Group.UpdateGroup)]
+    [HttpPatch(ApiRoutes.Group.UpdateGroup)]
     public async Task<ActionResult<Group>> UpdateGroup(int groupId, [FromBody] GroupUpdateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -120,7 +121,7 @@ public class GroupsController : ControllerBase
         return Ok(updatedGroup);
     }
 
-    [HttpDelete(Routes.Group.DeleteGroup)]
+    [HttpDelete(ApiRoutes.Group.DeleteGroup)]
     public async Task<ActionResult> DeleteGroup(int groupId)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);

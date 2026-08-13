@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MoopelApi.Models;
 using MoopelApi.Services.Interfaces;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Enums;
 using MoopelObjects.Exceptions;
@@ -38,7 +39,7 @@ public class WorkItemsController : ControllerBase
         _groupService = groupService;
     }
 
-    [HttpGet(Routes.WorkItem.WorkItemsByGroupId)]
+    [HttpGet(ApiRoutes.WorkItem.WorkItemsByGroupId)]
     public async Task<ActionResult<List<WorkItem>>> GetWorkItems(int groupId, CancellationToken cancelToken)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
@@ -69,7 +70,7 @@ public class WorkItemsController : ControllerBase
         return Ok(workItems ?? []);
     }
 
-    [HttpGet(Routes.WorkItem.WorkItemsByGroupIdAndType)]
+    [HttpGet(ApiRoutes.WorkItem.WorkItemsByGroupIdAndType)]
     public async Task<ActionResult<List<WorkItem>>> GetWorkItemsByType(int groupId, string type, CancellationToken cancelToken)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(type, nameof(type));
@@ -120,7 +121,7 @@ public class WorkItemsController : ControllerBase
         return Ok(workItems ?? []);
     }
 
-    [HttpGet(Routes.WorkItem.WorkItemById)]
+    [HttpGet(ApiRoutes.WorkItem.WorkItemById)]
     public async Task<ActionResult<WorkItem>> GetWorkItem(int workItemId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -151,7 +152,7 @@ public class WorkItemsController : ControllerBase
         return Ok(workItem);
     }
 
-    [HttpPost(Routes.WorkItem.CreateWorkItem)]
+    [HttpPost(ApiRoutes.WorkItem.CreateWorkItem)]
     public async Task<ActionResult<WorkItem>> CreateWorkItem(int groupId, [FromBody] WorkItemCreateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -183,7 +184,7 @@ public class WorkItemsController : ControllerBase
             workItem);
     }
 
-    [HttpPut(Routes.WorkItem.UpdateWorkItem)]
+    [HttpPut(ApiRoutes.WorkItem.UpdateWorkItem)]
     public async Task<ActionResult<WorkItem>> UpdateWorkItem(int workItemId, [FromBody] WorkItemUpdateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -216,7 +217,7 @@ public class WorkItemsController : ControllerBase
         return Ok(updatedWorkItem);
     }
 
-    [HttpDelete(Routes.WorkItem.DeleteWorkItem)]
+    [HttpDelete(ApiRoutes.WorkItem.DeleteWorkItem)]
     public async Task<ActionResult> DeleteWorkItem(int workItemId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -248,7 +249,7 @@ public class WorkItemsController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost(Routes.WorkItem.AddLink)]
+    [HttpPost(ApiRoutes.WorkItem.AddLink)]
     public async Task<ActionResult> AddLink([FromBody] WorkItemLinkRequest request)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
@@ -299,7 +300,7 @@ public class WorkItemsController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost(Routes.WorkItem.RemoveLink)]
+    [HttpPost(ApiRoutes.WorkItem.RemoveLink)]
     public async Task<IActionResult> RemoveLink([FromBody] WorkItemLinkRequest request)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));

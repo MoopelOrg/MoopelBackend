@@ -4,9 +4,9 @@ using System.Text.Json;
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 
-using MoopelApi;
 using MoopelApi.Models.Attributes;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 
@@ -37,7 +37,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Transaction.Generate.TransactionsByAccountId(TransactionTestData.MissingAccountId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Transaction.Generate.TransactionsByAccountId(TransactionTestData.MissingAccountId), _cancelToken);
 
         // Assert
 
@@ -60,7 +60,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Transaction.Generate.TransactionsByAccountId(account.AccountId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Transaction.Generate.TransactionsByAccountId(account.AccountId), _cancelToken);
 
         // Assert
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
@@ -85,7 +85,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Transaction.Generate.TransactionsByAccountId(TransactionTestData.MissingAccountId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Transaction.Generate.TransactionsByAccountId(TransactionTestData.MissingAccountId), _cancelToken);
 
         // Assert
 
@@ -108,7 +108,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Transaction.CreateTransaction, TransactionTestData.ValidCreateRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Transaction.CreateTransaction, TransactionTestData.ValidCreateRequest, _cancelToken);
 
         // Assert
 
@@ -132,7 +132,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage response =
             await client.PostAsJsonAsync(
                 string.Concat(
-                    Routes.Transaction.CreateTransaction,
+                    ApiRoutes.Transaction.CreateTransaction,
                     "?",
                     TransactionTestData.AccountIdQueryKey,
                     "=",
@@ -168,7 +168,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage response =
             await client.PostAsJsonAsync(
                 string.Concat(
-                    Routes.Transaction.CreateTransaction,
+                    ApiRoutes.Transaction.CreateTransaction,
                     "?",
                     TransactionTestData.AccountIdQueryKey,
                     "=",
@@ -197,7 +197,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Transaction.Generate.TransactionById(TransactionTestData.MissingTransactionId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Transaction.Generate.TransactionById(TransactionTestData.MissingTransactionId), _cancelToken);
 
         // Assert
 
@@ -220,7 +220,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Transaction.Generate.TransactionById(created.TransactionId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Transaction.Generate.TransactionById(created.TransactionId), _cancelToken);
 
         // Assert
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
@@ -247,7 +247,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Transaction.Generate.TransactionById(TransactionTestData.MissingTransactionId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Transaction.Generate.TransactionById(TransactionTestData.MissingTransactionId), _cancelToken);
 
         // Assert
 
@@ -270,7 +270,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.DeleteAsync(Routes.Transaction.Generate.DeleteTransaction(TransactionTestData.MissingTransactionId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Transaction.Generate.DeleteTransaction(TransactionTestData.MissingTransactionId), _cancelToken);
 
         // Assert
 
@@ -293,9 +293,9 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage deleteResponse =
-            await client.DeleteAsync(Routes.Transaction.Generate.DeleteTransaction(created.TransactionId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Transaction.Generate.DeleteTransaction(created.TransactionId), _cancelToken);
         HttpResponseMessage getResponse =
-            await client.GetAsync(Routes.Transaction.Generate.TransactionById(created.TransactionId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Transaction.Generate.TransactionById(created.TransactionId), _cancelToken);
 
         // Assert
         string deleteResponseBody = await deleteResponse.Content.ReadAsStringAsync(_cancelToken);
@@ -322,7 +322,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.DeleteAsync(Routes.Transaction.Generate.DeleteTransaction(TransactionTestData.MissingTransactionId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Transaction.Generate.DeleteTransaction(TransactionTestData.MissingTransactionId), _cancelToken);
 
         // Assert
 
@@ -346,7 +346,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PostAsJsonAsync(
-                Routes.Transaction.Generate.CreateTransactionItem(TransactionTestData.MissingAccountId),
+                ApiRoutes.Transaction.Generate.CreateTransactionItem(TransactionTestData.MissingAccountId),
                 TransactionTestData.ValidItemCreateRequest,
                 _cancelToken);
 
@@ -373,7 +373,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage response =
             await client.PostAsJsonAsync(
                 string.Concat(
-                    Routes.Transaction.Generate.CreateTransactionItem(account.AccountId),
+                    ApiRoutes.Transaction.Generate.CreateTransactionItem(account.AccountId),
                     "?",
                     TransactionTestData.TransactionIdQueryKey,
                     "=",
@@ -408,7 +408,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         HttpResponseMessage response =
             await client.PostAsJsonAsync(
                 string.Concat(
-                    Routes.Transaction.Generate.CreateTransactionItem(TransactionTestData.MissingAccountId),
+                    ApiRoutes.Transaction.Generate.CreateTransactionItem(TransactionTestData.MissingAccountId),
                     "?",
                     TransactionTestData.TransactionIdQueryKey,
                     "=",
@@ -438,7 +438,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PatchAsJsonAsync(
-                Routes.Transaction.Generate.UpdateTransactionItem(TransactionTestData.MissingTransactionItemId),
+                ApiRoutes.Transaction.Generate.UpdateTransactionItem(TransactionTestData.MissingTransactionItemId),
                 TransactionTestData.ValidItemUpdateRequest,
                 _cancelToken);
 
@@ -465,7 +465,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PatchAsJsonAsync(
-                Routes.Transaction.Generate.UpdateTransactionItem(created.ItemId),
+                ApiRoutes.Transaction.Generate.UpdateTransactionItem(created.ItemId),
                 TransactionTestData.ValidItemUpdateRequest,
                 _cancelToken);
         // Assert
@@ -494,7 +494,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await client.PatchAsJsonAsync(
-                Routes.Transaction.Generate.UpdateTransactionItem(TransactionTestData.MissingTransactionItemId),
+                ApiRoutes.Transaction.Generate.UpdateTransactionItem(TransactionTestData.MissingTransactionItemId),
                 TransactionTestData.ValidItemUpdateRequest,
                 _cancelToken);
 
@@ -519,7 +519,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.DeleteAsync(Routes.Transaction.Generate.DeleteTransactionItem(TransactionTestData.MissingTransactionItemId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Transaction.Generate.DeleteTransactionItem(TransactionTestData.MissingTransactionItemId), _cancelToken);
 
         // Assert
 
@@ -543,9 +543,9 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage deleteResponse =
-            await client.DeleteAsync(Routes.Transaction.Generate.DeleteTransactionItem(created.ItemId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Transaction.Generate.DeleteTransactionItem(created.ItemId), _cancelToken);
         HttpResponseMessage secondDeleteResponse =
-            await client.DeleteAsync(Routes.Transaction.Generate.DeleteTransactionItem(created.ItemId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Transaction.Generate.DeleteTransactionItem(created.ItemId), _cancelToken);
 
         // Assert
         string deleteResponseBody = await deleteResponse.Content.ReadAsStringAsync(_cancelToken);
@@ -572,7 +572,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.DeleteAsync(Routes.Transaction.Generate.DeleteTransactionItem(TransactionTestData.MissingTransactionItemId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Transaction.Generate.DeleteTransactionItem(TransactionTestData.MissingTransactionItemId), _cancelToken);
 
         // Assert
 
@@ -603,7 +603,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await user2.GetAsync(Routes.Transaction.Generate.TransactionById(created.TransactionId), _cancelToken);
+            await user2.GetAsync(ApiRoutes.Transaction.Generate.TransactionById(created.TransactionId), _cancelToken);
 
         // Assert
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
@@ -632,7 +632,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await user2.GetAsync(Routes.Transaction.Generate.TransactionsByAccountId(account.AccountId), _cancelToken);
+            await user2.GetAsync(ApiRoutes.Transaction.Generate.TransactionsByAccountId(account.AccountId), _cancelToken);
 
         // Assert
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
@@ -664,7 +664,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         HttpResponseMessage response =
             await user2.PatchAsJsonAsync(
-                Routes.Transaction.Generate.UpdateTransactionItem(created.ItemId),
+                ApiRoutes.Transaction.Generate.UpdateTransactionItem(created.ItemId),
                 TransactionTestData.ValidItemUpdateRequest,
                 _cancelToken);
 
@@ -689,7 +689,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Bank.CreateAccount, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Bank.CreateAccount, request, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
@@ -705,7 +705,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
     private async Task<Transaction> CreateTransactionAsync(HttpClient client, int accountId)
     {
         string endpoint = string.Concat(
-            Routes.Transaction.CreateTransaction,
+            ApiRoutes.Transaction.CreateTransaction,
             "?",
             TransactionTestData.AccountIdQueryKey,
             "=",
@@ -728,7 +728,7 @@ public class TransactionsControllerTests : IClassFixture<MoopelApiFactory>
     private async Task<TransactionItem> CreateTransactionItemAsync(HttpClient client, int accountId, int transactionId)
     {
         string endpoint = string.Concat(
-            Routes.Transaction.Generate.CreateTransactionItem(accountId),
+            ApiRoutes.Transaction.Generate.CreateTransactionItem(accountId),
             "?",
             TransactionTestData.TransactionIdQueryKey,
             "=",

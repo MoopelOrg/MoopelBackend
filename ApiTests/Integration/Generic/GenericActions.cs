@@ -1,8 +1,8 @@
 ﻿using ApiTests.TestData;
 
-using MoopelApi;
 using MoopelApi.Helpers;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Dto.Read;
 using MoopelObjects.Requests;
@@ -19,7 +19,7 @@ public static class GenericActions
             CancellationToken cancelToken)
         {
             HttpResponseMessage response =
-                await client.PostAsJsonAsync(Routes.Tag.CreateUserTag, request, cancelToken);
+                await client.PostAsJsonAsync(ApiRoutes.Tag.CreateUserTag, request, cancelToken);
 
             Assert.Equal(System.Net.HttpStatusCode.Created, response.StatusCode);
 
@@ -32,7 +32,7 @@ public static class GenericActions
         public static async Task<Group> CreateGroup(HttpClient client, CancellationToken cancelToken)
         {
             HttpResponseMessage response =
-                await client.PostAsJsonAsync(Routes.Group.CreateGroup, GroupTestData.ValidCreateRequest, cancelToken);
+                await client.PostAsJsonAsync(ApiRoutes.Group.CreateGroup, GroupTestData.ValidCreateRequest, cancelToken);
 
             Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
 
@@ -44,7 +44,7 @@ public static class GenericActions
 
         public static async Task<GroupTag> CreateGroupTag(HttpClient client, int groupId, TagCreateRequest request, CancellationToken cancelToken)
         {
-            string endpoint = Routes.Tag.Generate.CreateGroupTag(groupId);
+            string endpoint = ApiRoutes.Tag.Generate.CreateGroupTag(groupId);
             HttpResponseMessage response = await client.PostAsJsonAsync(endpoint, request, cancelToken);
 
             Assert.Equal(System.Net.HttpStatusCode.Created, response.StatusCode);
@@ -60,7 +60,7 @@ public static class GenericActions
     {
         public static async Task<LoginResult?> Login(HttpClient client, LoginRequest request, CancellationToken cancelToken)
         {
-            HttpResponseMessage response = await client.PostAsJsonAsync(Routes.Auth.Login, request, cancelToken);
+            HttpResponseMessage response = await client.PostAsJsonAsync(ApiRoutes.Auth.Login, request, cancelToken);
 
             return await ApiHelper.GetClassFromResponse<LoginResult>(
                 response,
@@ -73,7 +73,7 @@ public static class GenericActions
             ArgumentNullException.ThrowIfNull(client);
 
             HttpResponseMessage response =
-                await client.PostAsync(Routes.Auth.GuestLogin, content: null, cancelToken);
+                await client.PostAsync(ApiRoutes.Auth.GuestLogin, content: null, cancelToken);
             return await ApiHelper.GetClassFromResponse<LoginResult>(
                 response,
                 MoopelApiFactory.SharedJsonSerializerOptions,
@@ -83,7 +83,7 @@ public static class GenericActions
         public static async Task<UserRead?> Register(HttpClient client, RegistrationRequest request,
             CancellationToken cancelToken)
         {
-            HttpResponseMessage response = await client.PostAsJsonAsync(Routes.Auth.Register, request, cancelToken);
+            HttpResponseMessage response = await client.PostAsJsonAsync(ApiRoutes.Auth.Register, request, cancelToken);
 
             return await ApiHelper.GetClassFromResponse<UserRead>(
                 response,

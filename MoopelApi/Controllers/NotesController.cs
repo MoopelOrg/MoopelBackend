@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MoopelApi.Models;
 using MoopelApi.Services.Interfaces;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
@@ -33,7 +34,7 @@ public class NotesController : ControllerBase
         _contextService = contextService;
     }
 
-    [HttpGet(Routes.Note.MyNotes)]
+    [HttpGet(ApiRoutes.Note.MyNotes)]
     public async Task<ActionResult<List<Note>>> GetMyNotes()
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -45,7 +46,7 @@ public class NotesController : ControllerBase
         return Ok(notes);
     }
 
-    [HttpGet(Routes.Note.NoteById)]
+    [HttpGet(ApiRoutes.Note.NoteById)]
     public async Task<ActionResult<Note>> GetNoteById(int noteId)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
@@ -70,7 +71,7 @@ public class NotesController : ControllerBase
         return Ok(note);
     }
 
-    [HttpPost(Routes.Note.CreateNote)]
+    [HttpPost(ApiRoutes.Note.CreateNote)]
     public async Task<ActionResult<Note>> CreateNote([FromBody] NoteCreateRequest request)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
@@ -83,7 +84,7 @@ public class NotesController : ControllerBase
         return CreatedAtAction(nameof(GetNoteById), new { noteId = createdNote.NoteId }, createdNote);
     }
 
-    [HttpPatch(Routes.Note.UpdateNote)]
+    [HttpPatch(ApiRoutes.Note.UpdateNote)]
     public async Task<ActionResult<Note>> UpdateNote(int noteId, [FromBody] NoteUpdateRequest request)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
@@ -112,7 +113,7 @@ public class NotesController : ControllerBase
         return Ok(updatedNote);
     }
 
-    [HttpDelete(Routes.Note.DeleteNote)]
+    [HttpDelete(ApiRoutes.Note.DeleteNote)]
     public async Task<ActionResult> DeleteNote(int noteId)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);

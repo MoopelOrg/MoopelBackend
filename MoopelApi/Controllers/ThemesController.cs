@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MoopelApi.Models;
 using MoopelApi.Services.Interfaces;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
@@ -30,7 +31,7 @@ public class ThemesController : ControllerBase
         _authService = authService;
     }
 
-    [HttpGet(Routes.Theme.AllThemes)]
+    [HttpGet(ApiRoutes.Theme.AllThemes)]
     public async Task<ActionResult<List<Theme>>> GetAllThemes(CancellationToken cancelToken)
     {
         RequestContext requestContext = await _contextService.GetRequestContext(HttpContext);
@@ -43,7 +44,7 @@ public class ThemesController : ControllerBase
         return Ok(themes);
     }
 
-    [HttpGet(Routes.Theme.ThemeById)]
+    [HttpGet(ApiRoutes.Theme.ThemeById)]
     public async Task<ActionResult<Theme>> GetThemeById(int themeId)
     {
         RequestContext requestContext = await _contextService.GetRequestContext(HttpContext);
@@ -63,7 +64,7 @@ public class ThemesController : ControllerBase
         return Ok(theme);
     }
 
-    [HttpPost(Routes.Theme.CreateTheme)]
+    [HttpPost(ApiRoutes.Theme.CreateTheme)]
     public async Task<ActionResult<Theme>> CreateTheme(ThemeCreateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -77,7 +78,7 @@ public class ThemesController : ControllerBase
         return CreatedAtAction(nameof(GetThemeById), new { themeId = createdTheme.ThemeId }, createdTheme);
     }
 
-    [HttpPatch(Routes.Theme.UpdateTheme)]
+    [HttpPatch(ApiRoutes.Theme.UpdateTheme)]
     public async Task<ActionResult<Theme>> UpdateTheme(int themeId, ThemeUpdateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);

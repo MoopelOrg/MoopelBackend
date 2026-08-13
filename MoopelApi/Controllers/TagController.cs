@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MoopelApi.Models;
 using MoopelApi.Services.Interfaces;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
@@ -37,7 +38,7 @@ public class TagController : ControllerBase
     }
 
     #region User Tags
-    [HttpGet(Routes.Tag.UserTags)]
+    [HttpGet(ApiRoutes.Tag.UserTags)]
     public async Task<ActionResult<List<UserTag>>> GetUserTags()
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -48,7 +49,7 @@ public class TagController : ControllerBase
         return Ok(tags);
     }
 
-    [HttpGet(Routes.Tag.UserTagById)]
+    [HttpGet(ApiRoutes.Tag.UserTagById)]
     public async Task<ActionResult<UserTag>> GetUserTagById(int tagId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -71,7 +72,7 @@ public class TagController : ControllerBase
         return Ok(tag);
     }
 
-    [HttpPost(Routes.Tag.CreateUserTag)]
+    [HttpPost(ApiRoutes.Tag.CreateUserTag)]
     public async Task<ActionResult<UserTag>> CreateUserTag([FromBody] TagCreateRequest creationRequest)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -83,7 +84,7 @@ public class TagController : ControllerBase
         return CreatedAtAction(nameof(GetUserTagById), new { tagId = createdTag.TagId }, createdTag);
     }
 
-    [HttpPatch(Routes.Tag.UpdateUserTag)]
+    [HttpPatch(ApiRoutes.Tag.UpdateUserTag)]
     public async Task<ActionResult<UserTag>> UpdateUserTag(int tagId, [FromBody] TagUpdateRequest updateRequest)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -108,7 +109,7 @@ public class TagController : ControllerBase
         return Ok(updatedTag);
     }
 
-    [HttpDelete(Routes.Tag.DeleteUserTag)]
+    [HttpDelete(ApiRoutes.Tag.DeleteUserTag)]
     public async Task<ActionResult> DeleteUserTag(int tagId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -135,7 +136,7 @@ public class TagController : ControllerBase
     #endregion
 
     #region Group Tags
-    [HttpGet(Routes.Tag.GroupTagsByGroupId)]
+    [HttpGet(ApiRoutes.Tag.GroupTagsByGroupId)]
     public async Task<ActionResult<List<GroupTag>>> GetGroupTagsByGroupId(int groupId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -165,7 +166,7 @@ public class TagController : ControllerBase
         return Ok(tags);
     }
 
-    [HttpGet(Routes.Tag.GroupTagById)]
+    [HttpGet(ApiRoutes.Tag.GroupTagById)]
     public async Task<ActionResult<GroupTag>> GetGroupTagById(int tagId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -195,7 +196,7 @@ public class TagController : ControllerBase
         return Ok(tag);
     }
 
-    [HttpPost(Routes.Tag.CreateGroupTag)]
+    [HttpPost(ApiRoutes.Tag.CreateGroupTag)]
     public async Task<ActionResult<GroupTag>> CreateGroupTag(int groupId, [FromBody] TagCreateRequest creationRequest)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -224,7 +225,7 @@ public class TagController : ControllerBase
         return CreatedAtAction(nameof(GetGroupTagById), new { tagId = createdTag.TagId }, createdTag);
     }
 
-    [HttpPatch(Routes.Tag.UpdateGroupTag)]
+    [HttpPatch(ApiRoutes.Tag.UpdateGroupTag)]
     public async Task<ActionResult<GroupTag>> UpdateGroupTag(int tagId, [FromBody] TagUpdateRequest updateRequest)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -260,7 +261,7 @@ public class TagController : ControllerBase
         return Ok(updatedTag);
     }
 
-    [HttpDelete(Routes.Tag.DeleteGroupTag)]
+    [HttpDelete(ApiRoutes.Tag.DeleteGroupTag)]
     public async Task<ActionResult> DeleteGroupTag(int tagId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);

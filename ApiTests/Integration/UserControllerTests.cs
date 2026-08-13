@@ -4,9 +4,9 @@ using System.Text.Json;
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 
-using MoopelApi;
 using MoopelApi.Models.Attributes;
 
+using MoopelObjects;
 using MoopelObjects.Dto.Read;
 using MoopelObjects.Requests;
 using MoopelObjects.Requests.Update;
@@ -39,7 +39,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.User.Generate.UserById(UserTestData.MissingUserId), _cancelToken);
+            await client.GetAsync(ApiRoutes.User.Generate.UserById(UserTestData.MissingUserId), _cancelToken);
 
         // Assert
 
@@ -58,13 +58,13 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        HttpResponseMessage meResponse = await client.GetAsync(Routes.User.Generate.UserByName(username), _cancelToken);
+        HttpResponseMessage meResponse = await client.GetAsync(ApiRoutes.User.Generate.UserByName(username), _cancelToken);
 
         // Act
         string meResponseBody = await meResponse.Content.ReadAsStringAsync(_cancelToken);
         UserRead? me = JsonSerializer.Deserialize<UserRead>(meResponseBody, _apiFactory.JsonSerializerOptions);
         HttpResponseMessage response =
-            await client.GetAsync(Routes.User.Generate.UserById(me?.UserId ?? 0), _cancelToken);
+            await client.GetAsync(ApiRoutes.User.Generate.UserById(me?.UserId ?? 0), _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
@@ -93,7 +93,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.User.Generate.UserById(UserTestData.MissingUserId), _cancelToken);
+            await client.GetAsync(ApiRoutes.User.Generate.UserById(UserTestData.MissingUserId), _cancelToken);
 
         // Assert
 
@@ -113,7 +113,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.User.Generate.UserById(UserTestData.MissingUserId), _cancelToken);
+            await client.GetAsync(ApiRoutes.User.Generate.UserById(UserTestData.MissingUserId), _cancelToken);
 
         // Assert
 
@@ -134,13 +134,13 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
         await GenericActions.Auth.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
 
-        HttpResponseMessage user1MeResponse = await user1.GetAsync(Routes.User.Generate.UserByName(AuthTestData.ValidUserName), _cancelToken);
+        HttpResponseMessage user1MeResponse = await user1.GetAsync(ApiRoutes.User.Generate.UserByName(AuthTestData.ValidUserName), _cancelToken);
 
         // Act
         string user1MeResponseBody = await user1MeResponse.Content.ReadAsStringAsync(_cancelToken);
         UserRead? user1Me = JsonSerializer.Deserialize<UserRead>(user1MeResponseBody, _apiFactory.JsonSerializerOptions);
         HttpResponseMessage response =
-            await user2.GetAsync(Routes.User.Generate.UserById(user1Me?.UserId ?? 0), _cancelToken);
+            await user2.GetAsync(ApiRoutes.User.Generate.UserById(user1Me?.UserId ?? 0), _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
@@ -168,7 +168,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.User.Generate.UserByName(AuthTestData.ValidUserName), _cancelToken);
+            await client.GetAsync(ApiRoutes.User.Generate.UserByName(AuthTestData.ValidUserName), _cancelToken);
 
         // Assert
 
@@ -189,7 +189,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.User.Generate.UserByName(username), _cancelToken);
+            await client.GetAsync(ApiRoutes.User.Generate.UserByName(username), _cancelToken);
 
         // Assert
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
@@ -214,7 +214,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.User.Generate.UserByName(UserTestData.MissingUsername), _cancelToken);
+            await client.GetAsync(ApiRoutes.User.Generate.UserByName(UserTestData.MissingUsername), _cancelToken);
 
         // Assert
 
@@ -237,7 +237,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await user2.GetAsync(Routes.User.Generate.UserByName(AuthTestData.ValidUserName), _cancelToken);
+            await user2.GetAsync(ApiRoutes.User.Generate.UserByName(AuthTestData.ValidUserName), _cancelToken);
 
         // Assert
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
@@ -260,7 +260,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        string updateRoute = Routes.User.Generate.UpdateUser(UserTestData.MissingUserId);
+        string updateRoute = ApiRoutes.User.Generate.UpdateUser(UserTestData.MissingUserId);
 
         // Act
         HttpResponseMessage response =
@@ -290,12 +290,12 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
         };
 
         await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
-        HttpResponseMessage meResponse = await client.GetAsync(Routes.User.Generate.UserByName(username), _cancelToken);
+        HttpResponseMessage meResponse = await client.GetAsync(ApiRoutes.User.Generate.UserByName(username), _cancelToken);
         string meResponseBody = await meResponse.Content.ReadAsStringAsync(_cancelToken);
 
         // Act
         UserRead? me = JsonSerializer.Deserialize<UserRead>(meResponseBody, _apiFactory.JsonSerializerOptions);
-        string updateRoute = Routes.User.Generate.UpdateUser(me?.UserId ?? 0);
+        string updateRoute = ApiRoutes.User.Generate.UpdateUser(me?.UserId ?? 0);
         HttpResponseMessage updateResponse =
             await client.PatchAsJsonAsync(updateRoute, updateRequest, _cancelToken);
         string updateResponseBody = await updateResponse.Content.ReadAsStringAsync(_cancelToken);
@@ -325,7 +325,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         await GenericActions.Auth.CreateAuthenticatedClient(client, username, password, _cancelToken);
 
-        string updateRoute = Routes.User.Generate.UpdateUser(UserTestData.MissingUserId);
+        string updateRoute = ApiRoutes.User.Generate.UpdateUser(UserTestData.MissingUserId);
 
         // Act
         HttpResponseMessage response = await client.PatchAsJsonAsync(updateRoute, new UserUpdateRequest(), _cancelToken);
@@ -349,12 +349,12 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
         await GenericActions.Auth.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
 
-        HttpResponseMessage user1MeResponse = await user1.GetAsync(Routes.User.Generate.UserByName(AuthTestData.ValidUserName), _cancelToken);
+        HttpResponseMessage user1MeResponse = await user1.GetAsync(ApiRoutes.User.Generate.UserByName(AuthTestData.ValidUserName), _cancelToken);
 
         // Act
         string user1MeResponseBody = await user1MeResponse.Content.ReadAsStringAsync(_cancelToken);
         UserRead? user1Me = JsonSerializer.Deserialize<UserRead>(user1MeResponseBody, _apiFactory.JsonSerializerOptions);
-        string updateRoute = Routes.User.Generate.UpdateUser(user1Me?.UserId ?? 0);
+        string updateRoute = ApiRoutes.User.Generate.UpdateUser(user1Me?.UserId ?? 0);
         HttpResponseMessage response =
             await user2.PatchAsJsonAsync(updateRoute, new UserUpdateRequest(), _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
@@ -384,7 +384,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PatchAsJsonAsync(Routes.User.Generate.DisableUser(UserTestData.MissingUserId), new { }, _cancelToken);
+            await client.PatchAsJsonAsync(ApiRoutes.User.Generate.DisableUser(UserTestData.MissingUserId), new { }, _cancelToken);
 
         // Assert
 
@@ -405,7 +405,7 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PatchAsJsonAsync(Routes.User.Generate.DisableUser(UserTestData.MissingUserId), new { }, _cancelToken);
+            await client.PatchAsJsonAsync(ApiRoutes.User.Generate.DisableUser(UserTestData.MissingUserId), new { }, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
@@ -429,13 +429,13 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(user1, AuthTestData.ValidUserName, AuthTestData.ValidPassword, _cancelToken);
         await GenericActions.Auth.CreateAuthenticatedClient(user2, AuthTestData.ValidUserName2, AuthTestData.ValidPassword2, _cancelToken);
 
-        HttpResponseMessage user1MeResponse = await user1.GetAsync(Routes.User.Generate.UserByName(AuthTestData.ValidUserName), _cancelToken);
+        HttpResponseMessage user1MeResponse = await user1.GetAsync(ApiRoutes.User.Generate.UserByName(AuthTestData.ValidUserName), _cancelToken);
 
         // Act
         string user1MeResponseBody = await user1MeResponse.Content.ReadAsStringAsync(_cancelToken);
         UserRead? user1Me = JsonSerializer.Deserialize<UserRead>(user1MeResponseBody, _apiFactory.JsonSerializerOptions);
         HttpResponseMessage response =
-            await user2.PatchAsJsonAsync(Routes.User.Generate.DisableUser(user1Me?.UserId ?? 0), new { }, _cancelToken);
+            await user2.PatchAsJsonAsync(ApiRoutes.User.Generate.DisableUser(user1Me?.UserId ?? 0), new { }, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
@@ -464,12 +464,12 @@ public class UserControllerTests : IClassFixture<MoopelApiFactory>
         // Act
 
         // Get the target user
-        HttpResponseMessage targetMeResponse = await targetClient.GetAsync(Routes.Auth.Me, _cancelToken);
+        HttpResponseMessage targetMeResponse = await targetClient.GetAsync(ApiRoutes.Auth.Me, _cancelToken);
         string targetMeResponseBody = await targetMeResponse.Content.ReadAsStringAsync(_cancelToken);
         UserRead? targetUser = JsonSerializer.Deserialize<UserRead>(targetMeResponseBody, _apiFactory.JsonSerializerOptions);
 
         // try disabling user
-        string disableRoute = Routes.User.Generate.DisableUser(targetUser?.UserId ?? 0);
+        string disableRoute = ApiRoutes.User.Generate.DisableUser(targetUser?.UserId ?? 0);
         HttpResponseMessage disableResponse = await adminClient.PatchAsJsonAsync(disableRoute, new { }, _cancelToken);
 
         LoginResult? loginResult = await GenericActions.Auth.Login(

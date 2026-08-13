@@ -5,8 +5,7 @@ using System.Net.Http.Json;
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 
-using MoopelApi;
-
+using MoopelObjects;
 using MoopelObjects.Dto.Read;
 using MoopelObjects.Requests;
 using MoopelObjects.Results;
@@ -221,7 +220,7 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage loginResponse =
-            await client.PostAsJsonAsync(Routes.Auth.Login, invalidLoginRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Auth.Login, invalidLoginRequest, _cancelToken);
 
         LoginResult? loginResult =
             await loginResponse.Content.ReadFromJsonAsync<LoginResult>(_cancelToken);
@@ -252,7 +251,7 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage loginResponse =
-            await client.PostAsJsonAsync(Routes.Auth.Login, loginRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Auth.Login, loginRequest, _cancelToken);
 
         LoginResult? loginResult =
             await loginResponse.Content.ReadFromJsonAsync<LoginResult>(_cancelToken);
@@ -324,7 +323,7 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         Assert.NotNull(loginResult);
         GenericActions.Auth.AttachBearer(client, loginResult.Token);
 
-        HttpResponseMessage meResponse = await client.GetAsync(Routes.Auth.Me, _cancelToken);
+        HttpResponseMessage meResponse = await client.GetAsync(ApiRoutes.Auth.Me, _cancelToken);
         UserRead? meResult = await meResponse.Content.ReadFromJsonAsync<UserRead>(_cancelToken);
 
         // Assert
@@ -349,7 +348,7 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        HttpResponseMessage meResponse = await client.GetAsync(Routes.Auth.Me, _cancelToken);
+        HttpResponseMessage meResponse = await client.GetAsync(ApiRoutes.Auth.Me, _cancelToken);
 
         // Assert
         Assert.True(
@@ -367,7 +366,7 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
             new AuthenticationHeaderValue("Bearer", "not-a-real-token");
 
         // Act
-        HttpResponseMessage meResponse = await client.GetAsync(Routes.Auth.Me, _cancelToken);
+        HttpResponseMessage meResponse = await client.GetAsync(ApiRoutes.Auth.Me, _cancelToken);
 
         // Assert
         Assert.True(
@@ -401,7 +400,7 @@ public class AuthControllerTests : IClassFixture<MoopelApiFactory>
         Assert.NotNull(loginResult);
         GenericActions.Auth.AttachBearer(client, loginResult.Token);
 
-        UserRead? me = await client.GetFromJsonAsync<UserRead>(Routes.Auth.Me, _cancelToken);
+        UserRead? me = await client.GetFromJsonAsync<UserRead>(ApiRoutes.Auth.Me, _cancelToken);
 
         // Assert
         Assert.True(registeredUser is not null, $"Registration failed for username '{username}'.");

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MoopelApi.Models;
 using MoopelApi.Services.Interfaces;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
@@ -28,7 +29,7 @@ public class UserSettingsController : ControllerBase
         _contextService = contextService;
     }
 
-    [HttpGet(Routes.UserSettings.MySettings)]
+    [HttpGet(ApiRoutes.UserSettings.MySettings)]
     public async Task<ActionResult<UserSettings>> GetMySettings()
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
@@ -48,7 +49,7 @@ public class UserSettingsController : ControllerBase
         return Ok(settings);
     }
 
-    [HttpGet(Routes.UserSettings.SettingsById)]
+    [HttpGet(ApiRoutes.UserSettings.SettingsById)]
     public async Task<ActionResult<UserSettings>> GetSettingsById(int settingsId)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
@@ -66,7 +67,7 @@ public class UserSettingsController : ControllerBase
         return Ok(settings);
     }
 
-    [HttpPut(Routes.UserSettings.UpdateSettings)]
+    [HttpPut(ApiRoutes.UserSettings.UpdateSettings)]
     public async Task<ActionResult<UserSettings>> UpdateSettings([FromBody] UserSettingsUpdateRequest updateRequest)
     {
         ArgumentNullException.ThrowIfNull(updateRequest);

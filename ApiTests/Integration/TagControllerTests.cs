@@ -3,9 +3,9 @@
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 
-using MoopelApi;
 using MoopelApi.Models.Attributes;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
@@ -34,7 +34,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Tag.UserTags, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Tag.UserTags, _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -50,7 +50,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Tag.UserTags, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Tag.UserTags, _cancelToken);
         List<UserTag>? tags = await response.Content.ReadFromJsonAsync<List<UserTag>>(_cancelToken);
 
         // Assert
@@ -72,7 +72,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         await CreateUserTagAsync(client, request);
-        HttpResponseMessage response = await client.GetAsync(Routes.Tag.UserTags, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Tag.UserTags, _cancelToken);
         List<UserTag>? tags = await response.Content.ReadFromJsonAsync<List<UserTag>>(_cancelToken);
         UserTag? tag = tags?.FirstOrDefault();
 
@@ -97,7 +97,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        string endpoint = Routes.Tag.Generate.UserTagById(TagTestData.MissingTagId);
+        string endpoint = ApiRoutes.Tag.Generate.UserTagById(TagTestData.MissingTagId);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(endpoint, _cancelToken);
@@ -120,7 +120,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         UserTag created = await CreateUserTagAsync(client, createRequest);
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Tag.Generate.UserTagById(created.TagId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Tag.Generate.UserTagById(created.TagId), _cancelToken);
 
         UserTag? result = await response.Content.ReadFromJsonAsync<UserTag>(_cancelToken);
 
@@ -143,7 +143,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Tag.Generate.UserTagById(TagTestData.MissingTagId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Tag.Generate.UserTagById(TagTestData.MissingTagId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -167,7 +167,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         UserTag created = await CreateUserTagAsync(user1, request);
         HttpResponseMessage response =
-            await user2.GetAsync(Routes.Tag.Generate.UserTagById(created.TagId), _cancelToken);
+            await user2.GetAsync(ApiRoutes.Tag.Generate.UserTagById(created.TagId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -188,7 +188,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Tag.CreateUserTag, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Tag.CreateUserTag, request, _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -206,7 +206,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Tag.CreateUserTag, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Tag.CreateUserTag, request, _cancelToken);
 
         UserTag? created = await response.Content.ReadFromJsonAsync<UserTag>(_cancelToken);
 
@@ -231,7 +231,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
         TagUpdateRequest request = TagTestData.ValidUpdateRequest;
-        string endpoint = Routes.Tag.Generate.UpdateUserTag(TagTestData.MissingTagId);
+        string endpoint = ApiRoutes.Tag.Generate.UpdateUserTag(TagTestData.MissingTagId);
 
         // Act
         HttpResponseMessage response =
@@ -254,7 +254,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         UserTag created = await CreateUserTagAsync(client, createRequest);
         HttpResponseMessage updateResponse =
-            await client.PatchAsJsonAsync(Routes.Tag.Generate.UpdateUserTag(created.TagId), updateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(ApiRoutes.Tag.Generate.UpdateUserTag(created.TagId), updateRequest, _cancelToken);
 
         UserTag? updated = await updateResponse.Content.ReadFromJsonAsync<UserTag>(_cancelToken);
 
@@ -280,7 +280,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PatchAsJsonAsync(Routes.Tag.Generate.UpdateUserTag(TagTestData.MissingTagId), updateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(ApiRoutes.Tag.Generate.UpdateUserTag(TagTestData.MissingTagId), updateRequest, _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -297,7 +297,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        string endpoint = Routes.Tag.Generate.DeleteUserTag(TagTestData.MissingTagId);
+        string endpoint = ApiRoutes.Tag.Generate.DeleteUserTag(TagTestData.MissingTagId);
 
         // Act
         HttpResponseMessage response = await client.DeleteAsync(endpoint, _cancelToken);
@@ -319,10 +319,10 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         UserTag created = await CreateUserTagAsync(client, request);
         HttpResponseMessage deleteResponse =
-            await client.DeleteAsync(Routes.Tag.Generate.DeleteUserTag(created.TagId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Tag.Generate.DeleteUserTag(created.TagId), _cancelToken);
 
         HttpResponseMessage getResponse =
-            await client.GetAsync(Routes.Tag.Generate.UserTagById(created.TagId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Tag.Generate.UserTagById(created.TagId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
@@ -340,7 +340,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.DeleteAsync(Routes.Tag.Generate.DeleteUserTag(TagTestData.MissingTagId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Tag.Generate.DeleteUserTag(TagTestData.MissingTagId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -359,7 +359,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Tag.Generate.GroupTagsByGroupId(TagTestData.MissingGroupId), _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Tag.Generate.GroupTagsByGroupId(TagTestData.MissingGroupId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -379,7 +379,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Tag.Generate.GroupTagsByGroupId(group.GroupId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Tag.Generate.GroupTagsByGroupId(group.GroupId), _cancelToken);
 
         List<GroupTag>? tags = await response.Content.ReadFromJsonAsync<List<GroupTag>>(_cancelToken);
         GroupTag? tag = tags?.FirstOrDefault();
@@ -406,7 +406,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Tag.Generate.GroupTagsByGroupId(TagTestData.MissingGroupId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Tag.Generate.GroupTagsByGroupId(TagTestData.MissingGroupId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -430,7 +430,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await user2.GetAsync(Routes.Tag.Generate.GroupTagsByGroupId(group.GroupId), _cancelToken);
+            await user2.GetAsync(ApiRoutes.Tag.Generate.GroupTagsByGroupId(group.GroupId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -447,7 +447,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        string endpoint = Routes.Tag.Generate.GroupTagById(TagTestData.MissingTagId);
+        string endpoint = ApiRoutes.Tag.Generate.GroupTagById(TagTestData.MissingTagId);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(endpoint, _cancelToken);
@@ -470,7 +470,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Tag.Generate.GroupTagById(created.TagId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Tag.Generate.GroupTagById(created.TagId), _cancelToken);
 
         GroupTag? result = await response.Content.ReadFromJsonAsync<GroupTag>(_cancelToken);
 
@@ -494,7 +494,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Tag.Generate.GroupTagById(TagTestData.MissingTagId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Tag.Generate.GroupTagById(TagTestData.MissingTagId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -518,7 +518,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await user2.GetAsync(Routes.Tag.Generate.GroupTagById(created.TagId), _cancelToken);
+            await user2.GetAsync(ApiRoutes.Tag.Generate.GroupTagById(created.TagId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -538,7 +538,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Tag.Generate.CreateGroupTag(TagTestData.MissingGroupId), TagTestData.ValidCreateRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Tag.Generate.CreateGroupTag(TagTestData.MissingGroupId), TagTestData.ValidCreateRequest, _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -557,7 +557,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Tag.Generate.CreateGroupTag(group.GroupId), request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Tag.Generate.CreateGroupTag(group.GroupId), request, _cancelToken);
 
         GroupTag? created = await response.Content.ReadFromJsonAsync<GroupTag>(_cancelToken);
 
@@ -582,7 +582,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Tag.Generate.CreateGroupTag(TagTestData.MissingGroupId), TagTestData.ValidCreateRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Tag.Generate.CreateGroupTag(TagTestData.MissingGroupId), TagTestData.ValidCreateRequest, _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -605,7 +605,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await user2.PostAsJsonAsync(Routes.Tag.Generate.CreateGroupTag(group.GroupId), TagTestData.ValidCreateRequest, _cancelToken);
+            await user2.PostAsJsonAsync(ApiRoutes.Tag.Generate.CreateGroupTag(group.GroupId), TagTestData.ValidCreateRequest, _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -626,7 +626,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PatchAsJsonAsync(Routes.Tag.Generate.UpdateGroupTag(TagTestData.MissingTagId), request, _cancelToken);
+            await client.PatchAsJsonAsync(ApiRoutes.Tag.Generate.UpdateGroupTag(TagTestData.MissingTagId), request, _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -646,7 +646,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage updateResponse =
-            await client.PatchAsJsonAsync(Routes.Tag.Generate.UpdateGroupTag(created.TagId), updateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(ApiRoutes.Tag.Generate.UpdateGroupTag(created.TagId), updateRequest, _cancelToken);
 
         GroupTag? updated = await updateResponse.Content.ReadFromJsonAsync<GroupTag>(_cancelToken);
 
@@ -673,7 +673,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PatchAsJsonAsync(Routes.Tag.Generate.UpdateGroupTag(TagTestData.MissingTagId), updateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(ApiRoutes.Tag.Generate.UpdateGroupTag(TagTestData.MissingTagId), updateRequest, _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -697,7 +697,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await user2.PatchAsJsonAsync(Routes.Tag.Generate.UpdateGroupTag(created.TagId), TagTestData.ValidUpdateRequest, _cancelToken);
+            await user2.PatchAsJsonAsync(ApiRoutes.Tag.Generate.UpdateGroupTag(created.TagId), TagTestData.ValidUpdateRequest, _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -716,7 +716,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        HttpResponseMessage response = await client.DeleteAsync(Routes.Tag.Generate.DeleteGroupTag(TagTestData.MissingTagId), _cancelToken);
+        HttpResponseMessage response = await client.DeleteAsync(ApiRoutes.Tag.Generate.DeleteGroupTag(TagTestData.MissingTagId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -737,10 +737,10 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage deleteResponse =
-            await client.DeleteAsync(Routes.Tag.Generate.DeleteGroupTag(created.TagId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Tag.Generate.DeleteGroupTag(created.TagId), _cancelToken);
 
         HttpResponseMessage getResponse =
-            await client.GetAsync(Routes.Tag.Generate.GroupTagById(created.TagId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Tag.Generate.GroupTagById(created.TagId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
@@ -759,7 +759,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.DeleteAsync(Routes.Tag.Generate.DeleteGroupTag(TagTestData.MissingTagId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Tag.Generate.DeleteGroupTag(TagTestData.MissingTagId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -782,7 +782,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await userClient2.DeleteAsync(Routes.Tag.Generate.DeleteGroupTag(created.TagId), _cancelToken);
+            await userClient2.DeleteAsync(ApiRoutes.Tag.Generate.DeleteGroupTag(created.TagId), _cancelToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -793,7 +793,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
     private async Task<UserTag> CreateUserTagAsync(HttpClient client, TagCreateRequest request)
     {
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Tag.CreateUserTag, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Tag.CreateUserTag, request, _cancelToken);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
@@ -806,7 +806,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
     private async Task<Group> CreateGroupAsync(HttpClient client)
     {
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Group.CreateGroup, GroupTestData.ValidCreateRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Group.CreateGroup, GroupTestData.ValidCreateRequest, _cancelToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -819,7 +819,7 @@ public class TagControllerTests : IClassFixture<MoopelApiFactory>
     private async Task<GroupTag> CreateGroupTagAsync(HttpClient client, int groupId, TagCreateRequest request)
     {
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Tag.Generate.CreateGroupTag(groupId), request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Tag.Generate.CreateGroupTag(groupId), request, _cancelToken);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 

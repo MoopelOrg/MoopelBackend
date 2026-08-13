@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MoopelApi.Models;
 using MoopelApi.Services.Interfaces;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
@@ -33,7 +34,7 @@ public class FridgesController : ControllerBase
         _fridgeService = fridgeService;
     }
 
-    [HttpGet(Routes.Fridge.MyFridges)]
+    [HttpGet(ApiRoutes.Fridge.MyFridges)]
     public async Task<ActionResult<List<Fridge>>> GetUserFridges(CancellationToken cancelToken)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -47,7 +48,7 @@ public class FridgesController : ControllerBase
         return Ok(fridges ?? []);
     }
 
-    [HttpGet(Routes.Fridge.FridgeById)]
+    [HttpGet(ApiRoutes.Fridge.FridgeById)]
     public async Task<ActionResult<Fridge>> GetFridgeById(int fridgeId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -74,7 +75,7 @@ public class FridgesController : ControllerBase
         return Ok(fridge);
     }
 
-    [HttpPost(Routes.Fridge.CreateFridge)]
+    [HttpPost(ApiRoutes.Fridge.CreateFridge)]
     public async Task<ActionResult<Fridge>> CreateFridge(FridgeCreateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -88,7 +89,7 @@ public class FridgesController : ControllerBase
         return CreatedAtAction(nameof(GetFridgeById), new { fridgeId = fridge.FridgeId }, fridge);
     }
 
-    [HttpPatch(Routes.Fridge.UpdateFridge)]
+    [HttpPatch(ApiRoutes.Fridge.UpdateFridge)]
     public async Task<ActionResult<Fridge>> UpdateFridge(int fridgeId, FridgeUpdateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -117,7 +118,7 @@ public class FridgesController : ControllerBase
         return Ok(updatedFridge);
     }
 
-    [HttpDelete(Routes.Fridge.DeleteFridge)]
+    [HttpDelete(ApiRoutes.Fridge.DeleteFridge)]
     public async Task<ActionResult> DeleteFridge(int fridgeId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -146,7 +147,7 @@ public class FridgesController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost(Routes.Fridge.CreateFridgeItem)]
+    [HttpPost(ApiRoutes.Fridge.CreateFridgeItem)]
     public async Task<ActionResult<FridgeItem>> CreateFridgeItem(int fridgeId, FridgeItemCreateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -175,7 +176,7 @@ public class FridgesController : ControllerBase
         return CreatedAtAction(nameof(GetFridgeById), new { fridgeId }, createdItem);
     }
 
-    [HttpPatch(Routes.Fridge.UpdateFridgeItem)]
+    [HttpPatch(ApiRoutes.Fridge.UpdateFridgeItem)]
     public async Task<ActionResult<FridgeItem>> UpdateFridgeItem(int fridgeItemId, FridgeItemUpdateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -212,7 +213,7 @@ public class FridgesController : ControllerBase
         return Ok(updatedItem);
     }
 
-    [HttpDelete(Routes.Fridge.DeleteFridgeItem)]
+    [HttpDelete(ApiRoutes.Fridge.DeleteFridgeItem)]
     public async Task<ActionResult> DeleteFridgeItem(int fridgeItemId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);

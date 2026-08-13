@@ -3,9 +3,9 @@
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 
-using MoopelApi;
 using MoopelApi.Models.Attributes;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
@@ -36,7 +36,7 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Bank.MyAccounts, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Bank.MyAccounts, _cancelToken);
 
         // Assert
         Assert.True(
@@ -55,7 +55,7 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Bank.MyAccounts, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Bank.MyAccounts, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         List<BankAccount>? accounts = await response.Content.ReadFromJsonAsync<List<BankAccount>>(_cancelToken);
 
@@ -80,8 +80,8 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         BankAccountCreateRequest request = BankAccountTestData.ValidCreateRequest;
 
         // Act
-        await client.PostAsJsonAsync(Routes.Bank.CreateAccount, request, _cancelToken);
-        HttpResponseMessage response = await client.GetAsync(Routes.Bank.MyAccounts, _cancelToken);
+        await client.PostAsJsonAsync(ApiRoutes.Bank.CreateAccount, request, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Bank.MyAccounts, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         List<BankAccount>? accounts = await response.Content.ReadFromJsonAsync<List<BankAccount>>(_cancelToken);
 
@@ -116,7 +116,7 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
-        HttpResponseMessage response = await client.PostAsJsonAsync(Routes.Bank.CreateAccount, createRequest, _cancelToken);
+        HttpResponseMessage response = await client.PostAsJsonAsync(ApiRoutes.Bank.CreateAccount, createRequest, _cancelToken);
 
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         BankAccount? result = await response.Content.ReadFromJsonAsync<BankAccount>(_cancelToken);
@@ -150,12 +150,12 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         BankAccountCreateRequest createRequest = BankAccountTestData.ValidCreateRequest;
 
         // Act
-        HttpResponseMessage createResponse = await client.PostAsJsonAsync(Routes.Bank.CreateAccount, createRequest, _cancelToken);
+        HttpResponseMessage createResponse = await client.PostAsJsonAsync(ApiRoutes.Bank.CreateAccount, createRequest, _cancelToken);
 
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         BankAccount? created = await createResponse.Content.ReadFromJsonAsync<BankAccount>(_cancelToken);
 
-        string endpoint = Routes.Bank.Generate.AccountById(created?.AccountId ?? 0);
+        string endpoint = ApiRoutes.Bank.Generate.AccountById(created?.AccountId ?? 0);
 
         HttpResponseMessage response = await client.GetAsync(endpoint, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
@@ -185,7 +185,7 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
-        string endpoint = Routes.Bank.Generate.AccountById(99999999);
+        string endpoint = ApiRoutes.Bank.Generate.AccountById(99999999);
         HttpResponseMessage response = await client.GetAsync(endpoint, _cancelToken);
 
         // Assert
@@ -209,11 +209,11 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
-        HttpResponseMessage createResponse = await client.PostAsJsonAsync(Routes.Bank.CreateAccount, createRequest, _cancelToken);
+        HttpResponseMessage createResponse = await client.PostAsJsonAsync(ApiRoutes.Bank.CreateAccount, createRequest, _cancelToken);
 
         BankAccount? created = await createResponse.Content.ReadFromJsonAsync<BankAccount>(_cancelToken);
 
-        string updateEndpoint = Routes.Bank.Generate.UpdateAccount(created?.AccountId ?? 0);
+        string updateEndpoint = ApiRoutes.Bank.Generate.UpdateAccount(created?.AccountId ?? 0);
         HttpResponseMessage updateResponse = await client.PutAsJsonAsync(updateEndpoint, updateRequest, _cancelToken);
 
         string updateBody = await updateResponse.Content.ReadAsStringAsync(_cancelToken);
@@ -246,13 +246,13 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
-        HttpResponseMessage createResponse = await client.PostAsJsonAsync(Routes.Bank.CreateAccount, createRequest, _cancelToken);
+        HttpResponseMessage createResponse = await client.PostAsJsonAsync(ApiRoutes.Bank.CreateAccount, createRequest, _cancelToken);
         BankAccount? created = await createResponse.Content.ReadFromJsonAsync<BankAccount>(_cancelToken);
 
-        string deleteEndpoint = Routes.Bank.Generate.DeleteAccount(created?.AccountId ?? 0);
+        string deleteEndpoint = ApiRoutes.Bank.Generate.DeleteAccount(created?.AccountId ?? 0);
         HttpResponseMessage deleteResponse = await client.DeleteAsync(deleteEndpoint, _cancelToken);
 
-        string getEndpoint = Routes.Bank.Generate.AccountById(created?.AccountId ?? 0);
+        string getEndpoint = ApiRoutes.Bank.Generate.AccountById(created?.AccountId ?? 0);
         HttpResponseMessage getResponse = await client.GetAsync(getEndpoint, _cancelToken);
 
         // Assert
@@ -283,11 +283,11 @@ public class BanksControllerTests : IClassFixture<MoopelApiFactory>
         // Act
         BankAccountCreateRequest request = BankAccountTestData.ValidCreateRequest;
 
-        HttpResponseMessage createResponse = await userClient1.PostAsJsonAsync(Routes.Bank.CreateAccount, request, _cancelToken);
+        HttpResponseMessage createResponse = await userClient1.PostAsJsonAsync(ApiRoutes.Bank.CreateAccount, request, _cancelToken);
 
         BankAccount? created = await createResponse.Content.ReadFromJsonAsync<BankAccount>(_cancelToken);
 
-        string getEndpoint = Routes.Bank.Generate.AccountById(created?.AccountId ?? 0);
+        string getEndpoint = ApiRoutes.Bank.Generate.AccountById(created?.AccountId ?? 0);
         HttpResponseMessage response = await userClient2.GetAsync(getEndpoint, _cancelToken);
 
         // Assert

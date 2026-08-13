@@ -388,7 +388,7 @@ Suggested routes:
 
 **How it would be done**
 
-- Update `MoopelApi\Routes.cs` with constants matching the existing route style.
+- Update `MoopelApi\ApiRoutes.cs` with constants matching the existing route style.
 
 ### Step 18. Add challenge endpoints in `AuthController`
 
@@ -634,7 +634,7 @@ Expected backend files to change or be added:
 - `MoopelApi\Startup.cs`
 - `MoopelApi\MoopelApi.csproj`
 - `MoopelApi\appsettings.json`
-- `MoopelApi\Routes.cs`
+- `MoopelApi\ApiRoutes.cs`
 - `MoopelApi\Controllers\AuthController.cs`
 - `MoopelApi\Services\Interfaces\IAuthService.cs`
 - `MoopelApi\Services\AuthService.cs`

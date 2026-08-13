@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MoopelApi.Models;
 using MoopelApi.Services.Interfaces;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
@@ -33,7 +34,7 @@ public class StoragesController : ControllerBase
         _storageService = storageService;
     }
 
-    [HttpGet(Routes.Storage.MyStorages)]
+    [HttpGet(ApiRoutes.Storage.MyStorages)]
     public async Task<ActionResult<List<Storage>>> GetUserStorages(CancellationToken cancelToken)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -53,7 +54,7 @@ public class StoragesController : ControllerBase
         return Ok(userStorages ?? []);
     }
 
-    [HttpGet(Routes.Storage.StorageById)]
+    [HttpGet(ApiRoutes.Storage.StorageById)]
     public async Task<ActionResult<Storage>> GetStorageById(int storageId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -80,7 +81,7 @@ public class StoragesController : ControllerBase
         return Ok(storage);
     }
 
-    [HttpPost(Routes.Storage.CreateStorage)]
+    [HttpPost(ApiRoutes.Storage.CreateStorage)]
     public async Task<ActionResult<Storage>> CreateStorage(StorageCreateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -94,7 +95,7 @@ public class StoragesController : ControllerBase
         return CreatedAtAction(nameof(GetStorageById), new { storageId = storage.StorageId }, storage);
     }
 
-    [HttpPatch(Routes.Storage.UpdateStorage)]
+    [HttpPatch(ApiRoutes.Storage.UpdateStorage)]
     public async Task<ActionResult<Storage>> UpdateStorage(int storageId, StorageUpdateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -123,7 +124,7 @@ public class StoragesController : ControllerBase
         return Ok(updatedStorage);
     }
 
-    [HttpDelete(Routes.Storage.DeleteStorage)]
+    [HttpDelete(ApiRoutes.Storage.DeleteStorage)]
     public async Task<ActionResult> DeleteStorage(int storageId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -152,7 +153,7 @@ public class StoragesController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost(Routes.Storage.CreateStorageItem)]
+    [HttpPost(ApiRoutes.Storage.CreateStorageItem)]
     public async Task<ActionResult<StorageItem>> CreateStorageItem(int storageId, StorageCreateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -181,7 +182,7 @@ public class StoragesController : ControllerBase
         return CreatedAtAction(nameof(GetStorageById), new { storageId }, createdItem);
     }
 
-    [HttpPatch(Routes.Storage.UpdateStorageItem)]
+    [HttpPatch(ApiRoutes.Storage.UpdateStorageItem)]
     public async Task<ActionResult<StorageItem>> UpdateStorageItem(int storageItemId, StorageUpdateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -218,7 +219,7 @@ public class StoragesController : ControllerBase
         return Ok(updatedItem);
     }
 
-    [HttpDelete(Routes.Storage.DeleteStorageItem)]
+    [HttpDelete(ApiRoutes.Storage.DeleteStorageItem)]
     public async Task<ActionResult> DeleteStorageItem(int storageItemId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);

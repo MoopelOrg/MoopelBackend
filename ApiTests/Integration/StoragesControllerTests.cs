@@ -3,8 +3,7 @@
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 
-using MoopelApi;
-
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
@@ -36,7 +35,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Storage.MyStorages, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Storage.MyStorages, _cancelToken);
 
         // Assert
         Assert.True(
@@ -54,7 +53,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Storage.MyStorages, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Storage.MyStorages, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         List<Storage>? storages = await response.Content.ReadFromJsonAsync<List<Storage>>(_cancelToken);
 
@@ -77,7 +76,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Storage.Generate.StorageById(1), _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Storage.Generate.StorageById(1), _cancelToken);
 
         // Assert
         Assert.True(
@@ -97,7 +96,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         StorageCreateRequest createRequest = StorageTestData.ValidCreateRequest;
 
         HttpResponseMessage createResponse =
-            await client.PostAsJsonAsync(Routes.Storage.CreateStorage, createRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Storage.CreateStorage, createRequest, _cancelToken);
 
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Storage? created = await createResponse.Content.ReadFromJsonAsync<Storage>(_cancelToken);
@@ -106,7 +105,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.GetAsync(Routes.Storage.Generate.StorageById(created.StorageId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Storage.Generate.StorageById(created.StorageId), _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Storage? result = await response.Content.ReadFromJsonAsync<Storage>(_cancelToken);
 
@@ -129,7 +128,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Storage.Generate.StorageById(9999), _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Storage.Generate.StorageById(9999), _cancelToken);
 
         // Assert
         Assert.True(
@@ -152,7 +151,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         StorageCreateRequest request = StorageTestData.ValidCreateRequest;
 
         HttpResponseMessage createResponse =
-            await user1.PostAsJsonAsync(Routes.Storage.CreateStorage, request, _cancelToken);
+            await user1.PostAsJsonAsync(ApiRoutes.Storage.CreateStorage, request, _cancelToken);
 
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Storage? created = await createResponse.Content.ReadFromJsonAsync<Storage>(_cancelToken);
@@ -161,7 +160,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await user2.GetAsync(Routes.Storage.Generate.StorageById(created.StorageId), _cancelToken);
+            await user2.GetAsync(ApiRoutes.Storage.Generate.StorageById(created.StorageId), _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
         // Assert
@@ -185,7 +184,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Storage.CreateStorage, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Storage.CreateStorage, request, _cancelToken);
 
         // Assert
         Assert.True(
@@ -206,7 +205,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Storage.CreateStorage, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Storage.CreateStorage, request, _cancelToken);
 
         Storage? created = await response.Content.ReadFromJsonAsync<Storage>(_cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
@@ -237,7 +236,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         StorageCreateRequest createRequest = StorageTestData.ValidCreateRequest;
 
         HttpResponseMessage createResponse =
-            await client.PostAsJsonAsync(Routes.Storage.CreateStorage, createRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Storage.CreateStorage, createRequest, _cancelToken);
 
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Storage? created = await createResponse.Content.ReadFromJsonAsync<Storage>(_cancelToken);
@@ -248,7 +247,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage updateResponse =
-            await client.PatchAsJsonAsync(Routes.Storage.Generate.UpdateStorage(created.StorageId), updateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(ApiRoutes.Storage.Generate.UpdateStorage(created.StorageId), updateRequest, _cancelToken);
         string updateBody = await updateResponse.Content.ReadAsStringAsync(_cancelToken);
         Storage? updated = await updateResponse.Content.ReadFromJsonAsync<Storage>(_cancelToken);
 
@@ -274,7 +273,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PatchAsJsonAsync(Routes.Storage.Generate.UpdateStorage(StorageTestData.NonExistentStorageId), updateRequest, _cancelToken);
+            await client.PatchAsJsonAsync(ApiRoutes.Storage.Generate.UpdateStorage(StorageTestData.NonExistentStorageId), updateRequest, _cancelToken);
 
         // Assert
         Assert.True(
@@ -298,7 +297,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         StorageCreateRequest createRequest = StorageTestData.ValidCreateRequest;
 
         HttpResponseMessage createResponse =
-            await client.PostAsJsonAsync(Routes.Storage.CreateStorage, createRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Storage.CreateStorage, createRequest, _cancelToken);
 
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
         Storage? created = await createResponse.Content.ReadFromJsonAsync<Storage>(_cancelToken);
@@ -307,10 +306,10 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage deleteResponse =
-            await client.DeleteAsync(Routes.Storage.Generate.DeleteStorage(created.StorageId), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Storage.Generate.DeleteStorage(created.StorageId), _cancelToken);
         string deleteBody = await deleteResponse.Content.ReadAsStringAsync(_cancelToken);
         HttpResponseMessage getResponse =
-            await client.GetAsync(Routes.Storage.Generate.StorageById(created.StorageId), _cancelToken);
+            await client.GetAsync(ApiRoutes.Storage.Generate.StorageById(created.StorageId), _cancelToken);
 
         // Assert
         Assert.True(
@@ -333,7 +332,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.DeleteAsync(Routes.Storage.Generate.DeleteStorage(9999), _cancelToken);
+            await client.DeleteAsync(ApiRoutes.Storage.Generate.DeleteStorage(9999), _cancelToken);
 
         // Assert
         Assert.True(
@@ -356,7 +355,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         HttpResponseMessage response = await client.PostAsJsonAsync(
-            Routes.Storage.Generate.CreateStorageItem(StorageTestData.NonExistentStorageId),
+            ApiRoutes.Storage.Generate.CreateStorageItem(StorageTestData.NonExistentStorageId),
             StorageTestData.ValidCreateRequest,
             _cancelToken);
 
@@ -377,7 +376,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         HttpResponseMessage response = await client.PatchAsJsonAsync(
-            Routes.Storage.Generate.UpdateStorageItem(StorageTestData.NonExistentStorageItemId),
+            ApiRoutes.Storage.Generate.UpdateStorageItem(StorageTestData.NonExistentStorageItemId),
             StorageTestData.ValidUpdateRequest,
             _cancelToken);
 
@@ -397,7 +396,7 @@ public class StoragesControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         HttpResponseMessage response = await client.DeleteAsync(
-            Routes.Storage.Generate.DeleteStorageItem(StorageTestData.NonExistentStorageItemId),
+            ApiRoutes.Storage.Generate.DeleteStorageItem(StorageTestData.NonExistentStorageItemId),
             _cancelToken);
 
         Assert.True(

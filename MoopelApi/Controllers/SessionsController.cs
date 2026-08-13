@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MoopelApi.Models;
 using MoopelApi.Services.Interfaces;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Enums;
 
@@ -31,7 +32,7 @@ public class SessionsController : ControllerBase
         _contextService = contextService;
     }
 
-    [HttpGet(Routes.Session.MySessions)]
+    [HttpGet(ApiRoutes.Session.MySessions)]
     public async Task<ActionResult<List<Session>>> GetMySessions(CancellationToken cancelToken)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
@@ -43,7 +44,7 @@ public class SessionsController : ControllerBase
         return Ok(sessions);
     }
 
-    [HttpGet(Routes.Session.SessionById)]
+    [HttpGet(ApiRoutes.Session.SessionById)]
     public async Task<ActionResult<Session>> GetSessionById(int sessionId)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
@@ -62,7 +63,7 @@ public class SessionsController : ControllerBase
         return Ok(session);
     }
 
-    [HttpPost(Routes.Session.RevokeSession)]
+    [HttpPost(ApiRoutes.Session.RevokeSession)]
     public async Task<ActionResult> RevokeSession(int sessionId)
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);
@@ -82,7 +83,7 @@ public class SessionsController : ControllerBase
         return Ok();
     }
 
-    [HttpPost(Routes.Session.RevokeAll)]
+    [HttpPost(ApiRoutes.Session.RevokeAll)]
     public async Task<ActionResult> RevokeAllSessions()
     {
         RequestContext context = await _contextService.GetRequestContext(HttpContext);

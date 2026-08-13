@@ -4,9 +4,9 @@ using System.Text.Json;
 using ApiTests.Integration.Generic;
 using ApiTests.TestData;
 
-using MoopelApi;
 using MoopelApi.Models.Attributes;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
@@ -37,7 +37,7 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Note.MyNotes, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Note.MyNotes, _cancelToken);
 
         // Assert
         Assert.True(
@@ -56,7 +56,7 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         // Act
-        HttpResponseMessage response = await client.GetAsync(Routes.Note.MyNotes, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Note.MyNotes, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         List<Note>? notes = await response.Content.ReadFromJsonAsync<List<Note>>(_cancelToken);
 
@@ -81,8 +81,8 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         NoteCreateRequest request = NoteTestData.ValidCreateRequest;
 
         // Act
-        await client.PostAsJsonAsync(Routes.Note.CreateNote, request, _cancelToken);
-        HttpResponseMessage response = await client.GetAsync(Routes.Note.MyNotes, _cancelToken);
+        await client.PostAsJsonAsync(ApiRoutes.Note.CreateNote, request, _cancelToken);
+        HttpResponseMessage response = await client.GetAsync(ApiRoutes.Note.MyNotes, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         List<Note>? notes = await response.Content.ReadFromJsonAsync<List<Note>>(_cancelToken);
         Note? note = notes?.FirstOrDefault();
@@ -111,7 +111,7 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        string endpoint = Routes.Note.Generate.NoteById(NoteTestData.MissingNoteId);
+        string endpoint = ApiRoutes.Note.Generate.NoteById(NoteTestData.MissingNoteId);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(endpoint, _cancelToken);
@@ -136,14 +136,14 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage createResponse =
-            await client.PostAsJsonAsync(Routes.Note.CreateNote, createRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Note.CreateNote, createRequest, _cancelToken);
 
         Note? created = await createResponse.Content.ReadFromJsonAsync<Note>(_cancelToken);
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
 
         Assert.True(created is not null, $"Failed to create note. Status: {createResponse.StatusCode}, Body: {createBody}");
 
-        string endpoint = Routes.Note.Generate.NoteById(created.NoteId);
+        string endpoint = ApiRoutes.Note.Generate.NoteById(created.NoteId);
         HttpResponseMessage response = await client.GetAsync(endpoint, _cancelToken);
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
         Note? result = await response.Content.ReadFromJsonAsync<Note>(_cancelToken);
@@ -168,7 +168,7 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
-        string endpoint = Routes.Note.Generate.NoteById(NoteTestData.MissingNoteId);
+        string endpoint = ApiRoutes.Note.Generate.NoteById(NoteTestData.MissingNoteId);
 
         // Act
         HttpResponseMessage response = await client.GetAsync(endpoint, _cancelToken);
@@ -196,14 +196,14 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage createResponse =
-            await user1.PostAsJsonAsync(Routes.Note.CreateNote, request, _cancelToken);
+            await user1.PostAsJsonAsync(ApiRoutes.Note.CreateNote, request, _cancelToken);
 
         Note? created = await createResponse.Content.ReadFromJsonAsync<Note>(_cancelToken);
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
 
         Assert.True(created is not null, $"Failed to create note for user1. Status: {createResponse.StatusCode}, Body: {createBody}");
 
-        string endpoint = Routes.Note.Generate.NoteById(created.NoteId);
+        string endpoint = ApiRoutes.Note.Generate.NoteById(created.NoteId);
         HttpResponseMessage response = await user2.GetAsync(endpoint, _cancelToken);
 
         // Assert
@@ -228,7 +228,7 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Note.CreateNote, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Note.CreateNote, request, _cancelToken);
 
         // Assert
         Assert.True(
@@ -249,7 +249,7 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage response =
-            await client.PostAsJsonAsync(Routes.Note.CreateNote, request, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Note.CreateNote, request, _cancelToken);
 
         string responseBody = await response.Content.ReadAsStringAsync(_cancelToken);
 
@@ -280,7 +280,7 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         NoteUpdateRequest updateRequest = NoteTestData.ValidUpdateRequest;
-        string endpoint = Routes.Note.Generate.UpdateNote(NoteTestData.MissingNoteId);
+        string endpoint = ApiRoutes.Note.Generate.UpdateNote(NoteTestData.MissingNoteId);
 
         // Act
         HttpResponseMessage response =
@@ -305,14 +305,14 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage createResponse =
-            await client.PostAsJsonAsync(Routes.Note.CreateNote, createRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Note.CreateNote, createRequest, _cancelToken);
 
         Note? created = await createResponse.Content.ReadFromJsonAsync<Note>(_cancelToken);
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
 
         Assert.True(created is not null, $"Failed to create note. Status: {createResponse.StatusCode}, Body: {createBody}");
 
-        string updateEndpoint = Routes.Note.Generate.UpdateNote(created.NoteId);
+        string updateEndpoint = ApiRoutes.Note.Generate.UpdateNote(created.NoteId);
         HttpResponseMessage updateResponse =
             await client.PatchAsJsonAsync(updateEndpoint, updateRequest, _cancelToken);
         string updateBody = await updateResponse.Content.ReadAsStringAsync(_cancelToken);
@@ -342,7 +342,7 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
 
         NoteUpdateRequest updateRequest = NoteTestData.ValidUpdateRequest;
-        string endpoint = Routes.Note.Generate.UpdateNote(NoteTestData.MissingNoteId);
+        string endpoint = ApiRoutes.Note.Generate.UpdateNote(NoteTestData.MissingNoteId);
 
         // Act
         HttpResponseMessage response =
@@ -365,7 +365,7 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         // Arrange
         await _apiFactory.ResetDatabaseAsync();
         HttpClient client = _apiFactory.CreateClient();
-        string endpoint = Routes.Note.Generate.DeleteNote(NoteTestData.MissingNoteId);
+        string endpoint = ApiRoutes.Note.Generate.DeleteNote(NoteTestData.MissingNoteId);
 
         // Act
         HttpResponseMessage response = await client.DeleteAsync(endpoint, _cancelToken);
@@ -389,17 +389,17 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
 
         // Act
         HttpResponseMessage createResponse =
-            await client.PostAsJsonAsync(Routes.Note.CreateNote, createRequest, _cancelToken);
+            await client.PostAsJsonAsync(ApiRoutes.Note.CreateNote, createRequest, _cancelToken);
 
         Note? created = await createResponse.Content.ReadFromJsonAsync<Note>(_cancelToken);
         string createBody = await createResponse.Content.ReadAsStringAsync(_cancelToken);
 
         Assert.True(created is not null, $"Failed to create note. Status: {createResponse.StatusCode}, Body: {createBody}");
 
-        string deleteEndpoint = Routes.Note.Generate.DeleteNote(created.NoteId);
+        string deleteEndpoint = ApiRoutes.Note.Generate.DeleteNote(created.NoteId);
         HttpResponseMessage deleteResponse = await client.DeleteAsync(deleteEndpoint, _cancelToken);
 
-        string getEndpoint = Routes.Note.Generate.NoteById(created.NoteId);
+        string getEndpoint = ApiRoutes.Note.Generate.NoteById(created.NoteId);
         HttpResponseMessage getResponse = await client.GetAsync(getEndpoint, _cancelToken);
 
         // Assert
@@ -420,7 +420,7 @@ public class NoteControllerTests : IClassFixture<MoopelApiFactory>
         HttpClient client = _apiFactory.CreateClient();
 
         await GenericActions.Auth.CreateAuthenticatedClient(client, _cancelToken);
-        string endpoint = Routes.Note.Generate.DeleteNote(NoteTestData.MissingNoteId);
+        string endpoint = ApiRoutes.Note.Generate.DeleteNote(NoteTestData.MissingNoteId);
 
         // Act
         HttpResponseMessage response = await client.DeleteAsync(endpoint, _cancelToken);

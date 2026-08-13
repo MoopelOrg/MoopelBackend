@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MoopelApi.Models;
 using MoopelApi.Services.Interfaces;
 
+using MoopelObjects;
 using MoopelObjects.Dto;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
@@ -33,7 +34,7 @@ public class BanksController : ControllerBase
         _bankService = bankService;
     }
 
-    [HttpGet(Routes.Bank.MyAccounts)]
+    [HttpGet(ApiRoutes.Bank.MyAccounts)]
     public async Task<ActionResult<List<BankAccount>>> GetMyAccounts(CancellationToken cancelToken)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -44,7 +45,7 @@ public class BanksController : ControllerBase
         return Ok(accounts ?? []);
     }
 
-    [HttpGet(Routes.Bank.AccountById)]
+    [HttpGet(ApiRoutes.Bank.AccountById)]
     public async Task<ActionResult<BankAccount>> GetAccountById(int accountId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -69,7 +70,7 @@ public class BanksController : ControllerBase
         return Ok(account);
     }
 
-    [HttpPost(Routes.Bank.CreateAccount)]
+    [HttpPost(ApiRoutes.Bank.CreateAccount)]
     public async Task<ActionResult<BankAccount>> CreateAccount([FromBody] BankAccountCreateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -82,7 +83,7 @@ public class BanksController : ControllerBase
         return CreatedAtAction(nameof(GetAccountById), new { accountId = newAccount.AccountId }, newAccount);
     }
 
-    [HttpPut(Routes.Bank.UpdateAccount)]
+    [HttpPut(ApiRoutes.Bank.UpdateAccount)]
     public async Task<ActionResult<BankAccount>> UpdateAccount(int accountId, [FromBody] BankAccountUpdateRequest request)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
@@ -107,7 +108,7 @@ public class BanksController : ControllerBase
         return Ok(updatedAccount);
     }
 
-    [HttpDelete(Routes.Bank.DeleteAccount)]
+    [HttpDelete(ApiRoutes.Bank.DeleteAccount)]
     public async Task<ActionResult> DeleteAccount(int accountId)
     {
         User contextUser = await _contextService.GetContextUser(HttpContext);
