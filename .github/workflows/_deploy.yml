@@ -12,168 +12,130 @@ on:
       image_tag:
         required: true
         type: string
+      legacy_container_name:
+        required: false
+        type: string
+        default: ''
       run_smoke_tests:
         required: false
         type: boolean
         default: false
 
 env:
+  IMAGE_ARCHIVE_NAME: moopelbackend.tar
   IMAGE_NAME: ghcr.io/moopelorg/moopelbackend
   DEFAULT_CONTAINER_PORT: '8080'
-  DEFAULT_DEPLOY_PORT: '22'
+  DEFAULT_DEVELOPMENT_HOST_PORT: '8082'
+  DEFAULT_STAGING_HOST_PORT: '8083'
+  DEFAULT_PRODUCTION_HOST_PORT: '8080'
   DEFAULT_HEALTHCHECK_RETRIES: '12'
   DEFAULT_HEALTHCHECK_DELAY_SECONDS: '10'
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Windows, X64, moopel-server]
     environment: ${{ inputs.environment_name }}
     concurrency:
       group: deploy-${{ inputs.environment_name }}
       cancel-in-progress: false
     permissions:
+      actions: read
       contents: read
 
     steps:
-      - name: Validate deployment configuration
+      - name: Resolve deployment values
+        id: values
+        shell: pwsh
         env:
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
-          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
-          GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
-        run: |
-          set -euo pipefail
-
-          missing=0
-          for variable_name in DEPLOY_HOST DEPLOY_USER DEPLOY_SSH_KEY DEPLOY_KNOWN_HOSTS GHCR_USERNAME GHCR_READ_TOKEN; do
-            if [[ -z "${!variable_name:-}" ]]; then
-              echo "::error::Missing required environment secret: ${variable_name}"
-              missing=1
-            fi
-          done
-
-          exit "${missing}"
-
-      - name: Prepare SSH configuration
-        env:
-          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-        run: |
-          set -euo pipefail
-
-          mkdir -p "${HOME}/.ssh"
-          chmod 700 "${HOME}/.ssh"
-          printf '%s\n' "${DEPLOY_SSH_KEY}" > "${HOME}/.ssh/id_ed25519"
-          printf '%s\n' "${DEPLOY_KNOWN_HOSTS}" > "${HOME}/.ssh/known_hosts"
-          chmod 600 "${HOME}/.ssh/id_ed25519" "${HOME}/.ssh/known_hosts"
-
-      - name: Deploy container image
-        env:
-          CONTAINER_ENV_FILE_PATH: ${{ vars.CONTAINER_ENV_FILE_PATH }}
-          CONTAINER_NAME: ${{ inputs.container_name }}
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_PORT_VALUE: ${{ vars.DEPLOY_PORT }}
-          DEPLOY_RUN_ARGS: ${{ vars.DOCKER_RUN_ARGS }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          CONTAINER_PORT: ${{ vars.CONTAINER_PORT }}
           ENVIRONMENT_NAME: ${{ inputs.environment_name }}
-          GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
-          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
           HEALTHCHECK_DELAY_SECONDS: ${{ vars.HEALTHCHECK_DELAY_SECONDS }}
           HEALTHCHECK_RETRIES: ${{ vars.HEALTHCHECK_RETRIES }}
-          IMAGE_TAG: ${{ inputs.image_tag }}
+          HOST_PORT: ${{ vars.HOST_PORT }}
+          SMOKE_TEST_URL: ${{ vars.SMOKE_TEST_URL }}
         run: |
-          set -euo pipefail
+          $ErrorActionPreference = 'Stop'
 
-          deploy_port="${DEPLOY_PORT_VALUE:-${DEFAULT_DEPLOY_PORT}}"
-          remote_command=$(
-            cat <<EOF
-          IMAGE_NAME=$(printf '%q' "${IMAGE_NAME}") \
-          IMAGE_TAG=$(printf '%q' "${IMAGE_TAG}") \
-          CONTAINER_NAME=$(printf '%q' "${CONTAINER_NAME}") \
-          ENVIRONMENT_NAME=$(printf '%q' "${ENVIRONMENT_NAME}") \
-          GHCR_USERNAME=$(printf '%q' "${GHCR_USERNAME}") \
-          GHCR_READ_TOKEN=$(printf '%q' "${GHCR_READ_TOKEN}") \
-          CONTAINER_ENV_FILE_PATH=$(printf '%q' "${CONTAINER_ENV_FILE_PATH}") \
-          DEPLOY_RUN_ARGS=$(printf '%q' "${DEPLOY_RUN_ARGS}") \
-          HEALTHCHECK_RETRIES=$(printf '%q' "${HEALTHCHECK_RETRIES:-${DEFAULT_HEALTHCHECK_RETRIES}}") \
-          HEALTHCHECK_DELAY_SECONDS=$(printf '%q' "${HEALTHCHECK_DELAY_SECONDS:-${DEFAULT_HEALTHCHECK_DELAY_SECONDS}}") \
-          DEFAULT_CONTAINER_PORT=$(printf '%q' "${DEFAULT_CONTAINER_PORT}") \
-          bash -s
-          EOF
-          )
+          $defaultHostPort = switch ($env:ENVIRONMENT_NAME) {
+            'development' { $env:DEFAULT_DEVELOPMENT_HOST_PORT; break }
+            'staging' { $env:DEFAULT_STAGING_HOST_PORT; break }
+            'production' { $env:DEFAULT_PRODUCTION_HOST_PORT; break }
+            default { $env:DEFAULT_PRODUCTION_HOST_PORT; break }
+          }
 
-          ssh -i "${HOME}/.ssh/id_ed25519" -p "${deploy_port}" "${DEPLOY_USER}@${DEPLOY_HOST}" "${remote_command}" <<'REMOTE'
-          set -euo pipefail
+          $hostPort = if ([string]::IsNullOrWhiteSpace($env:HOST_PORT)) { $defaultHostPort } else { $env:HOST_PORT }
+          $containerPort = if ([string]::IsNullOrWhiteSpace($env:CONTAINER_PORT)) { $env:DEFAULT_CONTAINER_PORT } else { $env:CONTAINER_PORT }
+          $healthRetries = if ([string]::IsNullOrWhiteSpace($env:HEALTHCHECK_RETRIES)) { $env:DEFAULT_HEALTHCHECK_RETRIES } else { $env:HEALTHCHECK_RETRIES }
+          $healthDelaySeconds = if ([string]::IsNullOrWhiteSpace($env:HEALTHCHECK_DELAY_SECONDS)) { $env:DEFAULT_HEALTHCHECK_DELAY_SECONDS } else { $env:HEALTHCHECK_DELAY_SECONDS }
+          $smokeTestUrl = if ([string]::IsNullOrWhiteSpace($env:SMOKE_TEST_URL)) { "http://127.0.0.1:$hostPort/openapi/v1.json" } else { $env:SMOKE_TEST_URL }
 
-          image="${IMAGE_NAME}:${IMAGE_TAG}"
-          docker login ghcr.io -u "${GHCR_USERNAME}" --password-stdin <<<"${GHCR_READ_TOKEN}"
+          "host_port=$hostPort" >> $env:GITHUB_OUTPUT
+          "container_port=$containerPort" >> $env:GITHUB_OUTPUT
+          "healthcheck_retries=$healthRetries" >> $env:GITHUB_OUTPUT
+          "healthcheck_delay_seconds=$healthDelaySeconds" >> $env:GITHUB_OUTPUT
+          "smoke_test_url=$smokeTestUrl" >> $env:GITHUB_OUTPUT
 
-          run_args=()
-          if [[ -n "${CONTAINER_ENV_FILE_PATH:-}" ]]; then
-            run_args+=(--env-file "${CONTAINER_ENV_FILE_PATH}")
-          fi
+      - name: Verify runner
+        shell: pwsh
+        run: |
+          Write-Host "Runner: $env:RUNNER_NAME"
+          Write-Host "OS: $env:RUNNER_OS"
+          Write-Host "Architecture: $env:RUNNER_ARCH"
+          Write-Host "Machine: $env:COMPUTERNAME"
+          Write-Host "Image tag: ${{ inputs.image_tag }}"
+          Write-Host "Environment: ${{ inputs.environment_name }}"
+          Write-Host "Host port: ${{ steps.values.outputs.host_port }}"
 
-          if [[ -n "${DEPLOY_RUN_ARGS:-}" ]]; then
-            # shellcheck disable=SC2206
-            extra_args=(${DEPLOY_RUN_ARGS})
-            run_args+=("${extra_args[@]}")
-          fi
+      - name: Check out trusted deployment scripts
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
 
-          docker pull "${image}"
-          docker rm -f "${CONTAINER_NAME}" || true
-          docker run -d \
-            --name "${CONTAINER_NAME}" \
-            --restart unless-stopped \
-            -e ASPNETCORE_ENVIRONMENT="${ENVIRONMENT_NAME}" \
-            -e VERSION="${IMAGE_TAG}" \
-            -e COMMIT_NAME="${IMAGE_TAG}" \
-            -e DEPLOYED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
-            "${run_args[@]}" \
-            "${image}"
+      - name: Download deployment image archive
+        uses: actions/download-artifact@v4
+        with:
+          name: moopelbackend-docker-${{ inputs.image_tag }}
+          path: .
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
 
-          container_health_url="http://$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${CONTAINER_NAME}"):${DEFAULT_CONTAINER_PORT}/"
-          health_ok=0
-          for attempt in $(seq 1 "${HEALTHCHECK_RETRIES}"); do
-            if response="$(curl --silent --show-error --fail "${container_health_url}")" && grep -q "Healthy" <<<"${response}"; then
-              health_ok=1
-              printf '%s\n' "${response}"
-              break
-            fi
+      - name: Load Docker image
+        shell: pwsh
+        run: docker load --input "./${{ env.IMAGE_ARCHIVE_NAME }}"
 
-            sleep "${HEALTHCHECK_DELAY_SECONDS}"
-          done
+      - name: Deploy container image
+        shell: pwsh
+        env:
+          CONTAINER_ENV_FILE_PATH: ${{ vars.CONTAINER_ENV_FILE_PATH }}
+        run: >
+          ./.github/scripts/Deploy-Container.ps1
+          -ContainerName '${{ inputs.container_name }}'
+          -ImageName '${{ env.IMAGE_NAME }}'
+          -ImageTag '${{ inputs.image_tag }}'
+          -HostPort '${{ steps.values.outputs.host_port }}'
+          -ContainerPort '${{ steps.values.outputs.container_port }}'
+          -EnvironmentName '${{ inputs.environment_name }}'
+          -ContainerEnvFilePath "${env:CONTAINER_ENV_FILE_PATH}"
+          -HealthcheckRetries '${{ steps.values.outputs.healthcheck_retries }}'
+          -HealthcheckDelaySeconds '${{ steps.values.outputs.healthcheck_delay_seconds }}'
+          -LegacyContainerName '${{ inputs.legacy_container_name }}'
 
-          if [[ "${health_ok}" -ne 1 ]]; then
-            echo "Deployment health check failed for ${CONTAINER_NAME}" >&2
-            exit 1
-          fi
-          REMOTE
+      - name: Upload deployment image archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: moopelbackend-docker-${{ inputs.image_tag }}
+          path: ${{ env.IMAGE_ARCHIVE_NAME }}
+          if-no-files-found: error
 
       - name: Run smoke tests
         if: inputs.run_smoke_tests
-        env:
-          CONTAINER_NAME: ${{ inputs.container_name }}
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_PORT_VALUE: ${{ vars.DEPLOY_PORT }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-          SMOKE_TEST_URL: ${{ vars.SMOKE_TEST_URL }}
+        shell: pwsh
         run: |
-          set -euo pipefail
+          $ErrorActionPreference = 'Stop'
+          $response = Invoke-WebRequest -Uri '${{ steps.values.outputs.smoke_test_url }}' -UseBasicParsing
 
-          deploy_port="${DEPLOY_PORT_VALUE:-${DEFAULT_DEPLOY_PORT}}"
-
-          ssh -i "${HOME}/.ssh/id_ed25519" -p "${deploy_port}" "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            "CONTAINER_NAME=$(printf '%q' "${CONTAINER_NAME}") SMOKE_TEST_URL=$(printf '%q' "${SMOKE_TEST_URL}") DEFAULT_CONTAINER_PORT=$(printf '%q' "${DEFAULT_CONTAINER_PORT}") bash -s" <<'REMOTE'
-          set -euo pipefail
-
-          smoke_test_url="${SMOKE_TEST_URL:-http://$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${CONTAINER_NAME}"):${DEFAULT_CONTAINER_PORT}/openapi/v1.json}"
-          response="$(curl --silent --show-error --fail "${smoke_test_url}")"
-          printf '%s\n' "${response}"
-
-          if [[ -z "${response}" ]]; then
-            echo "Smoke test returned an empty response." >&2
-            exit 1
-          fi
-          REMOTE
+          if ([string]::IsNullOrWhiteSpace($response.Content)) {
+            throw 'Smoke test returned an empty response.'
+          }

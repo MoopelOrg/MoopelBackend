@@ -8,6 +8,7 @@ on:
       - completed
 
 permissions:
+  actions: read
   contents: read
 
 jobs:
@@ -20,4 +21,5 @@ jobs:
       environment_name: production
       container_name: moopelbackend-production
       image_tag: ${{ github.event.workflow_run.head_sha }}
+      legacy_container_name: moopelbackend
       run_smoke_tests: true
