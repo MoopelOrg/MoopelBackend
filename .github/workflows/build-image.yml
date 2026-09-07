@@ -1,0 +1,82 @@
+name: Build image
+
+on:
+  workflow_run:
+    workflows:
+      - Build and test
+    types:
+      - completed
+
+env:
+  IMAGE_NAME: ghcr.io/moopelorg/moopelbackend
+  DOCKERFILE_PATH: ./MoopelApi/Dockerfile
+  BUILD_CONTEXT: .
+  DEFAULT_BRANCH: main
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-image:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Calculate image tags
+        id: tags
+        env:
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          mapfile -t release_tags < <(git tag --points-at "${HEAD_SHA}" | grep -E '^v[0-9]+' || true)
+
+          {
+            echo "tags<<EOF"
+            echo "${IMAGE_NAME}:${HEAD_SHA}"
+
+            if [[ "${HEAD_BRANCH}" == "${DEFAULT_BRANCH}" ]]; then
+              echo "${IMAGE_NAME}:latest"
+            fi
+
+            for release_tag in "${release_tags[@]}"; do
+              echo "${IMAGE_NAME}:${release_tag}"
+            done
+
+            echo "EOF"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.BUILD_CONTEXT }}
+          file: ${{ env.DOCKERFILE_PATH }}
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+
+      - name: Summarize published image tags
+        run: |
+          {
+            echo "### Published image tags"
+            echo
+            while IFS= read -r tag; do
+              [[ -n "${tag}" ]] && echo "- ${tag}"
+            done <<< "${{ steps.tags.outputs.tags }}"
+          } >> "${GITHUB_STEP_SUMMARY}"
