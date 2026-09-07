@@ -1,0 +1,141 @@
+name: Reusable deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment_name:
+        required: true
+        type: string
+      container_name:
+        required: true
+        type: string
+      image_tag:
+        required: true
+        type: string
+      legacy_container_name:
+        required: false
+        type: string
+        default: ''
+      run_smoke_tests:
+        required: false
+        type: boolean
+        default: false
+
+env:
+  IMAGE_ARCHIVE_NAME: moopelbackend.tar
+  IMAGE_NAME: ghcr.io/moopelorg/moopelbackend
+  DEFAULT_CONTAINER_PORT: '8080'
+  DEFAULT_DEVELOPMENT_HOST_PORT: '8082'
+  DEFAULT_STAGING_HOST_PORT: '8083'
+  DEFAULT_PRODUCTION_HOST_PORT: '8080'
+  DEFAULT_HEALTHCHECK_RETRIES: '12'
+  DEFAULT_HEALTHCHECK_DELAY_SECONDS: '10'
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, Windows, X64, moopel-server]
+    environment: ${{ inputs.environment_name }}
+    concurrency:
+      group: deploy-${{ inputs.environment_name }}
+      cancel-in-progress: false
+    permissions:
+      actions: read
+      contents: read
+
+    steps:
+      - name: Resolve deployment values
+        id: values
+        shell: pwsh
+        env:
+          CONTAINER_PORT: ${{ vars.CONTAINER_PORT }}
+          ENVIRONMENT_NAME: ${{ inputs.environment_name }}
+          HEALTHCHECK_DELAY_SECONDS: ${{ vars.HEALTHCHECK_DELAY_SECONDS }}
+          HEALTHCHECK_RETRIES: ${{ vars.HEALTHCHECK_RETRIES }}
+          HOST_PORT: ${{ vars.HOST_PORT }}
+          SMOKE_TEST_URL: ${{ vars.SMOKE_TEST_URL }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $defaultHostPort = switch ($env:ENVIRONMENT_NAME) {
+            'development' { $env:DEFAULT_DEVELOPMENT_HOST_PORT; break }
+            'staging' { $env:DEFAULT_STAGING_HOST_PORT; break }
+            'production' { $env:DEFAULT_PRODUCTION_HOST_PORT; break }
+            default { $env:DEFAULT_PRODUCTION_HOST_PORT; break }
+          }
+
+          $hostPort = if ([string]::IsNullOrWhiteSpace($env:HOST_PORT)) { $defaultHostPort } else { $env:HOST_PORT }
+          $containerPort = if ([string]::IsNullOrWhiteSpace($env:CONTAINER_PORT)) { $env:DEFAULT_CONTAINER_PORT } else { $env:CONTAINER_PORT }
+          $healthRetries = if ([string]::IsNullOrWhiteSpace($env:HEALTHCHECK_RETRIES)) { $env:DEFAULT_HEALTHCHECK_RETRIES } else { $env:HEALTHCHECK_RETRIES }
+          $healthDelaySeconds = if ([string]::IsNullOrWhiteSpace($env:HEALTHCHECK_DELAY_SECONDS)) { $env:DEFAULT_HEALTHCHECK_DELAY_SECONDS } else { $env:HEALTHCHECK_DELAY_SECONDS }
+          $smokeTestUrl = if ([string]::IsNullOrWhiteSpace($env:SMOKE_TEST_URL)) { "http://127.0.0.1:$hostPort/openapi/v1.json" } else { $env:SMOKE_TEST_URL }
+
+          "host_port=$hostPort" >> $env:GITHUB_OUTPUT
+          "container_port=$containerPort" >> $env:GITHUB_OUTPUT
+          "healthcheck_retries=$healthRetries" >> $env:GITHUB_OUTPUT
+          "healthcheck_delay_seconds=$healthDelaySeconds" >> $env:GITHUB_OUTPUT
+          "smoke_test_url=$smokeTestUrl" >> $env:GITHUB_OUTPUT
+
+      - name: Verify runner
+        shell: pwsh
+        run: |
+          Write-Host "Runner: $env:RUNNER_NAME"
+          Write-Host "OS: $env:RUNNER_OS"
+          Write-Host "Architecture: $env:RUNNER_ARCH"
+          Write-Host "Machine: $env:COMPUTERNAME"
+          Write-Host "Image tag: ${{ inputs.image_tag }}"
+          Write-Host "Environment: ${{ inputs.environment_name }}"
+          Write-Host "Host port: ${{ steps.values.outputs.host_port }}"
+
+      - name: Check out trusted deployment scripts
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Download deployment image archive
+        uses: actions/download-artifact@v4.1.3
+        with:
+          name: moopelbackend-docker-${{ inputs.image_tag }}
+          path: .
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Load Docker image
+        shell: pwsh
+        run: docker load --input "./${{ env.IMAGE_ARCHIVE_NAME }}"
+
+      - name: Deploy container image
+        shell: pwsh
+        env:
+          CONTAINER_ENV_FILE_PATH: ${{ vars.CONTAINER_ENV_FILE_PATH }}
+        run: >
+          ./.github/scripts/Deploy-Container.ps1
+          -ContainerName '${{ inputs.container_name }}'
+          -ImageName '${{ env.IMAGE_NAME }}'
+          -ImageTag '${{ inputs.image_tag }}'
+          -HostPort '${{ steps.values.outputs.host_port }}'
+          -ContainerPort '${{ steps.values.outputs.container_port }}'
+          -EnvironmentName '${{ inputs.environment_name }}'
+          -ContainerEnvFilePath "${env:CONTAINER_ENV_FILE_PATH}"
+          -HealthcheckRetries '${{ steps.values.outputs.healthcheck_retries }}'
+          -HealthcheckDelaySeconds '${{ steps.values.outputs.healthcheck_delay_seconds }}'
+          -LegacyContainerName '${{ inputs.legacy_container_name }}'
+
+      - name: Upload deployment image archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: moopelbackend-docker-${{ inputs.image_tag }}
+          path: ${{ env.IMAGE_ARCHIVE_NAME }}
+          if-no-files-found: error
+
+      - name: Run smoke tests
+        if: inputs.run_smoke_tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $response = Invoke-WebRequest -Uri '${{ steps.values.outputs.smoke_test_url }}' -UseBasicParsing
+
+          if ([string]::IsNullOrWhiteSpace($response.Content)) {
+            throw 'Smoke test returned an empty response.'
+          }

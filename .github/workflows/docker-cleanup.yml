@@ -1,0 +1,81 @@
+name: Docker cleanup
+
+on:
+  schedule:
+    - cron: '0 4 * * 0'
+  workflow_dispatch:
+
+env:
+  PACKAGE_OWNER: MoopelOrg
+  PACKAGE_NAME: moopelbackend
+  RETENTION_DAYS: '30'
+  KEEP_SHA_TAGGED_VERSIONS: '30'
+
+permissions:
+  packages: read
+
+jobs:
+  audit-stale-images:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Audit stale container image versions
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const packageName = process.env.PACKAGE_NAME;
+            const org = process.env.PACKAGE_OWNER;
+            const retentionDays = Number(process.env.RETENTION_DAYS);
+            const keepCount = Number(process.env.KEEP_SHA_TAGGED_VERSIONS);
+            const releaseTagPattern = /^v\d+\.\d+\.\d+/i;
+            const shaTagPattern = /^[0-9a-f]{40}$/i;
+            const protectedTags = new Set(['latest']);
+            const cutoff = Date.now() - (retentionDays * 24 * 60 * 60 * 1000);
+
+            const versions = await github.paginate(
+              github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg,
+              {
+                org,
+                package_type: 'container',
+                package_name: packageName,
+                per_page: 100
+              }
+            );
+
+            const shaTaggedVersions = versions
+              .map(version => ({
+                id: version.id,
+                created_at: version.created_at,
+                tags: version.metadata?.container?.tags ?? []
+              }))
+              .filter(version =>
+                version.tags.length > 0 &&
+                !version.tags.some(tag => protectedTags.has(tag) || releaseTagPattern.test(tag)) &&
+                version.tags.every(tag => shaTagPattern.test(tag))
+              )
+              .sort((left, right) => new Date(right.created_at) - new Date(left.created_at));
+
+            const staleCandidates = shaTaggedVersions.filter((version, index) =>
+              index >= keepCount && Date.parse(version.created_at) < cutoff
+            );
+
+            await core.summary
+              .addHeading('GHCR cleanup audit')
+              .addRaw(`Retention policy keeps the newest ${keepCount} SHA-tagged image versions and preserves latest/release tags.`, true)
+              .addRaw('This workflow is intentionally read-only; review the candidates below before adding any deletion step.', true)
+              .addRaw('', true)
+              .addTable([
+                [
+                  { data: 'Version ID', header: true },
+                  { data: 'Created', header: true },
+                  { data: 'Tags', header: true }
+                ],
+                ...staleCandidates.map(version => [
+                  String(version.id),
+                  version.created_at,
+                  version.tags.join(', ')
+                ])
+              ])
+              .write();
+
+            core.info(`Found ${staleCandidates.length} stale SHA-tagged image version(s) for ${org}/${packageName}.`);
