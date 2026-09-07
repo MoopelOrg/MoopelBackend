@@ -9,8 +9,7 @@ on:
 
 env:
   IMAGE_NAME: ghcr.io/moopelorg/moopelbackend
-  DOCKERFILE_PATH: ./MoopelApi/Dockerfile
-  BUILD_CONTEXT: .
+  SOURCE_DIRECTORY: source
   DEFAULT_BRANCH: main
 
 permissions:
@@ -23,12 +22,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out source
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
-          fetch-depth: 0
-          persist-credentials: false
+      - name: Fetch source
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          git init "${SOURCE_DIRECTORY}"
+          cd "${SOURCE_DIRECTORY}"
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git -c protocol.version=2 fetch --depth=1 origin "${HEAD_SHA}"
+          git checkout --detach FETCH_HEAD
+          git fetch --force --tags origin
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -38,6 +43,7 @@ jobs:
         env:
           HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        working-directory: ${{ env.SOURCE_DIRECTORY }}
         run: |
           set -euo pipefail
           mapfile -t release_tags < <(git tag --points-at "${HEAD_SHA}" | grep -E '^v[0-9]+' || true)
@@ -60,8 +66,8 @@ jobs:
       - name: Build image
         uses: docker/build-push-action@v6
         with:
-          context: ${{ env.BUILD_CONTEXT }}
-          file: ${{ env.DOCKERFILE_PATH }}
+          context: ${{ env.SOURCE_DIRECTORY }}
+          file: ${{ env.SOURCE_DIRECTORY }}/MoopelApi/Dockerfile
           load: true
           tags: ${{ steps.tags.outputs.tags }}
 
