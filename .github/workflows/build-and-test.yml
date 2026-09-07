@@ -13,7 +13,7 @@ env:
   BUILD_CONFIGURATION: Release
   SOLUTION_PATH: MoopelBackend.slnx
   TEST_PROJECT_PATH: ApiTests/ApiTests.csproj
-  TEST_RESULTS_DIRECTORY: ${{ runner.temp }}/test-results
+  TEST_RESULTS_DIRECTORY: test-results
   UNIT_TEST_FILTER: FullyQualifiedName~ApiTests.Unit
   INTEGRATION_TEST_FILTER: FullyQualifiedName~ApiTests.Integration
 
