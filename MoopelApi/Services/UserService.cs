@@ -281,7 +281,7 @@ public class UserService : IUserService
             int rowsAffected = await command.ExecuteNonQueryAsync();
 
             if (rowsAffected != 1)
-                throw new Exception($"Rows affected[{rowsAffected}] did not match expected 1.");
+                throw new NotFoundException($"User [{userId}] was not found.");
 
             await transaction.CommitAsync();
         }
@@ -446,16 +446,22 @@ public class UserService : IUserService
             command.Parameters.Add(SettingDateFormatField.GenerateParameter("@DateFormat", updateRequest.DateFormat ?? existingSettings.DateFormat));
             command.Parameters.Add(SettingsIdField.GenerateParameter("@SettingsId", settingsId));
 
-            await using SqlDataReader reader = await command.ExecuteReaderAsync();
-
-            if (await reader.ReadAsync())
+            UserSettings? updatedSettings = null;
+            await using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
-                UserSettings updatedSettings = DtoReaders.ReadUserSettings(reader);
-                await transaction.CommitAsync();
-                return updatedSettings;
+                if (await reader.ReadAsync())
+                {
+                    updatedSettings = DtoReaders.ReadUserSettings(reader);
+                }
             }
 
-            throw new InvalidOperationException("Failed to update user settings.");
+            if (updatedSettings is null)
+            {
+                throw new InvalidOperationException("Failed to update user settings.");
+            }
+
+            await transaction.CommitAsync();
+            return updatedSettings;
         }
         catch (Exception ex)
         {

@@ -5,6 +5,7 @@ using MoopelApi.Models.Configuration;
 using MoopelApi.Services.Interfaces;
 
 using MoopelObjects.Dto;
+using MoopelObjects.Exceptions;
 using MoopelObjects.Requests.Creation;
 using MoopelObjects.Requests.Update;
 
@@ -292,12 +293,13 @@ public class NoteService : INoteService
             {
                 if (!await reader.ReadAsync())
                 {
-                    throw new("Could not retrieve inserted note");
+                    throw new NotFoundException($"Note [{noteId}] was not found.");
                 }
 
                 note = DtoReaders.ReadNote(reader);
             }
 
+            await transaction.CommitAsync();
             return note;
         }
         catch (Exception ex)

@@ -58,7 +58,7 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     }
 
     private readonly MsSqlContainer _dbContainer =
-    new MsSqlBuilder(image: "mcr.microsoft.com/mssql/server:2025-latest")
+    new MsSqlBuilder(image: "mcr.microsoft.com/mssql/server:2022-latest")
         .WithPassword("YourStrong!Passw0rd")
         .Build();
 
