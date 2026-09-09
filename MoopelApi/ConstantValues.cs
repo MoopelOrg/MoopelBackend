@@ -136,7 +136,7 @@ public class ConstantValues
             new()
             {
                 Name = "ThemeData",
-                Type = SqlDbType.Json, // SQL Server does not support JSON type directly
+                Type = SqlDbType.Json,
                 Nullable = false,
                 FieldSize = null,
                 DefaultValue = "'{}'"
