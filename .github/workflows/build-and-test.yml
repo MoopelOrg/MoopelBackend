@@ -45,7 +45,8 @@ jobs:
           --configuration ${{ env.BUILD_CONFIGURATION }}
           --no-build
           --filter "${{ env.UNIT_TEST_FILTER }}"
-          --logger "trx;LogFileName=unit-tests.trx"
+          --report-xunit-trx
+          --report-xunit-trx-filename "unit-tests.trx"
           --results-directory "${{ env.TEST_RESULTS_DIRECTORY }}"
 
       - name: Run integration tests
@@ -54,7 +55,8 @@ jobs:
           --configuration ${{ env.BUILD_CONFIGURATION }}
           --no-build
           --filter "${{ env.INTEGRATION_TEST_FILTER }}"
-          --logger "trx;LogFileName=integration-tests.trx"
+          --report-xunit-trx
+          --report-xunit-trx-filename "integration-tests.trx"
           --results-directory "${{ env.TEST_RESULTS_DIRECTORY }}"
 
       - name: Upload test results
