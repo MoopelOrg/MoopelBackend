@@ -32,6 +32,19 @@ namespace ApiTests;
 
 public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    private const string DatabaseConnectionStringEnvironmentVariable = "DatabaseConnection__ConnectionString";
+    private const string DatabaseNameEnvironmentVariable = "DatabaseConnection__DatabaseName";
+    private const string DatabaseTimeoutEnvironmentVariable = "DatabaseConnection__Timeout";
+    private const string JwtIssuerEnvironmentVariable = "JwtSettings__Issuer";
+    private const string JwtAudienceEnvironmentVariable = "JwtSettings__Audience";
+    private const string JwtKeyEnvironmentVariable = "JwtSettings__JwtKey";
+    private const string JwtExpiryMinutesEnvironmentVariable = "JwtSettings__ExpiryMinutes";
+
+    private const string TestJwtIssuer = "ApiTests";
+    private const string TestJwtAudience = "ApiTestsClient";
+    private const string TestJwtKey = "ApiTestsGeneratedJwtSigningKeyForContainerTestsOnly_2026_09_09__DoNotUseInProduction";
+    private const int TestJwtExpiryMinutes = 60;
+
     internal static JsonSerializerOptions SharedJsonSerializerOptions { get; } =
         CreateJsonSerializerOptions();
 
@@ -45,7 +58,7 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     }
 
     private readonly MsSqlContainer _dbContainer =
-    new MsSqlBuilder(image: "mcr.microsoft.com/mssql/server:2022-latest")
+    new MsSqlBuilder(image: "mcr.microsoft.com/mssql/server:2025-latest")
         .WithPassword("YourStrong!Passw0rd")
         .Build();
 
@@ -53,12 +66,26 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     private Respawner _respawner = null!;
     private DbConnection _connection = null!;
+    private readonly Dictionary<string, string?> _previousEnvironmentValues = [];
 
-    public string ConnectionString => _dbContainer.GetConnectionString();
+    public string ConnectionString
+    {
+        get
+        {
+            SqlConnectionStringBuilder connectionStringBuilder = new(_dbContainer.GetConnectionString())
+            {
+                MultipleActiveResultSets = true
+            };
+
+            return connectionStringBuilder.ConnectionString;
+        }
+    }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
         GC.SuppressFinalize(this);
+
+        RestoreEnvironmentVariables();
 
         Console.WriteLine($"Disposing of ApiFactory UTC:{DateTime.UtcNow}");
         await _dbContainer.StopAsync();
@@ -69,6 +96,7 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     async ValueTask IAsyncLifetime.InitializeAsync()
     {
         await _dbContainer.StartAsync();
+        ApplyEnvironmentVariables();
 
         // Force the app to build and run BuildDatabase so that all application
         // tables exist before Respawner takes its schema snapshot.
@@ -96,10 +124,15 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
             Dictionary<string, string?> overrideConfig = new()
             {
-                ["DatabaseConnection:ConnectionString"] = ConnectionString
+                ["DatabaseConnection:ConnectionString"] = ConnectionString,
+                ["DatabaseConnection:DatabaseName"] = "MoopelDB",
+                ["DatabaseConnection:Timeout"] = DatabaseTimeoutSeconds.ToString(),
+                ["JwtSettings:Issuer"] = TestJwtIssuer,
+                ["JwtSettings:Audience"] = TestJwtAudience,
+                ["JwtSettings:JwtKey"] = TestJwtKey,
+                ["JwtSettings:ExpiryMinutes"] = TestJwtExpiryMinutes.ToString()
             };
 
-            config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
             config.AddInMemoryCollection(overrideConfig);
         });
 
@@ -157,6 +190,34 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         if (updatedRows != 1)
         {
             throw new InvalidOperationException("Failed to promote the test user to administrator.");
+        }
+    }
+
+    private void ApplyEnvironmentVariables()
+    {
+        Dictionary<string, string> config = new()
+        {
+            [DatabaseConnectionStringEnvironmentVariable] = ConnectionString,
+            [DatabaseNameEnvironmentVariable] = "MoopelDB",
+            [DatabaseTimeoutEnvironmentVariable] = DatabaseTimeoutSeconds.ToString(),
+            [JwtIssuerEnvironmentVariable] = TestJwtIssuer,
+            [JwtAudienceEnvironmentVariable] = TestJwtAudience,
+            [JwtKeyEnvironmentVariable] = TestJwtKey,
+            [JwtExpiryMinutesEnvironmentVariable] = TestJwtExpiryMinutes.ToString()
+        };
+
+        foreach ((string key, string value) in config)
+        {
+            _previousEnvironmentValues[key] = Environment.GetEnvironmentVariable(key);
+            Environment.SetEnvironmentVariable(key, value);
+        }
+    }
+
+    private void RestoreEnvironmentVariables()
+    {
+        foreach ((string key, string? value) in _previousEnvironmentValues)
+        {
+            Environment.SetEnvironmentVariable(key, value);
         }
     }
 }
