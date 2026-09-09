@@ -136,7 +136,7 @@ public class ConstantValues
             new()
             {
                 Name = "ThemeData",
-                Type = SqlDbType.NVarChar,
+                Type = SqlDbType.Json,
                 Nullable = false,
                 FieldSize = null,
                 DefaultValue = "'{}'"
