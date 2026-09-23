@@ -41,10 +41,29 @@ jobs:
       image_tag: ${{ github.event.workflow_run.head_sha }}
       artifact_run_id: ${{ github.event.workflow_run.id }}
 
+  resolve-manual-image-tag:
+    if: github.event_name == 'workflow_dispatch' && github.ref_name != 'main'
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.resolve.outputs.image_tag }}
+
+    steps:
+      - name: Resolve manual image tag
+        id: resolve
+        env:
+          INPUT_IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          if [ -n "${INPUT_IMAGE_TAG}" ]; then
+            echo "image_tag=${INPUT_IMAGE_TAG}" >> "${GITHUB_OUTPUT}"
+          else
+            echo "image_tag=${GITHUB_SHA}" >> "${GITHUB_OUTPUT}"
+          fi
+
   deploy-development-manual:
     if: github.event_name == 'workflow_dispatch' && github.ref_name != 'main'
+    needs: resolve-manual-image-tag
     uses: ./.github/workflows/_deploy.yml
     with:
       environment_name: development
       container_name: moopelbackend-development
-      image_tag: ${{ inputs.image_tag != '' && inputs.image_tag || github.sha }}
+      image_tag: ${{ needs.resolve-manual-image-tag.outputs.image_tag }}
