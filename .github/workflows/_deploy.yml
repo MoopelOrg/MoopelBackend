@@ -12,6 +12,10 @@ on:
       image_tag:
         required: true
         type: string
+      artifact_run_id:
+        required: false
+        type: string
+        default: ''
       legacy_container_name:
         required: false
         type: string
@@ -41,6 +45,7 @@ jobs:
     permissions:
       actions: read
       contents: read
+      packages: read
 
     steps:
       - name: Resolve deployment values
@@ -93,15 +98,30 @@ jobs:
           persist-credentials: false
 
       - name: Download deployment image archive
+        if: inputs.artifact_run_id != ''
         uses: actions/download-artifact@v4.1.3
         with:
           name: moopelbackend-docker-${{ inputs.image_tag }}
           path: .
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ inputs.artifact_run_id }}
+
+      - name: Log in to GitHub Container Registry
+        if: inputs.artifact_run_id == ''
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull Docker image
+        if: inputs.artifact_run_id == ''
+        shell: pwsh
+        run: docker pull "${{ env.IMAGE_NAME }}:${{ inputs.image_tag }}"
 
       - name: Load Docker image
+        if: inputs.artifact_run_id != ''
         shell: pwsh
         run: docker load --input "./${{ env.IMAGE_ARCHIVE_NAME }}"
 
@@ -123,6 +143,7 @@ jobs:
           -LegacyContainerName '${{ inputs.legacy_container_name }}'
 
       - name: Upload deployment image archive
+        if: inputs.artifact_run_id != ''
         uses: actions/upload-artifact@v4
         with:
           name: moopelbackend-docker-${{ inputs.image_tag }}

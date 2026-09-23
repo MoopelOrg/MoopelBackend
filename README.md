@@ -9,6 +9,8 @@ This repository now includes separate GitHub Actions workflows for CI, image pub
 - `deploy-development.yml`, `deploy-staging.yml`, and `deploy-production.yml` reuse the same deployment workflow so each environment deploys the exact image built from the tested commit SHA on the self-hosted Windows runner without SSH.
 - `docker-cleanup.yml` is currently a read-only GHCR retention audit so stale image candidates can be reviewed before any deletion automation is enabled.
 
+To test development deployment on demand, manually run `deploy-development.yml` from the Actions tab on a non-`main` branch. It defaults to the selected branch HEAD commit SHA and can also redeploy any existing SHA-tagged image by setting the optional `image_tag` input.
+
 ### Required GitHub environments
 
 Create these GitHub environments and configure any approval rules directly in GitHub:

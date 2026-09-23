@@ -6,14 +6,21 @@ on:
       - Build image
     types:
       - completed
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Commit SHA image tag to deploy. Defaults to the selected branch HEAD commit SHA.
+        required: false
+        type: string
 
 permissions:
   actions: read
   contents: read
 
 jobs:
-  deploy-development:
+  deploy-development-from-build:
     if: >
+      github.event_name == 'workflow_run' &&
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'workflow_run' &&
       github.event.workflow_run.head_branch != null &&
@@ -23,3 +30,12 @@ jobs:
       environment_name: development
       container_name: moopelbackend-development
       image_tag: ${{ github.event.workflow_run.head_sha }}
+      artifact_run_id: ${{ github.event.workflow_run.id }}
+
+  deploy-development-manual:
+    if: github.event_name == 'workflow_dispatch' && github.ref_name != 'main'
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      environment_name: development
+      container_name: moopelbackend-development
+      image_tag: ${{ inputs.image_tag != '' && inputs.image_tag || github.sha }}
