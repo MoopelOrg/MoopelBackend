@@ -60,6 +60,7 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     private readonly MsSqlContainer _dbContainer =
     new MsSqlBuilder(image: "mcr.microsoft.com/mssql/server:2025-latest")
         .WithPassword("YourStrong!Passw0rd")
+        .WithCreateParameterModifier(parameters => parameters.User = "root")
         .Build();
 
     private const int DatabaseTimeoutSeconds = 30;
