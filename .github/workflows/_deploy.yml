@@ -116,17 +116,17 @@ jobs:
         shell: pwsh
         run: throw 'This deployment requires an artifact_run_id unless the caller explicitly enables registry pulls.'
 
-      - name: Validate GHCR read token
-        if: inputs.allow_registry_pull && secrets.GHCR_READ_TOKEN == ''
+      - name: Validate GHCR registry credentials
+        if: inputs.allow_registry_pull && (secrets.GHCR_READ_TOKEN == '' || secrets.GHCR_READ_USERNAME == '')
         shell: pwsh
-        run: throw 'Manual deployments require the GHCR_READ_TOKEN secret so the runner can pull the requested image tag from GHCR.'
+        run: throw 'Manual deployments require both GHCR_READ_USERNAME and GHCR_READ_TOKEN secrets so the runner can pull the requested image tag from GHCR.'
 
       - name: Log in to GitHub Container Registry
-        if: inputs.allow_registry_pull && secrets.GHCR_READ_TOKEN != ''
+        if: inputs.allow_registry_pull && secrets.GHCR_READ_TOKEN != '' && secrets.GHCR_READ_USERNAME != ''
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
+          username: ${{ secrets.GHCR_READ_USERNAME }}
           password: ${{ secrets.GHCR_READ_TOKEN }}
 
       - name: Pull Docker image
