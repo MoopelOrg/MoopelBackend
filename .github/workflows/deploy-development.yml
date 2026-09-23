@@ -64,6 +64,7 @@ jobs:
     needs: resolve-manual-image-tag
     uses: ./.github/workflows/_deploy.yml
     with:
+      allow_registry_pull: true
       environment_name: development
       container_name: moopelbackend-development
       image_tag: ${{ needs.resolve-manual-image-tag.outputs.image_tag }}
