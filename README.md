@@ -38,6 +38,8 @@ Add these GitHub environment variables when they apply to the self-hosted deploy
 - `HEALTHCHECK_DELAY_SECONDS` - Override for the wait between health retries.
 - `SMOKE_TEST_URL` - Optional URL to use for staging/production smoke tests. When omitted, the reusable workflow checks `/openapi/v1.json` through the bound host port.
 
+Add a `GHCR_READ_TOKEN` GitHub environment secret on `development` if you want to use the manual `deploy-development.yml` workflow. The token needs package read access for `ghcr.io/moopelorg/moopelbackend`.
+
 Environment-specific application settings and secrets must stay outside source control. The deployment workflow only references runner-local files and environment configuration.
 
 ### Notes and assumptions
