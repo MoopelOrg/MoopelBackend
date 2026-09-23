@@ -42,7 +42,6 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     private const string GitHubActionsEnvironmentVariable = "GITHUB_ACTIONS";
     private const string GitHubActionsEnabledValue = "true";
     private const string SqlServerTestContainerImage = "mcr.microsoft.com/mssql/server:2025-latest";
-    private const string SqlServerTestContainerPassword = "YourStrong!Passw0rd";
     private const string SqlServerRootUser = "root";
 
     private const string TestJwtIssuer = "ApiTests";
@@ -86,7 +85,7 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     private static MsSqlContainer CreateDbContainer()
     {
         MsSqlBuilder builder = new MsSqlBuilder(image: SqlServerTestContainerImage)
-            .WithPassword(SqlServerTestContainerPassword);
+            .WithPassword(IntegrationTestConfig.SqlServerTestContainerPassword);
 
         if (string.Equals(
                 Environment.GetEnvironmentVariable(GitHubActionsEnvironmentVariable),
