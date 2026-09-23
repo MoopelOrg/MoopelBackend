@@ -18,6 +18,16 @@ permissions:
   contents: read
 
 jobs:
+  reject-main-manual:
+    if: github.event_name == 'workflow_dispatch' && github.ref_name == 'main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Reject main branch manual deployment
+        run: |
+          echo "Manual development deployments must be run from a non-main branch." >&2
+          exit 1
+
   deploy-development-from-build:
     if: >
       github.event_name == 'workflow_run' &&
