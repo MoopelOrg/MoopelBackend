@@ -11,6 +11,7 @@ internal class IntegrationTestConfig
     {
         return new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
             .AddEnvironmentVariables(prefix: "Moopel_")
             .Build();
     }
