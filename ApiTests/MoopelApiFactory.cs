@@ -39,6 +39,10 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     private const string JwtAudienceEnvironmentVariable = "JwtSettings__Audience";
     private const string JwtKeyEnvironmentVariable = "JwtSettings__JwtKey";
     private const string JwtExpiryMinutesEnvironmentVariable = "JwtSettings__ExpiryMinutes";
+    private const string GitHubActionsEnvironmentVariable = "GITHUB_ACTIONS";
+    private const string GitHubActionsEnabledValue = "true";
+    private const string SqlServerTestContainerImage = "mcr.microsoft.com/mssql/server:2025-latest";
+    private const string SqlServerRootUser = "root";
 
     private const string TestJwtIssuer = "ApiTests";
     private const string TestJwtAudience = "ApiTestsClient";
@@ -57,10 +61,7 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         return options;
     }
 
-    private readonly MsSqlContainer _dbContainer =
-    new MsSqlBuilder(image: "mcr.microsoft.com/mssql/server:2022-latest")
-        .WithPassword("YourStrong!Passw0rd")
-        .Build();
+    private readonly MsSqlContainer _dbContainer = CreateDbContainer();
 
     private const int DatabaseTimeoutSeconds = 30;
 
@@ -79,6 +80,23 @@ public class MoopelApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
             return connectionStringBuilder.ConnectionString;
         }
+    }
+
+    private static MsSqlContainer CreateDbContainer()
+    {
+        MsSqlBuilder builder = new MsSqlBuilder(image: SqlServerTestContainerImage)
+            .WithPassword(IntegrationTestConfig.SqlServerTestContainerPassword);
+
+        if (string.Equals(
+                Environment.GetEnvironmentVariable(GitHubActionsEnvironmentVariable),
+                GitHubActionsEnabledValue,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            // SQL Server 2025 currently needs the legacy root user path on GitHub Actions.
+            builder = builder.WithCreateParameterModifier(parameters => parameters.User = SqlServerRootUser);
+        }
+
+        return builder.Build();
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()

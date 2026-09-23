@@ -4,13 +4,14 @@ namespace ApiTests;
 
 internal class IntegrationTestConfig
 {
+    private const string DefaultSqlServerTestContainerPassword = "YourStrong!Passw0rd";
     private static readonly IConfigurationRoot _config = Build();
 
     private static IConfigurationRoot Build()
     {
         return new ConfigurationBuilder()
-            .SetBasePath("")
-            .AddJsonFile("", optional: true, reloadOnChange: false)
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
             .AddEnvironmentVariables(prefix: "Moopel_")
             .Build();
     }
@@ -21,6 +22,10 @@ internal class IntegrationTestConfig
     public static string RequireDatabase() =>
         DatabaseConnectionString
         ?? IgnoreForMissing("Database");
+
+    public static string SqlServerTestContainerPassword =>
+        Nullable(_config["SqlServerTestContainerPassword"])
+        ?? DefaultSqlServerTestContainerPassword;
 
     private static string IgnoreForMissing(string name)
     {
