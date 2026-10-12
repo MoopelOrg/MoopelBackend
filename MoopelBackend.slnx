@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
+    <File Path="azure-pipeline.yml" />
     <File Path="MoopelApi/Properties/runDocker.ps1" />
     <File Path="oauth-github-google-plan.md" />
   </Folder>

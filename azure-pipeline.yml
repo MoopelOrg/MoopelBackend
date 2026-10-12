@@ -1,0 +1,46 @@
+# azure-pipelines.yml
+
+trigger:
+  - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  buildConfiguration: 'Release'
+  dotnetVersion: '11.x'
+
+steps:
+  - task: UseDotNet@2
+    displayName: 'Install .NET SDK'
+    inputs:
+      packageType: 'sdk'
+      version: '$(dotnetVersion)'
+
+  - script: dotnet restore
+    displayName: 'Restore dependencies'
+
+  - script: dotnet build --configuration $(buildConfiguration) --no-restore
+    displayName: 'Build solution'
+
+  - script: dotnet test --configuration $(buildConfiguration) --no-build
+    displayName: 'Run tests'
+
+  - script: dotnet publish --configuration $(buildConfiguration) --no-restore --output $(Build.ArtifactStagingDirectory)/publish
+    displayName: 'Publish application'
+
+  - task: ArchiveFiles@2
+    displayName: 'Package application'
+    inputs:
+      rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/publish'
+      includeRootFolder: false
+      archiveType: zip
+      archiveFile: '$(Build.ArtifactStagingDirectory)/MoopelBackend.zip'
+      replaceExistingArchive: true
+
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publish build artifact'
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)/MoopelBackend.zip'
+      artifact: 'MoopelBackend'
+      publishLocation: 'pipeline'
